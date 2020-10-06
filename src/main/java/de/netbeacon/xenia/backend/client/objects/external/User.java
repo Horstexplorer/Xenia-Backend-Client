@@ -27,6 +27,10 @@ public class User extends APIDataObject {
 
     private final long userId;
 
+    private long creationTimestamp;
+    private String internalRole;
+    private String preferredLanguage;
+
     public User(BackendProcessor backendProcessor, long userId) {
         super(backendProcessor, List.of("data", "user", String.valueOf(userId)));
         this.userId = userId;
@@ -36,13 +40,44 @@ public class User extends APIDataObject {
         return userId;
     }
 
+    public long getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public String getInternalRole() {
+        return internalRole;
+    }
+
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setInternalRole(String internalRole){
+        this.internalRole = internalRole;
+        update();
+    }
+
+    public void setPreferredLanguage(String language){
+        this.preferredLanguage = language;
+        update();
+    }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
-        return null;
+        return new JSONObject()
+                .put("userId", userId)
+                .put("creationTimestamp", creationTimestamp)
+                .put("internalRole", internalRole)
+                .put("preferredLanguage", preferredLanguage);
     }
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-
+        if(jsonObject.getLong("userId") != userId){
+            throw new JSONSerializationException("Object Do Not Match");
+        }
+        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+        this.internalRole = jsonObject.getString("internalRole");
+        this.preferredLanguage = jsonObject.getString("preferredLanguage");
     }
 }

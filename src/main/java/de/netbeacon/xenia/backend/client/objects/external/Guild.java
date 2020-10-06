@@ -29,6 +29,10 @@ import java.util.List;
 public class Guild extends APIDataObject {
 
     private final long guildId;
+
+    private long creationTimestamp;
+    private String preferredLanguage;
+
     private final ChannelCache channelCache;
     private final MemberCache memberCache;
     private final RoleCache roleCache;
@@ -45,6 +49,19 @@ public class Guild extends APIDataObject {
         return guildId;
     }
 
+    public long getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setPreferredLanguage(String preferredLanguage){
+        this.preferredLanguage = preferredLanguage;
+        update();
+    }
+
     public ChannelCache getChannelCache() {
         return channelCache;
     }
@@ -59,11 +76,18 @@ public class Guild extends APIDataObject {
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
-        return null;
+        return new JSONObject()
+                .put("guildId", guildId)
+                .put("creationTimestamp", creationTimestamp)
+                .put("preferredLanguage", preferredLanguage);
     }
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-
+        if(jsonObject.getLong("guildId") != guildId){
+            throw new JSONSerializationException("Object Do Not Match");
+        }
+        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+        this.preferredLanguage = jsonObject.getString("preferredLanguage");
     }
 }

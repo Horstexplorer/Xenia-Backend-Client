@@ -30,8 +30,19 @@ import java.util.List;
 
 public class License extends APIDataObject {
 
+    private final long guildId;
+
+    private String licenseName;
+    private String licenseDescription;
+    private long activationTimestamp;
+    private int durationDays;
+    // perks
+    private boolean perk_CHANNEL_LOGGING_MC;
+    private long perk_CHANNEL_LOGGING_PCB;
+
     public License(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "license"));
+        this.guildId = guildId;
     }
 
     public void update(String licenseKey) throws BackendException {
@@ -45,6 +56,8 @@ public class License extends APIDataObject {
         fromJSON(backendResult.getPayloadAsJSON());
     }
 
+
+
     @Override
     public void create() throws BackendException {}
 
@@ -57,11 +70,24 @@ public class License extends APIDataObject {
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
-        return null;
+        return new JSONObject()
+                .put("licenseName", licenseName)
+                .put("licenseDescription", licenseDescription)
+                .put("activationTimestamp", activationTimestamp)
+                .put("durationDays", durationDays)
+                .put("perks", new JSONObject()
+                        .put("channelLoggingMC", perk_CHANNEL_LOGGING_MC)
+                        .put("channelLoggingPCB", perk_CHANNEL_LOGGING_PCB)
+                );
     }
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-
+        this.licenseName = jsonObject.getString("licenseName");
+        this.licenseDescription = jsonObject.getString("licenseDescription");
+        this.activationTimestamp = jsonObject.getLong("activationTimestamp");
+        this.durationDays = jsonObject.getInt("durationDays");
+        this.perk_CHANNEL_LOGGING_MC = jsonObject.getJSONObject("perks").getBoolean("channelLoggingMC");
+        this.perk_CHANNEL_LOGGING_PCB = jsonObject.getJSONObject("perks").getLong("channelLoggingPCB");
     }
 }

@@ -28,6 +28,12 @@ public class Channel extends APIDataObject {
     private final long guildId;
     private final long channelId;
 
+    private long creationTimestamp;
+    private boolean accessRestriction;
+    private String channelMode;
+    private String channelType;
+    private boolean tmpLoggingActive;
+
     public Channel(BackendProcessor backendProcessor, long guildId, long channelId) {
         super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "channel", String.valueOf(channelId)));
         this.guildId = guildId;
@@ -40,11 +46,25 @@ public class Channel extends APIDataObject {
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
-        return null;
+        return new JSONObject()
+                .put("guildId", guildId)
+                .put("channelId", channelId)
+                .put("creationTimestamp", creationTimestamp)
+                .put("accessRestriction", accessRestriction)
+                .put("channelMode", channelMode)
+                .put("channelType", channelType)
+                .put("tmpLoggingActive", tmpLoggingActive);
     }
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-
+        if((jsonObject.getLong("guildId") != guildId) || (jsonObject.getLong("channelId") != channelId)){
+            throw new JSONSerializationException("Object Do Not Match");
+        }
+        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+        this.accessRestriction = jsonObject.getBoolean("accessRestriction");
+        this.channelMode = jsonObject.getString("channelMode");
+        this.channelType = jsonObject.getString("channelType");
+        this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
     }
 }

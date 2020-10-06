@@ -21,12 +21,17 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Member extends APIDataObject {
 
     private final long guildId;
     private final long userId;
+
+    private long creationTimestamp;
+    private Set<Long> roles = new HashSet<>();
 
     public Member(BackendProcessor backendProcessor, long guildId, long userId) {
         super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "member", String.valueOf(userId)));
@@ -38,13 +43,34 @@ public class Member extends APIDataObject {
         return userId;
     }
 
+    public long getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public Set<Long> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Long> roles){
+        this.roles = roles;
+        update();
+    }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
-        return null;
+        return new JSONObject()
+                .put("guildId", guildId)
+                .put("userId", userId)
+                .put("creationTimestamp", creationTimestamp)
+                .put("roles", roles);
     }
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-
+        if((jsonObject.getLong("guildId") != guildId) || (jsonObject.getLong("userId") != userId)){
+            throw new JSONSerializationException("Object Do Not Match");
+        }
+        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+        this.roles = (Set<Long>)(Set<?>)jsonObject.getJSONArray("roles");
     }
 }
