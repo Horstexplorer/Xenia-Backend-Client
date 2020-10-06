@@ -21,6 +21,7 @@ import de.netbeacon.utils.shutdownhook.ShutdownHook;
 import de.netbeacon.xenia.backend.client.objects.cache.GuildCache;
 import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
+import de.netbeacon.xenia.backend.client.objects.external.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import okhttp3.Dispatcher;
@@ -29,6 +30,7 @@ import okhttp3.OkHttpClient;
 public class XeniaBackendClient implements IShutdown {
 
     private final OkHttpClient okHttpClient;
+    private final BackendProcessor backendProcessor;
 
     private final UserCache userCache;
     private final GuildCache guildCache;
@@ -42,7 +44,7 @@ public class XeniaBackendClient implements IShutdown {
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder().dispatcher(dispatcher);
         this.okHttpClient = okHttpClientBuilder.build();
         // create processor
-        BackendProcessor backendProcessor = new BackendProcessor(okHttpClient, backendSettings);
+        backendProcessor = new BackendProcessor(okHttpClient, backendSettings);
         // check login
         backendProcessor.activateToken();
         // create main caches
@@ -52,6 +54,12 @@ public class XeniaBackendClient implements IShutdown {
         // add shutdown hook
         ShutdownHook shutdownHook = new ShutdownHook();
         shutdownHook.addShutdownAble(this);
+    }
+
+    public SetupData getSetupData() {
+        SetupData setupData = new SetupData(backendProcessor);
+        setupData.get();
+        return setupData;
     }
 
     public UserCache getUserCache() {
