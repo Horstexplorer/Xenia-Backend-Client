@@ -32,7 +32,7 @@ public class ShutdownHook {
     public ShutdownHook(){
         Runtime.getRuntime().addShutdownHook(new Thread(()->{
             while(!shutdownDeque.isEmpty()){
-                de.netbeacon.utils.shutdownhook.IShutdown iShutdown = shutdownDeque.remove();
+                IShutdown iShutdown = shutdownDeque.remove();
                 try{
                     iShutdown.onShutdown();
                 }catch (Exception e){
