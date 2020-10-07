@@ -19,18 +19,24 @@ package de.netbeacon.xenia.backend.client.objects.internal;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class BackendProcessor {
 
     private final OkHttpClient okHttpClient;
     private final BackendSettings backendSettings;
     private final Logger logger = LoggerFactory.getLogger(BackendProcessor.class);
+    private final ExecutorService executorService = Executors.newScheduledThreadPool(4);
 
     public BackendProcessor(OkHttpClient okHttpClient, BackendSettings backendSettings){
         this.okHttpClient = okHttpClient;
@@ -68,6 +74,51 @@ public class BackendProcessor {
     }
 
     public BackendResult process(BackendRequest backendRequest) throws BackendException {
+        try{
+            try(Response response = okHttpClient.newCall(buildOkHttpRequest(backendRequest)).execute()){
+                // parse response
+                int code = response.code();
+                if(response.body() != null){
+                    return new BackendResult(code, response.body().bytes());
+                }else{
+                    return new BackendResult(code, null);
+                }
+            }
+        }catch (Exception e){
+            logger.error("Failed To Process Request: ", e);
+            throw new BackendException(-1, e);
+        }
+    }
+
+    public void processAsync(BackendRequest backendRequest, Consumer<BackendResult> resultConsumer) throws BackendException {
+        try{
+            okHttpClient.newCall(buildOkHttpRequest(backendRequest)).enqueue(new Callback() {
+
+                @Override
+                public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                    logger.error("Failed To Process Request Async: ", e);
+                    executorService.execute(()->resultConsumer.accept(new BackendResult(-1, null)));
+                }
+
+                @Override
+                public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                    int code = response.code();
+                    if(response.body() != null){
+                        byte[] body = response.body().bytes();
+                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, body)));
+                    }else{
+                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, null)));
+                    }
+                }
+            });
+
+        }catch (Exception e){
+            logger.error("Failed To Process Request: ", e);
+            throw new BackendException(-1, e);
+        }
+    }
+
+    private Request buildOkHttpRequest(BackendRequest backendRequest){
         try{
             // build url from request
             HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
@@ -117,16 +168,7 @@ public class BackendProcessor {
                     }
                     break;
             }
-            // execute request
-            try(Response response = okHttpClient.newCall(requestBuilder.build()).execute()){
-                // parse response
-                int code = response.code();
-                if(response.body() != null){
-                    return new BackendResult(code, response.body().bytes());
-                }else{
-                    return new BackendResult(code, null);
-                }
-            }
+            return requestBuilder.build();
         }catch (Exception e){
             logger.error("Failed To Process Request: ", e);
             throw new BackendException(-1, e);
