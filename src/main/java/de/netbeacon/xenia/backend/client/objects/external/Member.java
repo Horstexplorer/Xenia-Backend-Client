@@ -71,6 +71,8 @@ public class Member extends APIDataObject {
             throw new JSONSerializationException("Object Do Not Match");
         }
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        this.roles = (Set<Long>)(Set<?>)jsonObject.getJSONArray("roles");
+        for(int i = 0; i < jsonObject.getJSONArray("roles").length(); i++){
+            this.roles.add(jsonObject.getJSONArray("roles").getLong(i));
+        }
     }
 }

@@ -31,7 +31,7 @@ public class SetupData extends APIDataObject {
     private String clientDescription;
     private String discordToken;
     private int totalShards;
-    private Integer[] shardIds;
+    private int[] shardIds;
 
     public SetupData(BackendProcessor backendProcessor) {
         super(backendProcessor, List.of("setup", "bot"));
@@ -57,7 +57,7 @@ public class SetupData extends APIDataObject {
         return totalShards;
     }
 
-    public Integer[] getShards(){
+    public int[] getShards(){
         return shardIds;
     }
 
@@ -89,6 +89,10 @@ public class SetupData extends APIDataObject {
         this.clientDescription = jsonObject.getString("clientDescription");
         this.discordToken = jsonObject.getString("discordToken");
         this.totalShards = jsonObject.getJSONObject("shards").getInt("total");
-        this.shardIds = ((Integer[])((List<Integer>)(List<?>)jsonObject.getJSONObject("shards").getJSONArray("use")).toArray());
+        int[] shardIdsI = new int[jsonObject.getJSONObject("shards").getJSONArray("use").length()];
+        for(int i = 0; i < jsonObject.getJSONObject("shards").getJSONArray("use").length(); i++){
+            shardIdsI[i] = jsonObject.getJSONObject("shards").getJSONArray("use").getInt(i);
+        }
+        this.shardIds = shardIdsI;
     }
 }
