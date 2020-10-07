@@ -17,7 +17,10 @@
 package de.netbeacon.xenia.backend.client.objects.cache;
 
 import de.netbeacon.xenia.backend.client.objects.external.Member;
+import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+
+import java.util.Objects;
 
 public class MemberCache extends Cache<Member> {
 
@@ -26,5 +29,34 @@ public class MemberCache extends Cache<Member> {
     public MemberCache(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
         this.guildId = guildId;
+    }
+
+    public Member get(long userId){
+        Member member = getFromCache(userId);
+        if(member != null){
+            return member;
+        }
+        member = new Member(getBackendProcessor(), guildId, userId);
+        try{
+            member.get();
+        }catch (BackendException e){
+            if(e.getId() == 404){
+                member.create();
+            }else{
+                throw e;
+            }
+        }
+        addToCache(userId, member);
+        return member;
+    }
+
+    public void remove(long userId){
+        removeFromCache(userId);
+    }
+
+    public void delete(long userId){
+        Member member = getFromCache(userId);
+        Objects.requireNonNullElseGet(member, ()->new Member(getBackendProcessor(), guildId, userId)).delete();
+        removeFromCache(userId);
     }
 }
