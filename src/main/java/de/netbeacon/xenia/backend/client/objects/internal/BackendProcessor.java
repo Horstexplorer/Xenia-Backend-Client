@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal;
 
+import de.netbeacon.utils.shutdownhook.IShutdown;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import okhttp3.*;
@@ -29,9 +30,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class BackendProcessor {
+public class BackendProcessor implements IShutdown {
 
     private final OkHttpClient okHttpClient;
     private final BackendSettings backendSettings;
@@ -173,5 +175,12 @@ public class BackendProcessor {
             logger.error("Failed To Process Request: ", e);
             throw new BackendException(-1, e);
         }
+    }
+
+    @Override
+    public void onShutdown() throws Exception {
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        okHttpClient.dispatcher().executorService().shutdown();
     }
 }

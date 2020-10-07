@@ -76,6 +76,6 @@ public class XeniaBackendClient implements IShutdown {
 
     @Override
     public void onShutdown() throws Exception {
-        okHttpClient.dispatcher().executorService().shutdown();
+        backendProcessor.onShutdown();
     }
 }
