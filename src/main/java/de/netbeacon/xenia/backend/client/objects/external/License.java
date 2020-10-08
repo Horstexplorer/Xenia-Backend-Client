@@ -37,8 +37,8 @@ public class License extends APIDataObject {
     private long activationTimestamp;
     private int durationDays;
     // perks
-    private boolean perk_CHANNEL_LOGGING_MC;
-    private long perk_CHANNEL_LOGGING_PCB;
+    private boolean perk_CHANNEL_LOGGING_PCB;
+    private int perk_CHANNEL_LOGGING_MC;
 
     public License(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "license"));
@@ -57,6 +57,29 @@ public class License extends APIDataObject {
     }
 
 
+    public String getLicenseName(){
+        return licenseName;
+    }
+
+    public String getLicenseDescription(){
+        return licenseDescription;
+    }
+
+    public long getActivationTimestamp() {
+        return activationTimestamp;
+    }
+
+    public int getDurationDays() {
+        return durationDays;
+    }
+
+    public boolean isPerk_CHANNEL_LOGGING_PCB() {
+        return perk_CHANNEL_LOGGING_PCB;
+    }
+
+    public int getPerk_CHANNEL_LOGGING_MC() {
+        return perk_CHANNEL_LOGGING_MC;
+    }
 
     @Override
     public void create() throws BackendException {}
@@ -87,7 +110,7 @@ public class License extends APIDataObject {
         this.licenseDescription = jsonObject.getString("licenseDescription");
         this.activationTimestamp = jsonObject.getLong("activationTimestamp");
         this.durationDays = jsonObject.getInt("durationDays");
-        this.perk_CHANNEL_LOGGING_MC = jsonObject.getJSONObject("perks").getBoolean("channelLoggingMC");
-        this.perk_CHANNEL_LOGGING_PCB = jsonObject.getJSONObject("perks").getLong("channelLoggingPCB");
+        this.perk_CHANNEL_LOGGING_MC = jsonObject.getJSONObject("perks").getInt("channelLoggingMC");
+        this.perk_CHANNEL_LOGGING_PCB = jsonObject.getJSONObject("perks").getBoolean("channelLoggingPCB");
     }
 }
