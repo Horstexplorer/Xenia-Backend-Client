@@ -162,6 +162,7 @@ public class BackendProcessor implements IShutdown {
                     }else{
                         throw new BackendException(-1, "No Body Specified Which Is Needed For POST");
                     }
+                    break;
                 case DELETE:
                     if(backendRequest.getPayload().length != 0){
                         requestBuilder.delete(RequestBody.create(backendRequest.getPayload(), MediaType.get("application/json")));
