@@ -95,6 +95,30 @@ public class Info extends APIDataObject {
     @Override
     public void deleteAsync() {}
 
+    public int getGuildCount() {
+        return guildCount;
+    }
+
+    public int getUserCount() {
+        return userCount;
+    }
+
+    public int getMemberCount() {
+        return memberCount;
+    }
+
+    public int getChannelCount() {
+        return channelCount;
+    }
+
+    public int getForbiddenChannels() {
+        return forbiddenChannels;
+    }
+
+    public long getPing() {
+        return ping;
+    }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         if(mode == Mode.Public){
