@@ -17,7 +17,6 @@
 package de.netbeacon.xenia.backend.client.core;
 
 import de.netbeacon.utils.shutdownhook.IShutdown;
-import de.netbeacon.utils.shutdownhook.ShutdownHook;
 import de.netbeacon.xenia.backend.client.objects.cache.GuildCache;
 import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
@@ -27,6 +26,10 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class XeniaBackendClient implements IShutdown {
 
     private final OkHttpClient okHttpClient;
@@ -35,6 +38,8 @@ public class XeniaBackendClient implements IShutdown {
     private final UserCache userCache;
     private final GuildCache guildCache;
     private final LicenseCache licenseCache;
+
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     public XeniaBackendClient(BackendSettings backendSettings){
         // create okhttp client
@@ -47,13 +52,12 @@ public class XeniaBackendClient implements IShutdown {
         backendProcessor = new BackendProcessor(okHttpClient, backendSettings);
         // check login
         backendProcessor.activateToken();
+        // create update task
+        scheduledExecutorService.scheduleAtFixedRate(backendProcessor::activateToken, 2, 2, TimeUnit.MINUTES);
         // create main caches
         this.userCache = new UserCache(backendProcessor);
         this.guildCache = new GuildCache(backendProcessor);
         this.licenseCache = new LicenseCache(backendProcessor);
-        // add shutdown hook
-        ShutdownHook shutdownHook = new ShutdownHook();
-        shutdownHook.addShutdownAble(this);
     }
 
     public SetupData getSetupData() {
@@ -76,6 +80,7 @@ public class XeniaBackendClient implements IShutdown {
 
     @Override
     public void onShutdown() throws Exception {
+        scheduledExecutorService.shutdownNow();
         backendProcessor.onShutdown();
     }
 }
