@@ -85,11 +85,19 @@ public class License extends APIDataObject {
     public void create() throws BackendException {}
 
     @Override
+    public void createAsync() {}
+
+    @Override
     public void update() throws BackendException {}
 
     @Override
-    public void delete() throws BackendException {
-    }
+    public void updateAsync() {}
+
+    @Override
+    public void delete() throws BackendException {}
+
+    @Override
+    public void deleteAsync() {}
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
