@@ -24,10 +24,12 @@ public class BackendResult {
 
     private final int statusCode;
     private final byte[] payload;
+    private final long requestDuration;
 
-    public BackendResult(int statusCode, byte[] payload){
+    public BackendResult(int statusCode, byte[] payload, long requestDuration){
         this.statusCode = statusCode;
         this.payload = Objects.requireNonNullElseGet(payload, () -> new JSONObject().toString().getBytes());
+        this.requestDuration = requestDuration;
     }
 
     public int getStatusCode() {
@@ -40,5 +42,9 @@ public class BackendResult {
 
     public JSONObject getPayloadAsJSON(){
         return new JSONObject(new String(payload));
+    }
+
+    public long getRequestDuration() {
+        return requestDuration;
     }
 }

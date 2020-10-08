@@ -80,10 +80,11 @@ public class BackendProcessor implements IShutdown {
             try(Response response = okHttpClient.newCall(buildOkHttpRequest(backendRequest)).execute()){
                 // parse response
                 int code = response.code();
+                long requestDuration = response.receivedResponseAtMillis()-response.sentRequestAtMillis();
                 if(response.body() != null){
-                    return new BackendResult(code, response.body().bytes());
+                    return new BackendResult(code, response.body().bytes(), requestDuration);
                 }else{
-                    return new BackendResult(code, null);
+                    return new BackendResult(code, null, requestDuration);
                 }
             }
         }catch (Exception e){
@@ -99,17 +100,18 @@ public class BackendProcessor implements IShutdown {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     logger.error("Failed To Process Request Async: ", e);
-                    executorService.execute(()->resultConsumer.accept(new BackendResult(-1, null)));
+                    executorService.execute(()->resultConsumer.accept(new BackendResult(-1, null, 0)));
                 }
 
                 @Override
                 public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                     int code = response.code();
+                    long requestDuration = response.receivedResponseAtMillis()-response.sentRequestAtMillis();
                     if(response.body() != null){
                         byte[] body = response.body().bytes();
-                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, body)));
+                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, body, requestDuration)));
                     }else{
-                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, null)));
+                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, null, requestDuration)));
                     }
                 }
             });
