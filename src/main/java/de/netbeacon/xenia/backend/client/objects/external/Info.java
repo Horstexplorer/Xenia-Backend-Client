@@ -19,15 +19,11 @@ package de.netbeacon.xenia.backend.client.objects.external;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
-import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
-import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class Info extends APIDataObject {
@@ -51,30 +47,6 @@ public class Info extends APIDataObject {
     public Info(BackendProcessor backendProcessor, Mode mode) {
         super(backendProcessor, List.of("info", mode.toString().toLowerCase()));
         this.mode = mode;
-    }
-
-    @Override
-    public void get() throws BackendException {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), null);
-        BackendResult backendResult = getBackendProcessor().process(backendRequest);
-        if(backendResult.getStatusCode() != 200){
-            logger.debug("Failed To GET APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
-            throw new BackendException(backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray()));
-        }
-        fromJSON(backendResult.getPayloadAsJSON());
-        this.ping = backendResult.getRequestDuration();
-    }
-
-    @Override
-    public void getAsync() {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), null);
-        getBackendProcessor().processAsync(backendRequest, br->{
-            if(br.getStatusCode() != 200){
-                logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
-                throw new BackendException(br.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray()));
-            }
-            fromJSON(br.getPayloadAsJSON());
-        });
     }
 
     @Override
@@ -116,7 +88,7 @@ public class Info extends APIDataObject {
     }
 
     public long getPing() {
-        return ping;
+        return getLastRequestDuration();
     }
 
     @Override
