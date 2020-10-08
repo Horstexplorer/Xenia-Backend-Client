@@ -60,6 +60,10 @@ public class XeniaBackendClient implements IShutdown {
         this.licenseCache = new LicenseCache(backendProcessor);
     }
 
+    public BackendProcessor getBackendProcessor(){
+        return backendProcessor;
+    }
+
     public SetupData getSetupData() {
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
