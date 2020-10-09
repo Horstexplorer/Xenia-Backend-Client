@@ -16,16 +16,24 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache;
 
+import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Role;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 public class RoleCache extends Cache<Role>{
 
     private final long guildId;
+    private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 
     public RoleCache(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
@@ -33,18 +41,39 @@ public class RoleCache extends Cache<Role>{
     }
 
     public Role get(long roleId) throws BackendException {
-        Role role = getFromCache(roleId);
-        if(role != null){
+        try{
+            idBasedLockHolder.getLock(roleId).lock();
+            Role role = getFromCache(roleId);
+            if(role != null){
+                return role;
+            }
+            role = new Role(getBackendProcessor(), guildId, roleId);
+            role.get();
+            addToCache(roleId, role);
             return role;
+        }finally {
+            idBasedLockHolder.getLock(roleId).unlock();
         }
-        role = new Role(getBackendProcessor(), guildId, roleId);
-        role.get();
-        addToCache(roleId, role);
-        return role;
     }
 
-    public List<Role> retrieveAll() throws BackendException {
-        return null;
+    public List<Role> retrieveAllFromBackend() throws BackendException {
+        try{
+            idBasedLockHolder.getLock().writeLock().lock();
+            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guild", String.valueOf(guildId), "role"),new HashMap<>(), null);
+            BackendResult backendResult = getBackendProcessor().process(backendRequest);
+            JSONArray roles = backendResult.getPayloadAsJSON().getJSONArray("roles");
+            List<Role> rolesList = new ArrayList<>();
+            for(int i = 0; i < roles.length(); i++){
+                JSONObject jsonObject = roles.getJSONObject(i);
+                Role role = new Role(getBackendProcessor(), guildId, jsonObject.getLong("roleId"));
+                role.fromJSON(jsonObject); // manually insert the data
+                addToCache(role.getId(), role); // this will overwrite already existing ones
+                rolesList.add(role);
+            }
+            return rolesList;
+        }finally {
+            idBasedLockHolder.getLock().writeLock().unlock();
+        }
     }
 
     public Role createNew() throws BackendException {
@@ -59,8 +88,13 @@ public class RoleCache extends Cache<Role>{
     }
 
     public void delete(long roleId) throws BackendException {
-        Role role = getFromCache(roleId);
-        Objects.requireNonNullElseGet(role, ()->new Role(getBackendProcessor(), guildId, roleId)).delete();
-        removeFromCache(roleId);
+        try{
+            idBasedLockHolder.getLock(roleId).lock();
+            Role role = getFromCache(roleId);
+            Objects.requireNonNullElseGet(role, ()->new Role(getBackendProcessor(), guildId, roleId)).delete();
+            removeFromCache(roleId);
+        }finally {
+            idBasedLockHolder.getLock(roleId).unlock();
+        }
     }
 }

@@ -16,16 +16,24 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache;
 
+import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 public class ChannelCache extends Cache<Channel> {
 
     private final long guildId;
+    private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 
     public ChannelCache(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
@@ -33,26 +41,47 @@ public class ChannelCache extends Cache<Channel> {
     }
 
     public Channel get(long channelId) throws BackendException {
-        Channel channel = getFromCache(channelId);
-        if(channel != null){
-            return channel;
-        }
-        channel = new Channel(getBackendProcessor(), guildId, channelId);
         try{
-            channel.get();
-        }catch (BackendException e){
-            if(e.getId() == 404){
-                channel.create();
-            }else{
-                throw e;
+            idBasedLockHolder.getLock(channelId).lock();
+            Channel channel = getFromCache(channelId);
+            if(channel != null){
+                return channel;
             }
+            channel = new Channel(getBackendProcessor(), guildId, channelId);
+            try{
+                channel.get();
+            }catch (BackendException e){
+                if(e.getId() == 404){
+                    channel.create();
+                }else{
+                    throw e;
+                }
+            }
+            addToCache(channelId, channel);
+            return channel;
+        }finally {
+            idBasedLockHolder.getLock(channelId).unlock();
         }
-        addToCache(channelId, channel);
-        return channel;
     }
 
-    public List<Channel> retrieveAll() throws BackendException {
-        return null;
+    public List<Channel> retrieveAllFromBackend() throws BackendException {
+        try{
+            idBasedLockHolder.getLock().writeLock().lock();
+            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guild", String.valueOf(guildId), "channel"),new HashMap<>(), null);
+            BackendResult backendResult = getBackendProcessor().process(backendRequest);
+            JSONArray channels = backendResult.getPayloadAsJSON().getJSONArray("channels");
+            List<Channel> channelList = new ArrayList<>();
+            for(int i = 0; i < channels.length(); i++){
+                JSONObject jsonObject = channels.getJSONObject(i);
+                Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channeldID"));
+                channel.fromJSON(jsonObject); // manually insert the data
+                addToCache(channel.getId(), channel); // this will overwrite already existing ones
+                channelList.add(channel);
+            }
+            return channelList;
+        }finally {
+            idBasedLockHolder.getLock().writeLock().unlock();
+        }
     }
 
     public void remove(long channelId){
@@ -60,8 +89,13 @@ public class ChannelCache extends Cache<Channel> {
     }
 
     public void delete(long channelId) throws BackendException {
-        Channel channel = getFromCache(channelId);
-        Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete();
-        removeFromCache(channelId);
+        try{
+            idBasedLockHolder.getLock(channelId).lock();
+            Channel channel = getFromCache(channelId);
+            Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete();
+            removeFromCache(channelId);
+        }finally {
+            idBasedLockHolder.getLock(channelId).unlock();
+        }
     }
 }

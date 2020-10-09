@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache;
 
+import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.User;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
@@ -24,27 +25,34 @@ import java.util.Objects;
 
 public class UserCache extends Cache<User> {
 
+    private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
+
     public UserCache(BackendProcessor backendProcessor) {
         super(backendProcessor);
     }
 
     public User get(long userId) throws BackendException {
-        User user = getFromCache(userId);
-        if(user != null){
-            return user;
-        }
-        user = new User(getBackendProcessor(), userId);
-        try{
-            user.get();
-        }catch (BackendException e){
-            if(e.getId() == 404){
-                user.create();
-            }else{
-                throw e;
-            }
-        }
-        addToCache(userId, user);
-        return user;
+       try{
+           idBasedLockHolder.getLock(userId).lock();
+           User user = getFromCache(userId);
+           if(user != null){
+               return user;
+           }
+           user = new User(getBackendProcessor(), userId);
+           try{
+               user.get();
+           }catch (BackendException e){
+               if(e.getId() == 404){
+                   user.create();
+               }else{
+                   throw e;
+               }
+           }
+           addToCache(userId, user);
+           return user;
+       }finally {
+           idBasedLockHolder.getLock(userId).unlock();
+       }
     }
 
     public void remove(long userId){
@@ -52,8 +60,13 @@ public class UserCache extends Cache<User> {
     }
 
     public void delete(long userId) throws BackendException {
-        User user = getFromCache(userId);
-        Objects.requireNonNullElseGet(user, ()->new User(getBackendProcessor(), userId)).delete();
-        removeFromCache(userId);
+        try{
+            idBasedLockHolder.getLock(userId).lock();
+            User user = getFromCache(userId);
+            Objects.requireNonNullElseGet(user, ()->new User(getBackendProcessor(), userId)).delete();
+            removeFromCache(userId);
+        }finally {
+            idBasedLockHolder.getLock(userId).unlock();
+        }
     }
 }
