@@ -18,6 +18,7 @@ package de.netbeacon.utils.locks;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Can be used to simplify id based locking
@@ -25,9 +26,19 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class IdBasedLockHolder<T> {
 
+    private final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock();
     private final ConcurrentHashMap<T, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
     public IdBasedLockHolder(){}
+
+    /**
+     * Returns the ReentrantLock matching the whole object
+     *
+     * @return ReentrantReadWriteLock
+     */
+    public ReentrantReadWriteLock getLock(){
+        return globalLock;
+    }
 
     /**
      * Returns the ReentrantLock matching to a given id
@@ -36,10 +47,15 @@ public class IdBasedLockHolder<T> {
      * @return ReentrantLock
      */
     public ReentrantLock getLock(T t){
-        if(!lockMap.containsKey(t)){
-            lockMap.put(t, new ReentrantLock());
+        try{
+            globalLock.readLock().lock(); // used to see if the object isnt locked globally
+            if(!lockMap.containsKey(t)){
+                lockMap.put(t, new ReentrantLock());
+            }
+            return lockMap.get(t);
+        }finally {
+            globalLock.readLock().lock();
         }
-        return lockMap.get(t);
     }
 
     /**
