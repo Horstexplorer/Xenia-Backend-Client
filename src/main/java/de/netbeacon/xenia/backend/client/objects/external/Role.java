@@ -21,6 +21,8 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,8 @@ public class Role extends APIDataObject {
 
     private String roleName;
     private final List<Permission> permissions = new ArrayList<>();
+
+    private final Logger logger = LoggerFactory.getLogger(Role.class);
 
     public Role(BackendProcessor backendProcessor, long guildId, long roleId) {
         super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "role", String.valueOf(roleId)));
@@ -72,49 +76,14 @@ public class Role extends APIDataObject {
         this.roleName = jsonObject.getString("roleName");
         permissions.clear();
         for(int i = 0; i < jsonObject.getJSONArray("permissions").length(); i++){
-            permissions.add(new Permission(jsonObject.getJSONArray("permissions").getJSONObject(i)));
-        }
-    }
-
-    public static class Permission{
-        private final int permissionId;
-        private final String permissionName;
-        private final String permissionDescription;
-        private boolean permissionGranted;
-
-        public Permission(JSONObject jsonObject){
-            this.permissionId = jsonObject.getInt("permissionId");
-            this.permissionName = jsonObject.getString("permissionName");
-            this.permissionDescription = jsonObject.getString("permissionDescription");
-            this.permissionGranted = jsonObject.getBoolean("permissionGranted");
-        }
-
-        public int getPermissionId() {
-            return permissionId;
-        }
-
-        public String getPermissionName() {
-            return permissionName;
-        }
-
-        public String getPermissionDescription() {
-            return permissionDescription;
-        }
-
-        public boolean isPermissionGranted() {
-            return permissionGranted;
-        }
-
-        public void setPermissionGranted(boolean permissionGranted) {
-            this.permissionGranted = permissionGranted;
-        }
-
-        public JSONObject asJSON(){
-            return  new JSONObject()
-                    .put("permissionId", permissionId)
-                    .put("permissionName", permissionName)
-                    .put("permissionDescription", permissionDescription)
-                    .put("permissionGranted", permissionGranted);
+            int permId = jsonObject.getJSONArray("permissions").getJSONObject(i).getInt("permissionId");
+            Permission permission = new Permission(getBackendProcessor(), guildId, roleId, permId);
+            try{
+                permission.get();
+                permissions.add(permission);
+            }catch (Exception e){
+                logger.error("Failed To Load Permission "+guildId+" "+roleId+" "+permId);
+            }
         }
     }
 }

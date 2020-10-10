@@ -21,58 +21,47 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class Member extends APIDataObject {
+public class Permission extends APIDataObject {
 
     private final long guildId;
-    private final long userId;
+    private final long roleId;
+    private final int permId;
 
-    private long creationTimestamp;
-    private Set<Long> roles = new HashSet<>();
+    private String permissionName;
+    private String permissionDescription;
+    private boolean permissionGranted;
 
-    public Member(BackendProcessor backendProcessor, long guildId, long userId) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "member", String.valueOf(userId)));
+    public Permission(BackendProcessor backendProcessor, long guildId, long roleId, int permId) {
+        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "role", String.valueOf(roleId), String.valueOf(permId)));
         this.guildId = guildId;
-        this.userId = userId;
+        this.roleId = roleId;
+        this.permId = permId;
     }
 
-    public long getId(){
-        return userId;
+    public int getId(){
+        return permId;
     }
 
-    public long getCreationTimestamp() {
-        return creationTimestamp;
-    }
-
-    public Set<Long> getRoleIds() {
-        return roles;
-    }
-
-    public void setRoleIds(Set<Long> roles){
-        this.roles = roles;
+    public void setPermissionGranted(boolean permissionGranted) {
+        this.permissionGranted = permissionGranted;
         update();
     }
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         return new JSONObject()
-                .put("guildId", guildId)
-                .put("userId", userId)
-                .put("creationTimestamp", creationTimestamp)
-                .put("roles", roles);
+                .put("permissionId", permId)
+                .put("permissionName", permissionName)
+                .put("permissionDescription", permissionDescription)
+                .put("permissionGranted", permissionGranted);
     }
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if((jsonObject.getLong("guildId") != guildId) || (jsonObject.getLong("userId") != userId)){
-            throw new JSONSerializationException("Object Do Not Match");
-        }
-        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        for(int i = 0; i < jsonObject.getJSONArray("roles").length(); i++){
-            this.roles.add(jsonObject.getJSONArray("roles").getLong(i));
-        }
+        this.permissionName = jsonObject.getString("permissionName");
+        this.permissionDescription = jsonObject.getString("permissionDescription");
+        this.permissionGranted = jsonObject.getBoolean("permissionGranted");
     }
 }
