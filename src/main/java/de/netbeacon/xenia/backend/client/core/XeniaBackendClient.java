@@ -20,6 +20,7 @@ import de.netbeacon.utils.shutdownhook.IShutdown;
 import de.netbeacon.xenia.backend.client.objects.cache.GuildCache;
 import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
+import de.netbeacon.xenia.backend.client.objects.external.Info;
 import de.netbeacon.xenia.backend.client.objects.external.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
@@ -68,6 +69,12 @@ public class XeniaBackendClient implements IShutdown {
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
         return setupData;
+    }
+
+    public Info getInfo(Info.Mode mode){
+        Info info = new Info(backendProcessor, mode);
+        info.get();
+        return info;
     }
 
     public UserCache getUserCache() {

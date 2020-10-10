@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.external;
 
+import de.netbeacon.utils.appinfo.AppInfo;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
@@ -35,7 +36,7 @@ public class Info extends APIDataObject {
 
     private final Mode mode;
 
-    private long ping;
+    private String version;
     private int guildCount;
     private int userCount;
     private int memberCount;
@@ -67,6 +68,10 @@ public class Info extends APIDataObject {
     @Override
     public void deleteAsync() {}
 
+    public String getVersion(){
+        return version;
+    }
+
     public int getGuildCount() {
         return guildCount;
     }
@@ -95,11 +100,13 @@ public class Info extends APIDataObject {
     public JSONObject asJSON() throws JSONSerializationException {
         if(mode == Mode.Public){
             return new JSONObject()
+                    .put("version", AppInfo.get("buildVersion")+"_"+ AppInfo.get("buildNumber"))
                     .put("guilds", guildCount)
                     .put("users", userCount)
                     .put("members", memberCount);
         }else{
             return new JSONObject()
+                    .put("version", AppInfo.get("buildVersion")+"_"+ AppInfo.get("buildNumber"))
                     .put("guilds", guildCount)
                     .put("users", userCount)
                     .put("members", memberCount)
@@ -112,10 +119,12 @@ public class Info extends APIDataObject {
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
         if(mode == Mode.Public){
+            this.version = jsonObject.getString("version");
             this.guildCount = jsonObject.getInt("guilds");
             this.userCount = jsonObject.getInt("users");
             this.memberCount = jsonObject.getInt("members");
         }else{
+            this.version = jsonObject.getString("version");
             this.guildCount = jsonObject.getInt("guilds");
             this.userCount = jsonObject.getInt("users");
             this.memberCount = jsonObject.getInt("members");
