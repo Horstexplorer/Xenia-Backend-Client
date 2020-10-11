@@ -44,6 +44,18 @@ public class Permission extends APIDataObject {
         return permId;
     }
 
+    public String getPermissionName() {
+        return permissionName;
+    }
+
+    public String getPermissionDescription() {
+        return permissionDescription;
+    }
+
+    public boolean isPermissionGranted() {
+        return permissionGranted;
+    }
+
     public void setPermissionGranted(boolean permissionGranted) {
         this.permissionGranted = permissionGranted;
         update();
