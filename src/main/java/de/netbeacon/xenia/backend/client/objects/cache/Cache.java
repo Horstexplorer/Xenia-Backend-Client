@@ -19,6 +19,9 @@ package de.netbeacon.xenia.backend.client.objects.cache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class Cache<T extends APIDataObject> {
@@ -45,7 +48,15 @@ public abstract class Cache<T extends APIDataObject> {
         dataMap.remove(id);
     }
 
-    //
+    // qol
+
+    public List<T> getAllAsList(){
+        return new ArrayList<>(dataMap.values());
+    }
+
+    public HashMap<Long, T> getAllAsMap(){
+        return new HashMap<>(dataMap);
+    }
 
     public BackendProcessor getBackendProcessor() {
         return backendProcessor;
