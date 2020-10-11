@@ -24,6 +24,8 @@ import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ public class RoleCache extends Cache<Role>{
 
     private final long guildId;
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
+    private final Logger logger = LoggerFactory.getLogger(RoleCache.class);
 
     public RoleCache(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
@@ -61,12 +64,16 @@ public class RoleCache extends Cache<Role>{
             idBasedLockHolder.getLock().writeLock().lock();
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guild", String.valueOf(guildId), "role"),new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
+            if(backendResult.getStatusCode() != 200){
+                logger.warn("Failed To Get All Roles From The Backend");
+                return null;
+            }
             JSONArray roles = backendResult.getPayloadAsJSON().getJSONArray("roles");
             List<Role> rolesList = new ArrayList<>();
             for(int i = 0; i < roles.length(); i++){
                 JSONObject jsonObject = roles.getJSONObject(i);
                 Role role = new Role(getBackendProcessor(), guildId, jsonObject.getLong("roleId"));
-                role.fromJSON(jsonObject); // manually insert the data
+                role.fromJSON(jsonObject); // manually insert the data as we already recieved it
                 addToCache(role.getId(), role); // this will overwrite already existing ones
                 rolesList.add(role);
             }

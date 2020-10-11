@@ -24,6 +24,8 @@ import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ public class ChannelCache extends Cache<Channel> {
 
     private final long guildId;
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
+    private final Logger logger = LoggerFactory.getLogger(ChannelCache.class);
 
     public ChannelCache(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
@@ -69,11 +72,15 @@ public class ChannelCache extends Cache<Channel> {
             idBasedLockHolder.getLock().writeLock().lock();
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guild", String.valueOf(guildId), "channel"),new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
+            if(backendResult.getStatusCode() != 200){
+                logger.warn("Failed To Get All Roles From The Backend");
+                return null;
+            }
             JSONArray channels = backendResult.getPayloadAsJSON().getJSONArray("channels");
             List<Channel> channelList = new ArrayList<>();
             for(int i = 0; i < channels.length(); i++){
                 JSONObject jsonObject = channels.getJSONObject(i);
-                Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channeldID"));
+                Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channelID"));
                 channel.fromJSON(jsonObject); // manually insert the data
                 addToCache(channel.getId(), channel); // this will overwrite already existing ones
                 channelList.add(channel);
