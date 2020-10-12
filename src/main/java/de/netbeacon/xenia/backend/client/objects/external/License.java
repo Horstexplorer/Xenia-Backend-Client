@@ -41,7 +41,7 @@ public class License extends APIDataObject {
     private int perk_GUILD_ROLE_C;
 
     public License(BackendProcessor backendProcessor, long guildId) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "license"));
+        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "license"));
         this.guildId = guildId;
     }
 
