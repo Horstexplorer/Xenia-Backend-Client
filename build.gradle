@@ -20,6 +20,11 @@ dependencies {
 
     compile group: 'org.json', name: 'json', version: '20200518' // https://mvnrepository.com/artifact/org.json/json
 
+    // CRYPT
+
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.66' // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.66' // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+
     // LOGGING
 
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
