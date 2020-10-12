@@ -77,7 +77,7 @@ public class MessageCache extends Cache<Message> {
                 return getFromCache(messageId);
             }
             Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).setInitialData(userId, creationTime, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
-            message.create();
+            message.createAsync();
             addToCache(messageId, message);
             return message;
         }finally {
