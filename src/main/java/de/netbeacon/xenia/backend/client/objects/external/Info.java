@@ -136,7 +136,7 @@ public class Info extends APIDataObject {
             this.memberCount = jsonObject.getInt("members");
             this.channelCount = jsonObject.getJSONObject("channels").getInt("total");
             this.forbiddenChannels = jsonObject.getJSONObject("channels").getInt("forbidden");
-            this.messageCount = jsonObject.getInt("messageCount");
+            this.messageCount = jsonObject.getInt("messages");
         }
     }
 }
