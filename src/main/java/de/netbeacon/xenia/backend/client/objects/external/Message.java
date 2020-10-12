@@ -61,6 +61,10 @@ public class Message extends APIDataObject {
         return messageId;
     }
 
+    public long getUserId(){
+        return userId;
+    }
+
     public long getCreationTimestamp() {
         return creationTimestamp;
     }
