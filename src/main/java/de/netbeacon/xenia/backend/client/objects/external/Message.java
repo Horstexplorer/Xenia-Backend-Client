@@ -56,7 +56,7 @@ public class Message extends APIDataObject {
             throw new BackendException(-5, "Failed To Encrypt Content");
         }
         this.userId = userId;
-        this.creationTimestamp = creationTimestamp;
+        this.creationTimestampDiscord = creationTimestamp;
         return this;
     }
 
