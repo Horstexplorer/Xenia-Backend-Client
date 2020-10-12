@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 
 public class XeniaBackendClient implements IShutdown {
 
+    private final BackendSettings backendSettings;
+
     private final OkHttpClient okHttpClient;
     private final BackendProcessor backendProcessor;
 
@@ -43,6 +45,7 @@ public class XeniaBackendClient implements IShutdown {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     public XeniaBackendClient(BackendSettings backendSettings){
+        this.backendSettings = backendSettings;
         // create okhttp client
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(128);
@@ -50,7 +53,7 @@ public class XeniaBackendClient implements IShutdown {
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder().dispatcher(dispatcher);
         this.okHttpClient = okHttpClientBuilder.build();
         // create processor
-        backendProcessor = new BackendProcessor(okHttpClient, backendSettings);
+        backendProcessor = new BackendProcessor(this);
         // check login
         backendProcessor.activateToken();
         // create update task
@@ -59,6 +62,14 @@ public class XeniaBackendClient implements IShutdown {
         this.userCache = new UserCache(backendProcessor);
         this.guildCache = new GuildCache(backendProcessor);
         this.licenseCache = new LicenseCache(backendProcessor);
+    }
+
+    public BackendSettings getBackendSettings() {
+        return backendSettings;
+    }
+
+    public OkHttpClient getOkHttpClient() {
+        return okHttpClient;
     }
 
     public BackendProcessor getBackendProcessor(){

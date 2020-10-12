@@ -17,6 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.internal;
 
 import de.netbeacon.utils.shutdownhook.IShutdown;
+import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import okhttp3.*;
@@ -35,14 +36,16 @@ import java.util.function.Consumer;
 
 public class BackendProcessor implements IShutdown {
 
+    private XeniaBackendClient xeniaBackendClient;
     private final OkHttpClient okHttpClient;
     private final BackendSettings backendSettings;
     private final Logger logger = LoggerFactory.getLogger(BackendProcessor.class);
     private final ExecutorService executorService = Executors.newScheduledThreadPool(4);
 
-    public BackendProcessor(OkHttpClient okHttpClient, BackendSettings backendSettings){
-        this.okHttpClient = okHttpClient;
-        this.backendSettings = backendSettings;
+    public BackendProcessor(XeniaBackendClient xeniaBackendClient){
+        this.xeniaBackendClient = xeniaBackendClient;
+        this.okHttpClient = xeniaBackendClient.getOkHttpClient();
+        this.backendSettings = xeniaBackendClient.getBackendSettings();
     }
 
     // auth
@@ -178,6 +181,10 @@ public class BackendProcessor implements IShutdown {
             logger.error("Failed To Process Request: ", e);
             throw new BackendException(-1, e);
         }
+    }
+
+    public XeniaBackendClient getBackendClient() {
+        return xeniaBackendClient;
     }
 
     @Override

@@ -26,12 +26,15 @@ public class BackendSettings {
     private final String password;
     private String token;
 
-    public BackendSettings(String scheme, String host, int port, long clientId, String password){
+    private String messageCryptKey;
+
+    public BackendSettings(String scheme, String host, int port, long clientId, String password, String messageCryptKey){
         this.scheme = scheme;
         this.host = host;
         this.port = port;
         this.clientId = clientId;
         this.password = password;
+        this.messageCryptKey = messageCryptKey;
     }
 
     // backend identification
@@ -53,6 +56,7 @@ public class BackendSettings {
     public long getClientId() {
         return clientId;
     }
+
     public String getClientIdAsString() {
         return String.valueOf(clientId);
     }
@@ -67,5 +71,12 @@ public class BackendSettings {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    // msg crypt
+
+
+    public String getMessageCryptKey() {
+        return messageCryptKey;
     }
 }

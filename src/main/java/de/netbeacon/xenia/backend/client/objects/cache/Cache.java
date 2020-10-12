@@ -61,4 +61,8 @@ public abstract class Cache<T extends APIDataObject> {
     public BackendProcessor getBackendProcessor() {
         return backendProcessor;
     }
+
+    public boolean contains(long id){
+        return dataMap.containsKey(id);
+    }
 }

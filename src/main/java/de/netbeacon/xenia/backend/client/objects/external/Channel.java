@@ -17,6 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.external;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
+import de.netbeacon.xenia.backend.client.objects.cache.MessageCache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
@@ -35,10 +36,13 @@ public class Channel extends APIDataObject {
     private boolean tmpLoggingActive;
     private long tmpLoggingChannelId;
 
+    private final MessageCache messageCache;
+
     public Channel(BackendProcessor backendProcessor, long guildId, long channelId) {
         super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelId)));
         this.guildId = guildId;
         this.channelId = channelId;
+        this.messageCache = new MessageCache(backendProcessor, guildId, channelId);
     }
 
     public long getId(){
@@ -92,6 +96,10 @@ public class Channel extends APIDataObject {
     public void setTmpLoggingChannelId(long tmpLoggingChannelId) {
         this.tmpLoggingChannelId = tmpLoggingChannelId;
         update();
+    }
+
+    public MessageCache getMessageCache(){
+        return messageCache;
     }
 
     @Override
