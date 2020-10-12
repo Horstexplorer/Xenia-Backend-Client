@@ -22,10 +22,12 @@ import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
 import de.netbeacon.xenia.backend.client.objects.external.Info;
 import de.netbeacon.xenia.backend.client.objects.external.SetupData;
+import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -79,6 +81,10 @@ public class XeniaBackendClient implements IShutdown {
     public SetupData getSetupData() {
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
+        // check if the setup data matches the gived key
+        if(!BCrypt.checkpw(setupData.getMessageCryptHash(), setupData.getMessageCryptHash())){
+            throw new BackendException(-1, "Invalid Message Crypt Hash Specified");
+        }
         return setupData;
     }
 
