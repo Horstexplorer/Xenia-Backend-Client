@@ -28,6 +28,7 @@ public abstract class Cache<T extends APIDataObject> {
 
     private final BackendProcessor backendProcessor;
     private final ConcurrentHashMap<Long, T> dataMap = new ConcurrentHashMap<>();
+    private final ArrayList<Long> orderedKeyMap = new ArrayList<>();
 
     public Cache(BackendProcessor backendProcessor){
         this.backendProcessor = backendProcessor;
@@ -41,11 +42,13 @@ public abstract class Cache<T extends APIDataObject> {
 
     public T addToCache(long id, T t){
         dataMap.put(id, t);
+        orderedKeyMap.add(id);
         return t;
     }
 
     public void removeFromCache(long id){
         dataMap.remove(id);
+        orderedKeyMap.remove(id);
     }
 
     // qol
@@ -64,5 +67,13 @@ public abstract class Cache<T extends APIDataObject> {
 
     public boolean contains(long id){
         return dataMap.containsKey(id);
+    }
+
+    public ConcurrentHashMap<Long, T> getDataMap(){
+        return dataMap;
+    }
+
+    public ArrayList<Long> getOrderedKeyMap() {
+        return orderedKeyMap;
     }
 }

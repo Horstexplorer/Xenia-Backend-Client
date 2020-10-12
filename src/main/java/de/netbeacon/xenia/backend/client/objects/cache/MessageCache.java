@@ -69,13 +69,13 @@ public class MessageCache extends Cache<Message> {
         }
     }
 
-    public Message create(long messageId, long userId, String messageContent){
+    public Message create(long messageId, long creationTime, long userId, String messageContent){
         try{
             idBasedLockHolder.getLock(messageId).lock();
             if(contains(messageId)){
                 return getFromCache(messageId);
             }
-            Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).setInitialData(userId, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
+            Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).setInitialData(userId, creationTime, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
             message.create();
             addToCache(messageId, message);
             return message;
@@ -123,5 +123,15 @@ public class MessageCache extends Cache<Message> {
         }finally {
             idBasedLockHolder.getLock(messageId).unlock();
         }
+    }
+
+    @Override
+    public Message addToCache(long id, Message message) {
+        super.addToCache(id, message);
+        // remove entries which are too much
+        while(getOrderedKeyMap().size() > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C()){
+            removeFromCache(getOrderedKeyMap().get(0));
+        }
+        return message;
     }
 }

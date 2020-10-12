@@ -44,7 +44,7 @@ public class Message extends APIDataObject {
         super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelId), "messages", String.valueOf(messageId)));
     }
 
-    public Message setInitialData(long userId, String messageContent, String cryptKey){
+    public Message setInitialData(long userId, long creationTimestamp, String messageContent, String cryptKey){
         try{
             byte[] salt = Crypt.genSalt();
             this.messageSalt = new String(Base64.encode(salt));
@@ -53,6 +53,7 @@ public class Message extends APIDataObject {
             throw new BackendException(-5, "Failed To Encrypt Content");
         }
         this.userId = userId;
+        this.creationTimestamp = creationTimestamp;
         return this;
     }
 
