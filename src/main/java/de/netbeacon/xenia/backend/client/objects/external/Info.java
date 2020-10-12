@@ -42,6 +42,7 @@ public class Info extends APIDataObject {
     private int memberCount;
     private int channelCount;
     private int forbiddenChannels;
+    private int messageCount;
 
     private final Logger logger = LoggerFactory.getLogger(Info.class);
 
@@ -92,6 +93,10 @@ public class Info extends APIDataObject {
         return forbiddenChannels;
     }
 
+    public int getMessageCount() {
+        return messageCount;
+    }
+
     public long getPing() {
         return getLastRequestDuration();
     }
@@ -112,7 +117,8 @@ public class Info extends APIDataObject {
                     .put("members", memberCount)
                     .put("channels", new JSONObject()
                             .put("total", channelCount)
-                            .put("forbidden", forbiddenChannels));
+                            .put("forbidden", forbiddenChannels))
+                    .put("messages", messageCount);
         }
     }
 
@@ -130,6 +136,7 @@ public class Info extends APIDataObject {
             this.memberCount = jsonObject.getInt("members");
             this.channelCount = jsonObject.getJSONObject("channels").getInt("total");
             this.forbiddenChannels = jsonObject.getJSONObject("channels").getInt("forbidden");
+            this.messageCount = jsonObject.getInt("messageCount");
         }
     }
 }
