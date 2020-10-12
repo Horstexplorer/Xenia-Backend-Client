@@ -32,6 +32,7 @@ public class SetupData extends APIDataObject {
     private String discordToken;
     private int totalShards;
     private int[] shardIds;
+    private String messageCryptHash;
 
     public SetupData(BackendProcessor backendProcessor) {
         super(backendProcessor, List.of("setup", "bot"));
@@ -61,6 +62,10 @@ public class SetupData extends APIDataObject {
         return shardIds;
     }
 
+    public String getMessageCryptHash() {
+        return messageCryptHash;
+    }
+
     @Override
     public void create() throws BackendException {}
 
@@ -86,6 +91,7 @@ public class SetupData extends APIDataObject {
                 .put("clientName", clientName)
                 .put("clientDescription", clientDescription)
                 .put("discordToken", discordToken)
+                .put("cryptHash", messageCryptHash)
                 .put("shards", new JSONObject()
                         .put("total", totalShards)
                         .put("use", shardIds));
@@ -97,6 +103,7 @@ public class SetupData extends APIDataObject {
         this.clientName = jsonObject.getString("clientName");
         this.clientDescription = jsonObject.getString("clientDescription");
         this.discordToken = jsonObject.getString("discordToken");
+        this.messageCryptHash = jsonObject.getString("cryptHash");
         this.totalShards = jsonObject.getJSONObject("shards").getInt("total");
         int[] shardIdsI = new int[jsonObject.getJSONObject("shards").getJSONArray("use").length()];
         for(int i = 0; i < jsonObject.getJSONObject("shards").getJSONArray("use").length(); i++){
