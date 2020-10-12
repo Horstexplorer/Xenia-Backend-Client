@@ -33,15 +33,65 @@ public class Channel extends APIDataObject {
     private String channelMode;
     private String channelType;
     private boolean tmpLoggingActive;
+    private long tmpLoggingChannelId;
 
     public Channel(BackendProcessor backendProcessor, long guildId, long channelId) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "channel", String.valueOf(channelId)));
+        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelId)));
         this.guildId = guildId;
         this.channelId = channelId;
     }
 
     public long getId(){
         return channelId;
+    }
+
+    public long getCreationTimestamp() {
+        return creationTimestamp;
+    }
+
+    public boolean isAccessRestricted(){
+        return accessRestriction;
+    }
+
+    public String getChannelMode(){
+        return channelMode;
+    }
+
+    public String getChannelType(){
+        return channelType;
+    }
+
+    public boolean tmpLoggingIsActive() {
+        return tmpLoggingActive;
+    }
+
+    public long getTmpLoggingChannelId(){
+        return tmpLoggingChannelId;
+    }
+
+    public void setAccessRestriction(boolean accessRestriction) {
+        this.accessRestriction = accessRestriction;
+        update();
+    }
+
+    public void setChannelMode(String channelMode) {
+        this.channelMode = channelMode;
+        update();
+    }
+
+    public void setChannelType(String channelType) {
+        this.channelType = channelType;
+        update();
+    }
+
+    public void setTmpLoggingActive(boolean tmpLoggingActive) {
+        this.tmpLoggingActive = tmpLoggingActive;
+        update();
+    }
+
+    public void setTmpLoggingChannelId(long tmpLoggingChannelId) {
+        this.tmpLoggingChannelId = tmpLoggingChannelId;
+        update();
     }
 
     @Override
@@ -53,7 +103,8 @@ public class Channel extends APIDataObject {
                 .put("accessRestriction", accessRestriction)
                 .put("channelMode", channelMode)
                 .put("channelType", channelType)
-                .put("tmpLoggingActive", tmpLoggingActive);
+                .put("tmpLoggingActive", tmpLoggingActive)
+                .put("tmpLoggingChannelId", tmpLoggingChannelId);
     }
 
     @Override
@@ -66,5 +117,6 @@ public class Channel extends APIDataObject {
         this.channelMode = jsonObject.getString("channelMode");
         this.channelType = jsonObject.getString("channelType");
         this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
+        this.tmpLoggingChannelId = jsonObject.getLong("tmpLoggingChannelId");
     }
 }

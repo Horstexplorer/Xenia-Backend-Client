@@ -38,7 +38,7 @@ public class Guild extends APIDataObject {
     private final RoleCache roleCache;
 
     public Guild(BackendProcessor backendProcessor, long guildId) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId)));
+        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId)));
         this.guildId = guildId;
         this.channelCache = new ChannelCache(backendProcessor, guildId);
         this.memberCache = new MemberCache(backendProcessor, guildId);

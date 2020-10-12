@@ -34,7 +34,7 @@ public class Member extends APIDataObject {
     private Set<Long> roles = new HashSet<>();
 
     public Member(BackendProcessor backendProcessor, long guildId, long userId) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "member", String.valueOf(userId)));
+        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "members", String.valueOf(userId)));
         this.guildId = guildId;
         this.userId = userId;
     }

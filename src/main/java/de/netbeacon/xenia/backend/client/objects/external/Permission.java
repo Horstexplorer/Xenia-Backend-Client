@@ -34,7 +34,7 @@ public class Permission extends APIDataObject {
     private boolean permissionGranted;
 
     public Permission(BackendProcessor backendProcessor, long guildId, long roleId, int permId) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "role", String.valueOf(roleId), String.valueOf(permId)));
+        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "roles", String.valueOf(roleId), String.valueOf(permId)));
         this.guildId = guildId;
         this.roleId = roleId;
         this.permId = permId;

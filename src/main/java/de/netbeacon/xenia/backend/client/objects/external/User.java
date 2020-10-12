@@ -32,7 +32,7 @@ public class User extends APIDataObject {
     private String preferredLanguage;
 
     public User(BackendProcessor backendProcessor, long userId) {
-        super(backendProcessor, List.of("data", "user", String.valueOf(userId)));
+        super(backendProcessor, List.of("data", "users", String.valueOf(userId)));
         this.userId = userId;
     }
 
