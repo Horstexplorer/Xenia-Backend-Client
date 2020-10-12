@@ -37,8 +37,8 @@ public class License extends APIDataObject {
     private long activationTimestamp;
     private int durationDays;
     // perks
-    private boolean perk_CHANNEL_LOGGING_PCB;
-    private int perk_CHANNEL_LOGGING_MC;
+    private int perk_CHANNEL_LOGGING_C;
+    private int perk_GUILD_ROLE_C;
 
     public License(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "license"));
@@ -73,12 +73,12 @@ public class License extends APIDataObject {
         return durationDays;
     }
 
-    public boolean isPerk_CHANNEL_LOGGING_PCB() {
-        return perk_CHANNEL_LOGGING_PCB;
+    public int getPerk_CHANNEL_LOGGING_C() {
+        return perk_CHANNEL_LOGGING_C;
     }
 
-    public int getPerk_CHANNEL_LOGGING_MC() {
-        return perk_CHANNEL_LOGGING_MC;
+    public int getPerk_GUILD_ROLE_C() {
+        return perk_GUILD_ROLE_C;
     }
 
     @Override
@@ -107,8 +107,8 @@ public class License extends APIDataObject {
                 .put("activationTimestamp", activationTimestamp)
                 .put("durationDays", durationDays)
                 .put("perks", new JSONObject()
-                        .put("channelLoggingMC", perk_CHANNEL_LOGGING_MC)
-                        .put("channelLoggingPCB", perk_CHANNEL_LOGGING_PCB)
+                        .put("channelLogging", perk_CHANNEL_LOGGING_C)
+                        .put("guildRoles", perk_GUILD_ROLE_C)
                 );
     }
 
@@ -118,7 +118,7 @@ public class License extends APIDataObject {
         this.licenseDescription = jsonObject.getString("licenseDescription");
         this.activationTimestamp = jsonObject.getLong("activationTimestamp");
         this.durationDays = jsonObject.getInt("durationDays");
-        this.perk_CHANNEL_LOGGING_MC = jsonObject.getJSONObject("perks").getInt("channelLoggingMC");
-        this.perk_CHANNEL_LOGGING_PCB = jsonObject.getJSONObject("perks").getBoolean("channelLoggingPCB");
+        this.perk_CHANNEL_LOGGING_C = jsonObject.getJSONObject("perks").getInt("channelLogging");
+        this.perk_GUILD_ROLE_C = jsonObject.getJSONObject("perks").getInt("guildRoles");
     }
 }
