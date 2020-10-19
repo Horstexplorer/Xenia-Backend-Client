@@ -130,7 +130,7 @@ public class TagCache extends Cache<String, Tag> {
                 tag.delete();
                 removeFromCache(tagName);
             }else{
-                throw new CacheException(-30, "Cant Delete Tag As Not Owner");
+                throw new CacheException(-30, "Cant Delete Tag When Not Owner");
             }
         }catch (CacheException e){
             throw e;

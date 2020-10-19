@@ -18,6 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.external.misc;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
@@ -63,7 +64,10 @@ public class Tag extends APIDataObject {
         return tagContent;
     }
 
-    public void setTagContent(String tagContent){
+    public void setTagContent(String tagContent, long userId) throws BackendException {
+        if(this.userId != userId){
+            throw new BackendException(-30, "Cant Modify Tag When Not Owner");
+        }
         this.tagContent = tagContent;
         updateAsync();
     }
