@@ -21,13 +21,22 @@ import de.netbeacon.xenia.backend.client.objects.cache.Cache;
 import de.netbeacon.xenia.backend.client.objects.external.misc.Tag;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class TagCache extends Cache<String, Tag> {
 
     private final long guildId;
     private final IdBasedLockHolder<String> idBasedLockHolder = new IdBasedLockHolder<>();
+    private final Logger logger = LoggerFactory.getLogger(TagCache.class);
 
     public TagCache(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
@@ -57,7 +66,22 @@ public class TagCache extends Cache<String, Tag> {
     public List<Tag> retrieveAllFromBackend() throws CacheException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
-            return null;
+            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guilds", String.valueOf(guildId), "misc", "tags"), new HashMap<>(), null);
+            BackendResult backendResult = getBackendProcessor().process(backendRequest);
+            if(backendResult.getStatusCode() != 200){
+                logger.warn("Failed To Get Tags From The Backend");
+                return null;
+            }
+            JSONArray tags = backendResult.getPayloadAsJSON().getJSONArray("tags");
+            List<Tag> tagList = new ArrayList<>();
+            for(int i = 0; i < tags.length(); i++){
+                JSONObject jsonObject = tags.getJSONObject(i);
+                Tag tag = new Tag(getBackendProcessor(), guildId, jsonObject.getString("tagName"));
+                tag.fromJSON(jsonObject);
+                addToCache(tag.getId(), tag);
+                tagList.add(tag);
+            }
+            return tagList;
         }catch (CacheException e){
             throw e;
         }catch (Exception e){
