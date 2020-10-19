@@ -96,7 +96,7 @@ public class Guild extends APIDataObject {
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
     }
 
-    private static class MiscCaches{
+    public static class MiscCaches{
 
         private final TagCache tagCache;
 
