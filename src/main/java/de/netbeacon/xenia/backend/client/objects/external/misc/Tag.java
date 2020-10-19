@@ -33,7 +33,7 @@ public class Tag extends APIDataObject {
     private String tagContent;
 
     public Tag(BackendProcessor backendProcessor, long guildId, String tagName) {
-        super(backendProcessor, List.of("data", "guild", String.valueOf(guildId), "misc", "tags", tagName));
+        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "misc", "tags", tagName));
         this.guildId = guildId;
         this.tagName = tagName;
     }

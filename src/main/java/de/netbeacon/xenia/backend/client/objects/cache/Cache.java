@@ -76,4 +76,9 @@ public abstract class Cache<K, T extends APIDataObject> {
     public ArrayList<K> getOrderedKeyMap() {
         return orderedKeyMap;
     }
+
+    public void clear(){
+        dataMap.clear();
+        orderedKeyMap.clear();
+    }
 }
