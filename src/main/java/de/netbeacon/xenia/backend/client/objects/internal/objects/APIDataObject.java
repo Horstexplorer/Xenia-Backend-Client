@@ -18,8 +18,8 @@ package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
 import de.netbeacon.utils.json.serial.IJSONSerializable;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
-import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import org.json.JSONObject;

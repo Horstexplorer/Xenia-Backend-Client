@@ -18,6 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal;
 
 import de.netbeacon.utils.shutdownhook.IShutdown;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import okhttp3.*;

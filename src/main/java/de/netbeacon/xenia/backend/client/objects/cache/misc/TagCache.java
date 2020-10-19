@@ -19,8 +19,8 @@ package de.netbeacon.xenia.backend.client.objects.cache.misc;
 import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.cache.Cache;
 import de.netbeacon.xenia.backend.client.objects.external.misc.Tag;
-import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 
 public class TagCache extends Cache<String, Tag> {
 

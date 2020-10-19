@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.internal;
+package de.netbeacon.xenia.backend.client.objects.internal.exceptions;
 
 public class BackendException extends RuntimeException{
 
