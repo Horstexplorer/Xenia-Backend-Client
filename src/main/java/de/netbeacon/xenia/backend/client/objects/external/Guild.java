@@ -20,6 +20,7 @@ import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.cache.ChannelCache;
 import de.netbeacon.xenia.backend.client.objects.cache.MemberCache;
 import de.netbeacon.xenia.backend.client.objects.cache.RoleCache;
+import de.netbeacon.xenia.backend.client.objects.cache.misc.TagCache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
@@ -36,6 +37,7 @@ public class Guild extends APIDataObject {
     private final ChannelCache channelCache;
     private final MemberCache memberCache;
     private final RoleCache roleCache;
+    private final MiscCaches miscCaches;
 
     public Guild(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId)));
@@ -43,6 +45,7 @@ public class Guild extends APIDataObject {
         this.channelCache = new ChannelCache(backendProcessor, guildId);
         this.memberCache = new MemberCache(backendProcessor, guildId);
         this.roleCache = new RoleCache(backendProcessor, guildId);
+        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId));
     }
 
     public long getId(){
@@ -74,6 +77,8 @@ public class Guild extends APIDataObject {
         return roleCache;
     }
 
+    public MiscCaches getMiscCaches() { return miscCaches; }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         return new JSONObject()
@@ -89,5 +94,18 @@ public class Guild extends APIDataObject {
         }
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
+    }
+
+    private static class MiscCaches{
+
+        private final TagCache tagCache;
+
+        public MiscCaches(TagCache tagCache){
+            this.tagCache = tagCache;
+        }
+
+        public TagCache getTagCache() {
+            return tagCache;
+        }
     }
 }

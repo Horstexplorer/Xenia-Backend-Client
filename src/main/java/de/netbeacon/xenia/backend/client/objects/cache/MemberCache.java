@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class MemberCache extends Cache<Member> {
+public class MemberCache extends Cache<Long, Member> {
 
     private final long guildId;
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
@@ -43,7 +43,7 @@ public class MemberCache extends Cache<Member> {
         this.guildId = guildId;
     }
 
-    public Member get(long userId){
+    public Member get(long userId) throws BackendException{
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);
@@ -95,7 +95,7 @@ public class MemberCache extends Cache<Member> {
         removeFromCache(userId);
     }
 
-    public void delete(long userId){
+    public void delete(long userId) throws BackendException{
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);

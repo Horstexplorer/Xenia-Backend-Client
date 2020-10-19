@@ -24,11 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class Cache<T extends APIDataObject> {
+public abstract class Cache<K, T extends APIDataObject> {
 
     private final BackendProcessor backendProcessor;
-    private final ConcurrentHashMap<Long, T> dataMap = new ConcurrentHashMap<>();
-    private final ArrayList<Long> orderedKeyMap = new ArrayList<>();
+    private final ConcurrentHashMap<K, T> dataMap = new ConcurrentHashMap<>();
+    private final ArrayList<K> orderedKeyMap = new ArrayList<>();
 
     public Cache(BackendProcessor backendProcessor){
         this.backendProcessor = backendProcessor;
@@ -36,17 +36,17 @@ public abstract class Cache<T extends APIDataObject> {
 
     // data
 
-    public T getFromCache(long id){
+    public T getFromCache(K id){
         return dataMap.get(id);
     }
 
-    public T addToCache(long id, T t){
+    public T addToCache(K id, T t){
         dataMap.put(id, t);
         orderedKeyMap.add(id);
         return t;
     }
 
-    public void removeFromCache(long id){
+    public void removeFromCache(K id){
         dataMap.remove(id);
         orderedKeyMap.remove(id);
     }
@@ -57,7 +57,7 @@ public abstract class Cache<T extends APIDataObject> {
         return new ArrayList<>(dataMap.values());
     }
 
-    public HashMap<Long, T> getAllAsMap(){
+    public HashMap<K, T> getAllAsMap(){
         return new HashMap<>(dataMap);
     }
 
@@ -65,15 +65,15 @@ public abstract class Cache<T extends APIDataObject> {
         return backendProcessor;
     }
 
-    public boolean contains(long id){
+    public boolean contains(K id){
         return dataMap.containsKey(id);
     }
 
-    public ConcurrentHashMap<Long, T> getDataMap(){
+    public ConcurrentHashMap<K, T> getDataMap(){
         return dataMap;
     }
 
-    public ArrayList<Long> getOrderedKeyMap() {
+    public ArrayList<K> getOrderedKeyMap() {
         return orderedKeyMap;
     }
 }

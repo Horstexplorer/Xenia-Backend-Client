@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class MessageCache extends Cache<Message> {
+public class MessageCache extends Cache<Long, Message> {
 
     private final long guildId;
     private final long channelid;
@@ -46,7 +46,7 @@ public class MessageCache extends Cache<Message> {
         this.channelid = channelId;
     }
 
-    public Message get(long messageId){
+    public Message get(long messageId) throws BackendException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             Message message = getFromCache(messageId);
@@ -70,7 +70,7 @@ public class MessageCache extends Cache<Message> {
         }
     }
 
-    public Message create(long messageId, long creationTime, long userId, String messageContent){
+    public Message create(long messageId, long creationTime, long userId, String messageContent) throws BackendException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             if(contains(messageId)){
@@ -116,7 +116,7 @@ public class MessageCache extends Cache<Message> {
         removeFromCache(messageId);
     }
 
-    public void delete(long messageId){
+    public void delete(long messageId) throws BackendException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             Message message = getFromCache(messageId);
@@ -140,7 +140,7 @@ public class MessageCache extends Cache<Message> {
     }
 
     @Override
-    public Message addToCache(long id, Message message) {
+    public Message addToCache(Long id, Message message) {
         super.addToCache(id, message);
         // remove entries which are too much
         while(getOrderedKeyMap().size() > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C()){

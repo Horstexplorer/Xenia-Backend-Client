@@ -23,7 +23,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 
 import java.util.Objects;
 
-public class GuildCache extends Cache<Guild> {
+public class GuildCache extends Cache<Long, Guild> {
 
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 

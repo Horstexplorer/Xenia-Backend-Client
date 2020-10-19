@@ -18,9 +18,10 @@ package de.netbeacon.xenia.backend.client.objects.cache;
 
 import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.License;
+import de.netbeacon.xenia.backend.client.objects.internal.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 
-public class LicenseCache extends Cache<License> {
+public class LicenseCache extends Cache<Long, License> {
 
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 
@@ -28,7 +29,7 @@ public class LicenseCache extends Cache<License> {
         super(backendProcessor);
     }
 
-    public License get(long guildId){
+    public License get(long guildId) throws BackendException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             License license = getFromCache(guildId);
