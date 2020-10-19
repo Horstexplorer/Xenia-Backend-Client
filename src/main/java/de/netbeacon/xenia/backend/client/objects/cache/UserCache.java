@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.User;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 
 import java.util.Objects;
 
@@ -31,7 +32,7 @@ public class UserCache extends Cache<Long, User> {
         super(backendProcessor);
     }
 
-    public User get(long userId) throws BackendException {
+    public User get(long userId) throws CacheException {
        try{
            idBasedLockHolder.getLock(userId).lock();
            User user = getFromCache(userId);
@@ -50,6 +51,10 @@ public class UserCache extends Cache<Long, User> {
            }
            addToCache(userId, user);
            return user;
+       }catch (CacheException e){
+           throw e;
+       }catch (Exception e){
+           throw new CacheException(-1, "Failed To Get User", e);
        }finally {
            idBasedLockHolder.getLock(userId).unlock();
        }
@@ -59,12 +64,16 @@ public class UserCache extends Cache<Long, User> {
         removeFromCache(userId);
     }
 
-    public void delete(long userId) throws BackendException {
+    public void delete(long userId) throws CacheException {
         try{
             idBasedLockHolder.getLock(userId).lock();
             User user = getFromCache(userId);
             Objects.requireNonNullElseGet(user, ()->new User(getBackendProcessor(), userId)).delete();
             removeFromCache(userId);
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-3, "Failed To Delete User", e);
         }finally {
             idBasedLockHolder.getLock(userId).unlock();
         }

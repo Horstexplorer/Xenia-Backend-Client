@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Member;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import org.json.JSONArray;
@@ -43,7 +44,7 @@ public class MemberCache extends Cache<Long, Member> {
         this.guildId = guildId;
     }
 
-    public Member get(long userId) throws BackendException{
+    public Member get(long userId) throws CacheException{
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);
@@ -62,12 +63,16 @@ public class MemberCache extends Cache<Long, Member> {
             }
             addToCache(userId, member);
             return member;
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-1, "Failed To Get Member", e);
         }finally {
             idBasedLockHolder.getLock(userId).unlock();
         }
     }
 
-    public List<Member> retrieveAllFromBackend() throws BackendException {
+    public List<Member> retrieveAllFromBackend() throws CacheException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guilds", String.valueOf(guildId), "members"),new HashMap<>(), null);
@@ -86,6 +91,10 @@ public class MemberCache extends Cache<Long, Member> {
                 memberList.add(member);
             }
             return memberList;
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-11, "Failed To Retrieve All Members", e);
         }finally {
             idBasedLockHolder.getLock().writeLock().unlock();
         }
@@ -95,12 +104,16 @@ public class MemberCache extends Cache<Long, Member> {
         removeFromCache(userId);
     }
 
-    public void delete(long userId) throws BackendException{
+    public void delete(long userId) throws CacheException{
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);
             Objects.requireNonNullElseGet(member, ()->new Member(getBackendProcessor(), guildId, userId)).delete();
             removeFromCache(userId);
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-3, "Failed To Delete Member", e);
         }finally {
             idBasedLockHolder.getLock(userId).unlock();
         }

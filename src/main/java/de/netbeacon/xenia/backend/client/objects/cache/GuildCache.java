@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 
 import java.util.Objects;
 
@@ -31,7 +32,7 @@ public class GuildCache extends Cache<Long, Guild> {
         super(backendProcessor);
     }
 
-    public Guild get(long guildId) throws BackendException{
+    public Guild get(long guildId) throws CacheException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
@@ -50,6 +51,10 @@ public class GuildCache extends Cache<Long, Guild> {
             }
             addToCache(guildId, guild);
             return guild;
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-1, "Failed To Get Guild", e);
         }finally {
             idBasedLockHolder.getLock(guildId).unlock();
         }
@@ -59,12 +64,16 @@ public class GuildCache extends Cache<Long, Guild> {
         removeFromCache(guildId);
     }
 
-    public void delete(long guildId) throws BackendException {
+    public void delete(long guildId) throws CacheException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
             Objects.requireNonNullElseGet(guild, () -> new Guild(getBackendProcessor(), guildId)).delete();
             removeFromCache(guildId);
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-3, "Failed To Delete Guild", e);
         }finally {
             idBasedLockHolder.getLock(guildId).unlock();
         }

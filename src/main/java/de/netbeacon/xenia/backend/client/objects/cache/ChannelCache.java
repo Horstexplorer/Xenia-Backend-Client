@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import org.json.JSONArray;
@@ -43,7 +44,7 @@ public class ChannelCache extends Cache<Long, Channel> {
         this.guildId = guildId;
     }
 
-    public Channel get(long channelId) throws BackendException {
+    public Channel get(long channelId) throws CacheException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
@@ -62,12 +63,16 @@ public class ChannelCache extends Cache<Long, Channel> {
             }
             addToCache(channelId, channel);
             return channel;
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-1, "Failed To Get Channel", e);
         }finally {
             idBasedLockHolder.getLock(channelId).unlock();
         }
     }
 
-    public List<Channel> retrieveAllFromBackend() throws BackendException {
+    public List<Channel> retrieveAllFromBackend() throws CacheException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guilds", String.valueOf(guildId), "channels"),new HashMap<>(), null);
@@ -86,6 +91,10 @@ public class ChannelCache extends Cache<Long, Channel> {
                 channelList.add(channel);
             }
             return channelList;
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-11, "Failed To Retrieve All Channels", e);
         }finally {
             idBasedLockHolder.getLock().writeLock().unlock();
         }
@@ -95,12 +104,16 @@ public class ChannelCache extends Cache<Long, Channel> {
         removeFromCache(channelId);
     }
 
-    public void delete(long channelId) throws BackendException {
+    public void delete(long channelId) throws CacheException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
             Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete();
             removeFromCache(channelId);
+        }catch (CacheException e){
+            throw e;
+        }catch (Exception e){
+            throw new CacheException(-3, "Failed To Delete Channel", e);
         }finally {
             idBasedLockHolder.getLock(channelId).unlock();
         }
