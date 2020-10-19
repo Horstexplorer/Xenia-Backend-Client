@@ -45,6 +45,11 @@ public class CacheException extends RuntimeException {
         this.exception = exception;
     }
 
+    @Override
+    public String getMessage() {
+        return "Type: "+type+" Message: "+super.getMessage();
+    }
+
     public int getType() {
         return type;
     }
