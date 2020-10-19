@@ -82,7 +82,7 @@ public class XeniaBackendClient implements IShutdown {
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
         // check if the setup data matches the gived key
-        if(!BCrypt.checkpw(setupData.getMessageCryptHash(), setupData.getMessageCryptHash())){
+        if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
             throw new BackendException(-1, "Invalid Message Crypt Hash Specified");
         }
         return setupData;
