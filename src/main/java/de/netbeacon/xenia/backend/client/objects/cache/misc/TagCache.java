@@ -46,11 +46,10 @@ public class TagCache extends Cache<String, Tag> {
     public Tag get(String tagName) throws CacheException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
-            Tag tag = getFromCache(tagName);
-            if(tag != null){
-                return tag;
+            if(contains(tagName)){
+                return getFromCache(tagName);
             }
-            tag = new Tag(getBackendProcessor(), guildId, tagName);
+            Tag tag = new Tag(getBackendProcessor(), guildId, tagName);
             tag.get();
             addToCache(tagName, tag);
             return tag;
