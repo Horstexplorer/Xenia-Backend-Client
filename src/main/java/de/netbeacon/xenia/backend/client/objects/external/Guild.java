@@ -65,6 +65,7 @@ public class Guild extends APIDataObject {
         update();
     }
 
+
     public ChannelCache getChannelCache() {
         return channelCache;
     }
@@ -78,6 +79,21 @@ public class Guild extends APIDataObject {
     }
 
     public MiscCaches getMiscCaches() { return miscCaches; }
+
+    public void initSync(){
+        getRoleCache().retrieveAllFromBackend();
+        List<Channel> channelList = getChannelCache().retrieveAllFromBackend();
+        for(Channel channel : channelList){
+            channel.getMessageCache().retrieveAllFromBackend();
+        }
+        getMemberCache().retrieveAllFromBackend();
+        getRoleCache().retrieveAllFromBackend();
+        getMiscCaches().getTagCache().retrieveAllFromBackend();
+    }
+
+    public void initAsync(){
+        getBackendProcessor().getScalingExecutor().execute(this::initSync);
+    }
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {

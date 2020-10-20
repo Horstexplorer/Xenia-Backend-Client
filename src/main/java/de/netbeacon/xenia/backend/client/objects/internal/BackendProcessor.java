@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal;
 
+import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.utils.shutdownhook.IShutdown;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
@@ -30,8 +31,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -41,7 +40,7 @@ public class BackendProcessor implements IShutdown {
     private final OkHttpClient okHttpClient;
     private final BackendSettings backendSettings;
     private final Logger logger = LoggerFactory.getLogger(BackendProcessor.class);
-    private final ExecutorService executorService = Executors.newScheduledThreadPool(4);
+    private final ScalingExecutor scalingExecutor = new ScalingExecutor(4, 64, 12500, 30, TimeUnit.SECONDS);
 
     public BackendProcessor(XeniaBackendClient xeniaBackendClient){
         this.xeniaBackendClient = xeniaBackendClient;
@@ -104,7 +103,7 @@ public class BackendProcessor implements IShutdown {
                 @Override
                 public void onFailure(@NotNull Call call, @NotNull IOException e) {
                     logger.error("Failed To Process Request Async: ", e);
-                    executorService.execute(()->resultConsumer.accept(new BackendResult(-1, null, 0)));
+                    scalingExecutor.execute(()->resultConsumer.accept(new BackendResult(-1, null, 0)));
                 }
 
                 @Override
@@ -113,9 +112,9 @@ public class BackendProcessor implements IShutdown {
                     long requestDuration = response.receivedResponseAtMillis()-response.sentRequestAtMillis();
                     if(response.body() != null){
                         byte[] body = response.body().bytes();
-                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, body, requestDuration)));
+                        scalingExecutor.execute(()->resultConsumer.accept(new BackendResult(code, body, requestDuration)));
                     }else{
-                        executorService.execute(()->resultConsumer.accept(new BackendResult(code, null, requestDuration)));
+                        scalingExecutor.execute(()->resultConsumer.accept(new BackendResult(code, null, requestDuration)));
                     }
                 }
             });
@@ -188,10 +187,14 @@ public class BackendProcessor implements IShutdown {
         return xeniaBackendClient;
     }
 
+    public ScalingExecutor getScalingExecutor() {
+        return scalingExecutor;
+    }
+
     @Override
     public void onShutdown() throws Exception {
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        scalingExecutor.shutdown();
+        scalingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         okHttpClient.dispatcher().executorService().shutdown();
     }
 }
