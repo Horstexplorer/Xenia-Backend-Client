@@ -69,7 +69,7 @@ public class Tag extends APIDataObject {
             throw new BackendException(-30, "Cant Modify Tag When Not Owner");
         }
         this.tagContent = tagContent;
-        updateAsync();
+        update();
     }
 
     @Override
