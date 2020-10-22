@@ -25,6 +25,7 @@ import de.netbeacon.xenia.backend.client.objects.external.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.WebSocketListener;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.mindrot.jbcrypt.BCrypt;
@@ -39,6 +40,7 @@ public class XeniaBackendClient implements IShutdown {
 
     private final OkHttpClient okHttpClient;
     private final BackendProcessor backendProcessor;
+    private final WebSocketListener webSocketListener;
 
     private final UserCache userCache;
     private final GuildCache guildCache;
@@ -60,6 +62,9 @@ public class XeniaBackendClient implements IShutdown {
         backendProcessor.activateToken();
         // create update task
         scheduledExecutorService.scheduleAtFixedRate(backendProcessor::activateToken, 2, 2, TimeUnit.MINUTES);
+        // activate websocket
+        webSocketListener = new WebSocketListener(this);
+        webSocketListener.start();
         // create main caches
         this.userCache = new UserCache(backendProcessor);
         this.guildCache = new GuildCache(backendProcessor);
@@ -109,6 +114,7 @@ public class XeniaBackendClient implements IShutdown {
     @Override
     public void onShutdown() throws Exception {
         scheduledExecutorService.shutdownNow();
+        webSocketListener.onShutdown();
         backendProcessor.onShutdown();
     }
 }

@@ -190,6 +190,10 @@ public class BackendProcessor implements IShutdown {
         return scalingExecutor;
     }
 
+    public BackendSettings getBackendSettings() {
+        return backendSettings;
+    }
+
     @Override
     public void onShutdown() throws Exception {
         scalingExecutor.shutdown();
