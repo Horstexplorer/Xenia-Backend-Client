@@ -65,7 +65,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
 
     @Override
     public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
-        logger.info("Connected To Websocket");
+        logger.warn("Connected To Websocket");
     }
 
     @Override
@@ -80,13 +80,17 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
 
     @Override
     public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-        logger.warn("Closing Websocket: "+code+" "+reason);
+        logger.warn("Websocket Closed: "+code+" "+reason);
         webSocket.close(code, reason);
     }
 
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
         logger.warn("Websocket Closed: "+code+" "+reason);
+        if(code != 1000){
+            logger.warn("Reconnecting On: "+code);
+            start(); // reconnect
+        }
     }
 
     @Override
