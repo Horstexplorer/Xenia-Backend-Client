@@ -108,7 +108,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
             String action = message.getString("action");
             switch (type.toLowerCase()){
                 case "status":
-                    logger.info("Recieved Status From WS: "+action);
+                    logger.info("Received Status From WS: "+action);
                     break;
                 case "user":
                     if(!xeniaBackendClient.getUserCache().contains(message.getLong("userId"))){
