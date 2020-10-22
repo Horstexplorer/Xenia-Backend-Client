@@ -143,8 +143,7 @@ public class BackendProcessor implements IShutdown {
                     .url(urlBuilder.build());
             switch (backendRequest.getAuthType()){
                 case Token:
-                    requestBuilder.header("UserID", backendSettings.getClientIdAsString());
-                    requestBuilder.header("Token", backendSettings.getToken());
+                    requestBuilder.header("Authorization", "Token "+backendSettings.getToken());
                     break;
                 case Basic:
                     requestBuilder.header("Authorization", Credentials.basic(backendSettings.getClientIdAsString(), backendSettings.getPassword()));
