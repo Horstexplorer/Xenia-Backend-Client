@@ -125,9 +125,9 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
                 {
                     long newHeartBeat = message.getLong("timestamp");
                     long delay = (newHeartBeat-lastHeartBeat);
-                    if(delay < 30000*2){
-                        logger.warn("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+") Missed At Least "+(delay/30000)+ "Heartbeats. The Network Might Be Faulty!");
-                    }else if(delay < 30000*1.5){
+                    if(delay > 30000*2){
+                        logger.warn("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+") Missed At Least "+(delay/30000)+" Heartbeat(s). The Network Might Be Faulty!");
+                    }else if(delay > 30000*1.5){
                         logger.info("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+") The Service Might Be Slow.");
                     }else{
                         logger.debug("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+")");
