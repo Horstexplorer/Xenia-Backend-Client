@@ -96,17 +96,21 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
         if(code != 1000){
             logger.debug("Reconnecting On: "+code);
             start(); // reconnect
+        }else{
+            logger.warn("Websocket Closed - Wont Open Again "+code+" "+reason);
         }
     }
 
     @Override
     public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
-        logger.warn("Websocket Failure - Trying To Reconnect");
+        logger.warn("Websocket Failure - Trying To Reconnect "+response, t);
         try{
-            TimeUnit.SECONDS.sleep(4);
+            TimeUnit.SECONDS.sleep(2);
             start();
         }catch (Exception ignore){}
     }
+
+    private long lastHeartBeat = System.currentTimeMillis();
 
     public void handle(JSONObject message){
         try{
@@ -115,8 +119,22 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
             logger.debug("Received Message From WS: "+message.toString());
             switch (type.toLowerCase()){
                 case "status":
-                    logger.info("Received Status From WS: "+action);
+                    logger.debug("Received Status From WS: "+action);
                     break;
+                case "heartbeat":
+                {
+                    long newHeartBeat = message.getLong("timestamp");
+                    long delay = (newHeartBeat-lastHeartBeat);
+                    if(delay < 5000*2){
+                        logger.warn("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-5000)+") Missed At Least "+(delay/5000)+ "Heartbeats. The Network Might Be Faulty!");
+                    }else if(delay < 5000*1.5){
+                        logger.info("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-5000)+") The Service Might Be Slow.");
+                    }else{
+                        logger.debug("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-5000)+")");
+                    }
+                    lastHeartBeat = newHeartBeat;
+                }
+                break;
                 case "user":
                 {
                     if(!xeniaBackendClient.getUserCache().contains(message.getLong("userId"))){
