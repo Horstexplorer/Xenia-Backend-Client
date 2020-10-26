@@ -47,7 +47,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         BackendResult backendResult = backendProcessor.process(backendRequest);
         if(backendResult.getStatusCode() != 200){
             logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
-            throw new BackendException(backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(backendPath.toArray()));
+            throw new BackendException(backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
@@ -58,7 +58,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         backendProcessor.processAsync(backendRequest, br->{
             if(br.getStatusCode() != 200){
                 logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
-                throw new BackendException(br.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(backendPath.toArray()));
+                throw new BackendException(br.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
             }
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
