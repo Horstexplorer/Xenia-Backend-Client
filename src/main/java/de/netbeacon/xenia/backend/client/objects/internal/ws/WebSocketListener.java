@@ -283,6 +283,26 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
                     }
                 }
                 break;
+                case "guild_misc_notification":
+                {
+                    if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
+                        return;
+                    }
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    switch (action.toLowerCase()){
+                        case "create":
+                            scalingExecutor.execute(()->g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")));
+                            break;
+                        case "update":
+                            g.getMiscCaches().getNotificationCache().remove(message.getLong("notificationId"));
+                            scalingExecutor.execute(()->g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")));
+                            break;
+                        case "delete":
+                            g.getMiscCaches().getNotificationCache().remove(message.getLong("notificationId"));
+                            break;
+                    }
+                }
+                break;
             }
         }catch (Exception e){
             logger.warn("Error Processing Message, Cache Might Be Inconsistent: "+message.toString());
