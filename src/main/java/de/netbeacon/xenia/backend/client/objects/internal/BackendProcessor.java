@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 public class BackendProcessor implements IShutdown {
@@ -41,6 +42,7 @@ public class BackendProcessor implements IShutdown {
     private final BackendSettings backendSettings;
     private final Logger logger = LoggerFactory.getLogger(BackendProcessor.class);
     private final ScalingExecutor scalingExecutor = new ScalingExecutor(4, 64, 12500, 30, TimeUnit.SECONDS);
+    private final ReentrantLock lock = new ReentrantLock();
 
     public BackendProcessor(XeniaBackendClient xeniaBackendClient){
         this.xeniaBackendClient = xeniaBackendClient;
@@ -51,31 +53,36 @@ public class BackendProcessor implements IShutdown {
     // auth
 
     public BackendProcessor activateToken() throws BackendException {
-        if(backendSettings.getToken() == null || backendSettings.getToken().isBlank()){
-            // send request to backend to get a new token
-            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Basic, Arrays.asList("auth", "token"), new HashMap<>(), null);
-            BackendResult backendResult = process(backendRequest);
-            if(backendResult.getStatusCode() == 200){
-                backendSettings.setToken(backendResult.getPayloadAsJSON().getString("token"));
-                logger.debug("Received New Token Successfully");
+        try{
+            lock.lock();
+            if(backendSettings.getToken() == null || backendSettings.getToken().isBlank()){
+                // send request to backend to get a new token
+                BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Basic, Arrays.asList("auth", "token"), new HashMap<>(), null);
+                BackendResult backendResult = process(backendRequest);
+                if(backendResult.getStatusCode() == 200){
+                    backendSettings.setToken(backendResult.getPayloadAsJSON().getString("token"));
+                    logger.debug("Received New Token Successfully");
+                }else{
+                    logger.error("Failed To Receive New Token With Status Code "+backendResult.getStatusCode());
+                    throw new BackendException(-2, "Requesting Token Failed With Status Code: "+backendResult.getStatusCode());
+                }
             }else{
-                logger.error("Failed To Receive New Token With Status Code "+backendResult.getStatusCode());
-                throw new BackendException(-2, "Requesting Token Failed With Status Code: "+backendResult.getStatusCode());
+                // renew this token
+                BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, Arrays.asList("auth", "token", "renew"), new HashMap<>(), null);
+                BackendResult backendResult = process(backendRequest);
+                if(backendResult.getStatusCode() == 200){
+                    logger.debug("Renewed Token Successfully");
+                }else{
+                    // renewing failed - remove token and call again to request new one
+                    logger.error("Failed To Renew Token With Status Code "+backendResult.getStatusCode()+" - Requesting New Token");
+                    backendSettings.setToken(null);
+                    return activateToken();
+                }
             }
-        }else{
-            // renew this token
-            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, Arrays.asList("auth", "token", "renew"), new HashMap<>(), null);
-            BackendResult backendResult = process(backendRequest);
-            if(backendResult.getStatusCode() == 200){
-                logger.debug("Renewed Token Successfully");
-            }else{
-                // renewing failed - remove token and call again to request new one
-                logger.error("Failed To Renew Token With Status Code "+backendResult.getStatusCode()+" - Requesting New Token");
-                backendSettings.setToken(null);
-                return activateToken();
-            }
+            return this;
+        }finally {
+            lock.unlock();
         }
-        return this;
     }
 
     public BackendResult process(BackendRequest backendRequest) throws BackendException {
