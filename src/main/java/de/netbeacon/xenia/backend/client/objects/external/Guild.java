@@ -20,6 +20,7 @@ import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.cache.ChannelCache;
 import de.netbeacon.xenia.backend.client.objects.cache.MemberCache;
 import de.netbeacon.xenia.backend.client.objects.cache.RoleCache;
+import de.netbeacon.xenia.backend.client.objects.cache.misc.NotificationCache;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.TagCache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
@@ -45,7 +46,7 @@ public class Guild extends APIDataObject {
         this.channelCache = new ChannelCache(backendProcessor, guildId);
         this.memberCache = new MemberCache(backendProcessor, guildId);
         this.roleCache = new RoleCache(backendProcessor, guildId);
-        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId));
+        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId));
     }
 
     public long getId(){
@@ -88,7 +89,9 @@ public class Guild extends APIDataObject {
         }
         getMemberCache().retrieveAllFromBackend();
         getRoleCache().retrieveAllFromBackend();
+
         getMiscCaches().getTagCache().retrieveAllFromBackend();
+        getMiscCaches().getNotificationCache().retrieveAllFromBackend();
     }
 
     public void initAsync(){
@@ -115,13 +118,19 @@ public class Guild extends APIDataObject {
     public static class MiscCaches{
 
         private final TagCache tagCache;
+        private final NotificationCache notificationCache;
 
-        public MiscCaches(TagCache tagCache){
+        public MiscCaches(TagCache tagCache, NotificationCache notificationCache){
             this.tagCache = tagCache;
+            this.notificationCache = notificationCache;
         }
 
         public TagCache getTagCache() {
             return tagCache;
+        }
+
+        public NotificationCache getNotificationCache() {
+            return notificationCache;
         }
     }
 }
