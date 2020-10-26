@@ -22,6 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
+import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class RoleCache extends Cache<Long, Role>{
+public class RoleCache extends Cache<Long, Role> {
 
     private final long guildId;
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
