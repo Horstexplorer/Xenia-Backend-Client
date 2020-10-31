@@ -58,6 +58,15 @@ public class User extends APIDataObject {
         this.metaUsername = username;
     }
 
+    public void setMetaData(String username){
+        lSetMetaData(username);
+        update();
+    }
+
+    public String getMetaUsername() {
+        return metaUsername;
+    }
+
     public void setInternalRole(String internalRole){
         this.internalRole = internalRole;
         update();

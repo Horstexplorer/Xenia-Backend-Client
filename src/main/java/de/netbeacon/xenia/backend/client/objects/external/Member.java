@@ -65,6 +65,18 @@ public class Member extends APIDataObject {
         update();
     }
 
+    public String metaNickname() {
+        return metaNickname;
+    }
+
+    public boolean metaIsAdministrator() {
+        return metaIsAdministrator;
+    }
+
+    public boolean metaIsOwner() {
+        return metaIsOwner;
+    }
+
     public void setRoleIds(Set<Long> roles){
         this.roles = roles;
         update();
