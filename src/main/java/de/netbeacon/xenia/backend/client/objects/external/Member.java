@@ -55,7 +55,7 @@ public class Member extends APIDataObject {
     }
 
     public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner){
-        this.metaNickname = metaNickname;
+        this.metaNickname = nickname;
         this.metaIsOwner = isOwner;
         this.metaIsAdministrator = isAdministrator;
     }
