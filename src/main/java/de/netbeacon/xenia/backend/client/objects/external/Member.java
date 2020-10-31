@@ -29,9 +29,12 @@ public class Member extends APIDataObject {
 
     private final long guildId;
     private final long userId;
-
     private long creationTimestamp;
     private Set<Long> roles = new HashSet<>();
+    // meta data - initialize with values
+    private String metaNickname = "unknown_nickname";
+    private boolean metaIsAdministrator = false;
+    private boolean metaIsOwner = false;
 
     public Member(BackendProcessor backendProcessor, long guildId, long userId) {
         super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "members", String.valueOf(userId)));
@@ -51,6 +54,17 @@ public class Member extends APIDataObject {
         return roles;
     }
 
+    public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner){
+        this.metaNickname = metaNickname;
+        this.metaIsOwner = isOwner;
+        this.metaIsAdministrator = isAdministrator;
+    }
+
+    public void setMetaData(String nickname, boolean isAdministrator, boolean isOwner){
+        lSetMetaData(nickname, isAdministrator, isOwner);
+        update();
+    }
+
     public void setRoleIds(Set<Long> roles){
         this.roles = roles;
         update();
@@ -62,7 +76,12 @@ public class Member extends APIDataObject {
                 .put("guildId", guildId)
                 .put("userId", userId)
                 .put("creationTimestamp", creationTimestamp)
-                .put("roles", roles);
+                .put("roles", roles)
+                .put("meta", new JSONObject()
+                        .put("nickname", metaNickname)
+                        .put("isAdministrator", metaIsAdministrator)
+                        .put("isOwner", metaIsOwner)
+                );
     }
 
     @Override
@@ -74,5 +93,9 @@ public class Member extends APIDataObject {
         for(int i = 0; i < jsonObject.getJSONArray("roles").length(); i++){
             this.roles.add(jsonObject.getJSONArray("roles").getLong(i));
         }
+        JSONObject meta = jsonObject.getJSONObject("meta");
+        this.metaNickname = meta.getString("nickname");
+        this.metaIsAdministrator = meta.getBoolean("isAdministrator");
+        this.metaIsOwner = meta.getBoolean("isOwner");
     }
 }
