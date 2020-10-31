@@ -82,7 +82,7 @@ public class MessageCache extends Cache<Long, Message> {
             if(contains(messageId)){
                 return getFromCache(messageId);
             }
-            Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).setInitialData(userId, creationTime, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
+            Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).lSetInitialData(userId, creationTime, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
             message.createAsync(); // can be async as we process a lot of em
             addToCache(messageId, message);
             return message;

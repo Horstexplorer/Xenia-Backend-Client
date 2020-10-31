@@ -93,7 +93,7 @@ public class NotificationCache extends Cache<Long, Notification> {
 
     public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage){
         try{
-            Notification notification = new Notification(getBackendProcessor(), guildId, -1).setInitialData(channelId, userId, notificationTarget, notificationMessage);
+            Notification notification = new Notification(getBackendProcessor(), guildId, -1).lSetInitialData(channelId, userId, notificationTarget, notificationMessage);
             notification.create();
             addToCache(notification.getId(), notification);
             return notification;

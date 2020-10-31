@@ -96,7 +96,7 @@ public class TagCache extends Cache<String, Tag> {
             if(contains(tagName)){
                 throw new CacheException(-20, "Tag Already Exists");
             }
-            Tag tag = new Tag(getBackendProcessor(), guildId, tagName).setInitialData(userId, content);
+            Tag tag = new Tag(getBackendProcessor(), guildId, tagName).lSetInitialData(userId, content);
             tag.create(); // fails if a tag already exists on the backend which hasnt synced already with the client
             addToCache(tagName, tag);
             return tag;

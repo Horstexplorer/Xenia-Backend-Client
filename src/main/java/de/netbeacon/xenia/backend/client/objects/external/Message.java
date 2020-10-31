@@ -47,7 +47,7 @@ public class Message extends APIDataObject {
         this.messageId = messageId;
     }
 
-    public Message setInitialData(long userId, long creationTimestamp, String messageContent, String cryptKey){
+    public Message lSetInitialData(long userId, long creationTimestamp, String messageContent, String cryptKey){
         try{
             byte[] salt = Crypt.genSalt();
             this.messageSalt = new String(Base64.encode(salt));

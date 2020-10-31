@@ -38,7 +38,7 @@ public class Tag extends APIDataObject {
         this.tagName = tagName;
     }
 
-    public Tag setInitialData(long userId, String tagContent){
+    public Tag lSetInitialData(long userId, String tagContent){
         this.userId = userId;
         this.tagContent = tagContent;
         return this;

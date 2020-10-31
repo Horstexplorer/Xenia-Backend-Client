@@ -37,7 +37,7 @@ public class Notification extends APIDataObject {
         super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "misc", "notifications", String.valueOf(notificationId)));
     }
 
-    public Notification setInitialData(long channelId, long userId, long notificationTarget, String notificationMessage){
+    public Notification lSetInitialData(long channelId, long userId, long notificationTarget, String notificationMessage){
         this.channelId = channelId;
         this.userId = userId;
         this.notificationTarget = notificationTarget;
