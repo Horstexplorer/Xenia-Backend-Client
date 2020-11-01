@@ -45,6 +45,8 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
         this.xeniaBackendClient = xeniaBackendClient;
     }
 
+    // todo: improve status codes on backend so we have a better knowledge of what is going on
+
     public void start(){
         if(scalingExecutor != null){
             scalingExecutor.shutdown();
@@ -71,7 +73,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
 
     @Override
     public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
-        logger.debug("Connected To Websocket");
+        logger.warn("Connected To Websocket");
     }
 
     @Override
@@ -86,7 +88,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
 
     @Override
     public void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-        logger.debug("Websocket Closed: "+code+" "+reason);
+        logger.debug("Websocket Closing: "+code+" "+reason);
         webSocket.close(code, reason);
     }
 
@@ -94,7 +96,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
         logger.debug("Websocket Closed: "+code+" "+reason);
         if(code != 1000){
-            logger.debug("Reconnecting On: "+code);
+            logger.warn("Reconnecting On: "+code);
             start(); // reconnect
         }else{
             logger.warn("Websocket Closed - Wont Open Again "+code+" "+reason);
