@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WebSocketListener extends okhttp3.WebSocketListener implements IShutdown {
 
@@ -40,12 +41,11 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
     private final XeniaBackendClient xeniaBackendClient;
     private ScalingExecutor scalingExecutor;
     private WebSocket webSocket;
+    private AtomicBoolean shutdown = new AtomicBoolean(true);
 
     public WebSocketListener(XeniaBackendClient xeniaBackendClient){
         this.xeniaBackendClient = xeniaBackendClient;
     }
-
-    // todo: improve status codes on backend so we have a better knowledge of what is going on
 
     public void start(){
         if(scalingExecutor != null){
@@ -62,9 +62,11 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
         // build request
         Request request = new Request.Builder().url("wss://"+host+":"+port+"/ws?token="+token).build();
         webSocket = xeniaBackendClient.getOkHttpClient().newWebSocket(request, this);
+        shutdown.set(false);
     }
 
     public void stop(){
+        shutdown.set(true);
         scalingExecutor.shutdown();
         scalingExecutor = null;
         webSocket.close(1000, "Closed Connection");
@@ -95,11 +97,15 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
     @Override
     public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
         logger.debug("Websocket Closed: "+code+" "+reason);
-        if(code != 1000){
-            logger.warn("Reconnecting On: "+code);
-            start(); // reconnect
-        }else{
+        // normal closure & shutdown || unauthorized || forbidden
+        if(code == 1000 && shutdown.get()|| code == 3401 || code == 3403){
             logger.warn("Websocket Closed - Wont Open Again "+code+" "+reason);
+        }else{
+            logger.warn("Reconnecting On: "+code);
+            try{
+                TimeUnit.SECONDS.sleep(1);
+                start();
+            }catch (Exception ignore){}
         }
     }
 
