@@ -32,6 +32,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,7 +62,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
         int port = backendSettings.getPort();
         String token = backendSettings.getToken();
         // build request
-        Request request = new Request.Builder().url("wss://"+host+":"+port+"/ws?token="+token).build();
+        Request request = new Request.Builder().url("wss://"+host+":"+port+"/ws?token="+URLEncoder.encode(token, StandardCharsets.UTF_8)).build();
         webSocket = xeniaBackendClient.getOkHttpClient().newWebSocket(request, this);
         shutdown.set(false);
     }
