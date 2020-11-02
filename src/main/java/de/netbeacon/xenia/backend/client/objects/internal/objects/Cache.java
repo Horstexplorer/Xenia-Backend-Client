@@ -19,6 +19,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.objects;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +29,7 @@ public abstract class Cache<K, T extends APIDataObject> {
     private final BackendProcessor backendProcessor;
     private final ConcurrentHashMap<K, T> dataMap = new ConcurrentHashMap<>();
     private final ArrayList<K> orderedKeyMap = new ArrayList<>();
+    private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
 
     public Cache(BackendProcessor backendProcessor){
         this.backendProcessor = backendProcessor;
@@ -48,6 +50,8 @@ public abstract class Cache<K, T extends APIDataObject> {
     public void removeFromCache(K id){
         dataMap.remove(id);
         orderedKeyMap.remove(id);
+
+
     }
 
     // qol
@@ -79,5 +83,29 @@ public abstract class Cache<K, T extends APIDataObject> {
     public void clear(){
         dataMap.clear();
         orderedKeyMap.clear();
+    }
+
+    private void onInsertion(K newKey, T newObject){
+        for(var listener : cacheListeners){
+            try{
+                listener.onInsertion(newKey, newObject);
+            }catch (Exception ignore){}
+        }
+    }
+
+    private void onRemoval(K oldKey){
+        for(var listener : cacheListeners){
+            try{
+                listener.onRemoval(oldKey);
+            }catch (Exception e){}
+        }
+    }
+
+    public void addEventListeners(CacheEventListener<K, T>...listeners){
+        cacheListeners.addAll(Arrays.asList(listeners));
+    }
+
+    public void removeEventListeners(){
+        cacheListeners.clear();
     }
 }

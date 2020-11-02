@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ public abstract class APIDataObject implements IJSONSerializable {
     private final List<String> backendPath;
     private final Logger logger = LoggerFactory.getLogger(APIDataObject.class);
     private long lastRequestDuration;
+    private final ArrayList<APIDataEventListener> apiDataEventListeners = new ArrayList<>();
 
     public APIDataObject(BackendProcessor backendProcessor, List<String> backendPath){
         this.backendProcessor = backendProcessor;
@@ -51,6 +53,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
+        onRetrieval();
     }
 
     public void getAsync(){
@@ -63,6 +66,7 @@ public abstract class APIDataObject implements IJSONSerializable {
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
         });
+        onRetrieval();
     }
 
     public void create() throws BackendException{
@@ -74,6 +78,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
+        onCreation();
     }
 
     public void createAsync() {
@@ -85,6 +90,7 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
+            onCreation();
         });
     }
 
@@ -97,6 +103,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
+        onUpdate();
     }
 
     public void updateAsync() {
@@ -108,6 +115,7 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
+            onUpdate();
         });
     }
 
@@ -119,6 +127,7 @@ public abstract class APIDataObject implements IJSONSerializable {
             throw new BackendException(backendResult.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
         }
         lastRequestDuration = backendResult.getRequestDuration();
+        onDeletion();
     }
 
     public void deleteAsync() {
@@ -129,6 +138,7 @@ public abstract class APIDataObject implements IJSONSerializable {
                 throw new BackendException(br.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
             }
             lastRequestDuration = br.getRequestDuration();
+            onDeletion();
         });
     }
 
@@ -142,6 +152,46 @@ public abstract class APIDataObject implements IJSONSerializable {
 
     public long getLastRequestDuration() {
         return lastRequestDuration;
+    }
+
+    private void onRetrieval(){
+        for(var listener : apiDataEventListeners){
+            try{
+                listener.onRetrieval(this);
+            }catch (Exception ignore){}
+        }
+    }
+
+    private void onCreation(){
+        for(var listener : apiDataEventListeners){
+            try{
+                listener.onCreation(this);
+            }catch (Exception ignore){}
+        }
+    }
+
+    private void onUpdate(){
+        for(var listener : apiDataEventListeners){
+            try{
+                listener.onUpdate(this);
+            }catch (Exception ignore){}
+        }
+    }
+
+    private void onDeletion(){
+        for(var listener : apiDataEventListeners){
+            try{
+                listener.onDeletion(this);
+            }catch (Exception ignore){}
+        }
+    }
+
+    public void addEventListener(APIDataEventListener...listeners){
+        apiDataEventListeners.addAll(Arrays.asList(listeners));
+    }
+
+    public void removeEventListener(){
+        apiDataEventListeners.clear();
     }
 
     @Override
