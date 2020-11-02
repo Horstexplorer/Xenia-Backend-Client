@@ -93,6 +93,9 @@ public class TagCache extends Cache<String, Tag> {
     public Tag createNew(String tagName, long userId, String content) throws CacheException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
+            if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TAGS_C()){
+                throw new RuntimeException("Cache Is Full");
+            }
             if(contains(tagName)){
                 throw new CacheException(-20, "Tag Already Exists");
             }

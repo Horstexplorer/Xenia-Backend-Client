@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class NotificationCache extends Cache<Long, Notification> {
 
@@ -91,8 +92,14 @@ public class NotificationCache extends Cache<Long, Notification> {
         }
     }
 
+    private final ReentrantLock creationLock = new ReentrantLock();
+
     public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage){
         try{
+            creationLock.lock();
+            if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_NOTIFICATIONS_C()){
+                throw new RuntimeException("Cache Is Full");
+            }
             Notification notification = new Notification(getBackendProcessor(), guildId, -1).lSetInitialData(channelId, userId, notificationTarget, notificationMessage);
             notification.create();
             addToCache(notification.getId(), notification);
@@ -101,6 +108,8 @@ public class NotificationCache extends Cache<Long, Notification> {
             throw e;
         }catch (Exception e){
             throw new CacheException(-2, "Failed To Create A New Notification", e);
+        }finally {
+            creationLock.unlock();
         }
     }
 
