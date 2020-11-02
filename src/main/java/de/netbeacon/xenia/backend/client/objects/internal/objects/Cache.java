@@ -44,14 +44,14 @@ public abstract class Cache<K, T extends APIDataObject> {
     public T addToCache(K id, T t){
         dataMap.put(id, t);
         orderedKeyMap.add(id);
+        onInsertion(id, t);
         return t;
     }
 
     public void removeFromCache(K id){
         dataMap.remove(id);
         orderedKeyMap.remove(id);
-
-
+        onRemoval(id);
     }
 
     // qol
@@ -81,13 +81,13 @@ public abstract class Cache<K, T extends APIDataObject> {
     }
 
     public void clear(){
-        dataMap.forEach((k,v)->v.removeEventListener()); // remove event listeners of objects
+        dataMap.forEach((k,v)->v.removeEventListeners()); // remove event listeners of objects
         dataMap.clear();
         orderedKeyMap.clear();
     }
 
     private void onInsertion(K newKey, T newObject){
-        for(var listener : cacheListeners){
+        for(var listener : new ArrayList<>(cacheListeners)){
             try{
                 listener.onInsertion(newKey, newObject);
             }catch (Exception ignore){}
@@ -95,7 +95,7 @@ public abstract class Cache<K, T extends APIDataObject> {
     }
 
     private void onRemoval(K oldKey){
-        for(var listener : cacheListeners){
+        for(var listener : new ArrayList<>(cacheListeners)){
             try{
                 listener.onRemoval(oldKey);
             }catch (Exception e){}

@@ -165,7 +165,7 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     private void onRetrieval(){
-        for(var listener : apiDataEventListeners){
+        for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onRetrieval(this);
             }catch (Exception ignore){}
@@ -173,7 +173,7 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     private void onCreation(){
-        for(var listener : apiDataEventListeners){
+        for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onCreation(this);
             }catch (Exception ignore){}
@@ -181,7 +181,7 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     private void onUpdate(){
-        for(var listener : apiDataEventListeners){
+        for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onUpdate(this);
             }catch (Exception ignore){}
@@ -189,7 +189,7 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     private void onDeletion(){
-        for(var listener : apiDataEventListeners){
+        for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onDeletion(this);
             }catch (Exception ignore){}
@@ -200,7 +200,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         apiDataEventListeners.addAll(Arrays.asList(listeners));
     }
 
-    public void removeEventListener(){
+    public void removeEventListeners(){
         apiDataEventListeners.clear();
     }
 
