@@ -18,8 +18,8 @@ package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
 public interface CacheEventListener<K, T extends APIDataObject> {
 
-    public void onInsertion(K newKey, T newObject);
+    public default void onInsertion(K newKey, T newObject){}
 
-    public void onRemoval(K oldKey);
+    public default void onRemoval(K oldKey){}
 
 }

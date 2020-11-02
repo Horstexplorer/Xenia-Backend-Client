@@ -18,11 +18,11 @@ package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
 public interface APIDataEventListener {
 
-    public void onRetrieval(APIDataObject apiDataObject);
+    public default void onRetrieval(APIDataObject apiDataObject){}
 
-    public void onCreation(APIDataObject apiDataObject);
+    public default void onCreation(APIDataObject apiDataObject){}
 
-    public void onUpdate(APIDataObject apiDataObject);
+    public default void onUpdate(APIDataObject apiDataObject){}
 
-    public void onDeletion(APIDataObject apiDataObject);
+    public default void onDeletion(APIDataObject apiDataObject){}
 }
