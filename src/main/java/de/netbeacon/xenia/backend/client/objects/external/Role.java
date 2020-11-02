@@ -51,6 +51,15 @@ public class Role extends APIDataObject {
         return roleName;
     }
 
+    public void setRoleName(String name){
+        lSetRoleName(name);
+        update();
+    }
+
+    public void lSetRoleName(String name){
+        this.roleName = roleName;
+    }
+
     public List<Permission> getPermissions() {
         return permissions;
     }

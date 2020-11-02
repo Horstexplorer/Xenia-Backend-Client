@@ -68,13 +68,21 @@ public class User extends APIDataObject {
     }
 
     public void setInternalRole(String internalRole){
-        this.internalRole = internalRole;
+        lSetMetaData(internalRole);
         update();
     }
 
+    public void lSetInternalRole(String internalRole){
+        this.internalRole = internalRole;
+    }
+
     public void setPreferredLanguage(String language){
-        this.preferredLanguage = language;
+        lSetPreferredLanguage(language);
         update();
+    }
+
+    public void lSetPreferredLanguage(String language){
+        this.preferredLanguage = language;
     }
 
     @Override

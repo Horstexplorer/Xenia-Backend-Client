@@ -62,8 +62,12 @@ public class Guild extends APIDataObject {
     }
 
     public void setPreferredLanguage(String preferredLanguage){
-        this.preferredLanguage = preferredLanguage;
+        lSetPreferredLanguage(preferredLanguage);
         update();
+    }
+
+    public void lSetPreferredLanguage(String preferredLanguage){
+        this.preferredLanguage = preferredLanguage;
     }
 
 

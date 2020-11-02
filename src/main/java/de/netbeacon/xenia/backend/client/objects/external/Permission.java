@@ -57,8 +57,12 @@ public class Permission extends APIDataObject {
     }
 
     public void setPermissionGranted(boolean permissionGranted) {
-        this.permissionGranted = permissionGranted;
+        lSetPermissionGranted(permissionGranted);
         update();
+    }
+
+    public void lSetPermissionGranted(boolean permissionGranted) {
+        this.permissionGranted = permissionGranted;
     }
 
     @Override

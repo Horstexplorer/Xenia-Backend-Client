@@ -64,12 +64,13 @@ public class Tag extends APIDataObject {
         return tagContent;
     }
 
-    public void setTagContent(String tagContent, long userId) throws BackendException {
-        if(this.userId != userId){
-            throw new BackendException(-30, "Cant Modify Tag When Not Owner");
-        }
-        this.tagContent = tagContent;
+    public void setTagContent(String tagContent) throws BackendException {
+        lSetTagContent(tagContent);
         update();
+    }
+
+    public void lSetTagContent(String tagContent) throws BackendException {
+        this.tagContent = tagContent;
     }
 
     @Override

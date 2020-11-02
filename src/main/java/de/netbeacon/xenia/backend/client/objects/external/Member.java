@@ -78,8 +78,12 @@ public class Member extends APIDataObject {
     }
 
     public void setRoleIds(Set<Long> roles){
-        this.roles = roles;
+        lSetRoleIds(roles);
         update();
+    }
+
+    public void lSetRoleIds(Set<Long> roles){
+        this.roles = roles;
     }
 
     @Override

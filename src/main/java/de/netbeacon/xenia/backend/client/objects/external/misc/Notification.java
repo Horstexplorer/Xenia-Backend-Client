@@ -74,13 +74,20 @@ public class Notification extends APIDataObject {
     }
 
     public void setNotificationTarget(long notificationTarget) {
-        this.notificationTarget = notificationTarget;
+        lSetNotificationTarget(notificationTarget);
         update();
+    }
+    public void lSetNotificationTarget(long notificationTarget) {
+        this.notificationTarget = notificationTarget;
     }
 
     public void setNotificationMessage(String notificationMessage) {
-        this.notificationMessage = notificationMessage;
+        lSetNotificationMessage(notificationMessage);
         update();
+    }
+
+    public void lSetNotificationMessage(String notificationMessage) {
+        this.notificationMessage = notificationMessage;
     }
 
     @Override

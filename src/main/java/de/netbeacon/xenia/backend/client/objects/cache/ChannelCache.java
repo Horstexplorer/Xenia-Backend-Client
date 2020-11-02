@@ -119,4 +119,10 @@ public class ChannelCache extends Cache<Long, Channel> {
             idBasedLockHolder.getLock(channelId).unlock();
         }
     }
+
+    @Override
+    public void clear() {
+        getDataMap().forEach((k,v)->v.clear());
+        super.clear();
+    }
 }

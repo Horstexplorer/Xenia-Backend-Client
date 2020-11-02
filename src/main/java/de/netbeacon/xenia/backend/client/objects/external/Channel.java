@@ -74,28 +74,48 @@ public class Channel extends APIDataObject {
     }
 
     public void setAccessRestriction(boolean accessRestriction) {
-        this.accessRestriction = accessRestriction;
+        lSetAccessRestriction(accessRestriction);
         update();
+    }
+
+    public void lSetAccessRestriction(boolean accessRestriction) {
+        this.accessRestriction = accessRestriction;
     }
 
     public void setChannelMode(String channelMode) {
-        this.channelMode = channelMode;
+        lSetChannelMode(channelMode);
         update();
+    }
+
+    public void lSetChannelMode(String channelMode) {
+        this.channelMode = channelMode;
     }
 
     public void setChannelType(String channelType) {
-        this.channelType = channelType;
+        lSetChannelType(channelType);
         update();
+    }
+
+    public void lSetChannelType(String channelType) {
+        this.channelType = channelType;
     }
 
     public void setTmpLoggingActive(boolean tmpLoggingActive) {
-        this.tmpLoggingActive = tmpLoggingActive;
+        lSetTmpLoggingActive(tmpLoggingActive);
         update();
     }
 
+    public void lSetTmpLoggingActive(boolean tmpLoggingActive) {
+        this.tmpLoggingActive = tmpLoggingActive;
+    }
+
     public void setTmpLoggingChannelId(long tmpLoggingChannelId) {
-        this.tmpLoggingChannelId = tmpLoggingChannelId;
+        lSetTmpLoggingChannelId(tmpLoggingChannelId);
         update();
+    }
+
+    public void lSetTmpLoggingChannelId(long tmpLoggingChannelId) {
+        this.tmpLoggingChannelId = tmpLoggingChannelId;
     }
 
     public MessageCache getMessageCache(){
@@ -126,5 +146,9 @@ public class Channel extends APIDataObject {
         this.channelType = jsonObject.getString("channelType");
         this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
         this.tmpLoggingChannelId = jsonObject.getLong("tmpLoggingChannelId");
+    }
+
+    public void clear(){
+        messageCache.clear();
     }
 }
