@@ -79,4 +79,10 @@ public class GuildCache extends Cache<Long, Guild> {
             idBasedLockHolder.getLock(guildId).unlock();
         }
     }
+
+    @Override
+    public void clear() {
+        getDataMap().forEach((k, v)->v.clear()); // as the guild also contains caches
+        super.clear();
+    }
 }

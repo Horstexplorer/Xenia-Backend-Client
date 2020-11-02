@@ -81,6 +81,7 @@ public abstract class Cache<K, T extends APIDataObject> {
     }
 
     public void clear(){
+        dataMap.forEach((k,v)->v.removeEventListener()); // remove event listeners of objects
         dataMap.clear();
         orderedKeyMap.clear();
     }

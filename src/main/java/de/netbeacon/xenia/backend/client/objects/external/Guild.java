@@ -115,6 +115,13 @@ public class Guild extends APIDataObject {
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
     }
 
+    public void clear(){
+        channelCache.clear();
+        memberCache.clear();
+        roleCache.clear();
+        miscCaches.clear();
+    }
+
     public static class MiscCaches{
 
         private final TagCache tagCache;
@@ -131,6 +138,11 @@ public class Guild extends APIDataObject {
 
         public NotificationCache getNotificationCache() {
             return notificationCache;
+        }
+
+        public void clear(){
+            tagCache.clear();
+            notificationCache.clear();
         }
     }
 }
