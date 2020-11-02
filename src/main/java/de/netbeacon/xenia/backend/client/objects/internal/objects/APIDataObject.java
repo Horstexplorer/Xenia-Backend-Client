@@ -30,26 +30,32 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class APIDataObject implements IJSONSerializable {
 
     private final BackendProcessor backendProcessor;
-    private final List<String> backendPath;
+    private final List<BackendPathArg> backendPath = new ArrayList<>();
     private final Logger logger = LoggerFactory.getLogger(APIDataObject.class);
     private long lastRequestDuration;
     private final ArrayList<APIDataEventListener> apiDataEventListeners = new ArrayList<>();
 
-    public APIDataObject(BackendProcessor backendProcessor, List<String> backendPath){
+    public APIDataObject(BackendProcessor backendProcessor){
         this.backendProcessor = backendProcessor;
-        this.backendPath = backendPath;
+    }
+
+    protected void setBackendPath(Object... backendPath){
+        for(Object o : backendPath){
+            this.backendPath.add(new BackendPathArg(o));
+        }
     }
 
     public void get() throws BackendException {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), null);
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), null);
         BackendResult backendResult = backendProcessor.process(backendRequest);
         if(backendResult.getStatusCode() != 200){
-            logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
-            throw new BackendException(backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
+            logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
+            throw new BackendException(backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
@@ -57,11 +63,11 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void getAsync(){
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), null);
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), null);
         backendProcessor.processAsync(backendRequest, br->{
             if(br.getStatusCode() != 200){
-                logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
-                throw new BackendException(br.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
+                logger.debug("Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
+                throw new BackendException(br.getStatusCode(), "Failed To GET APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
             }
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
@@ -70,11 +76,11 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void create() throws BackendException{
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), asJSON());
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), asJSON());
         BackendResult backendResult = backendProcessor.process(backendRequest);
         if(backendResult.getStatusCode() != 202){
-            logger.debug("Failed To CREATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
-            throw new BackendException(backendResult.getStatusCode(), "Failed To CREATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
+            logger.debug("Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
+            throw new BackendException(backendResult.getStatusCode(), "Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
@@ -82,11 +88,11 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void createAsync() {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), asJSON());
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), asJSON());
         backendProcessor.processAsync(backendRequest, br->{
             if(br.getStatusCode() != 202){
-                logger.debug("Failed To CREATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
-                throw new BackendException(br.getStatusCode(), "Failed To CREATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
+                logger.debug("Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
+                throw new BackendException(br.getStatusCode(), "Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
             }
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
@@ -95,11 +101,11 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void update() throws BackendException {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), asJSON());
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), asJSON());
         BackendResult backendResult = backendProcessor.process(backendRequest);
         if(backendResult.getStatusCode() != 200){
-            logger.debug("Failed To UPDATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
-            throw new BackendException(backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
+            logger.debug("Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
+            throw new BackendException(backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
         }
         fromJSON(backendResult.getPayloadAsJSON());
         lastRequestDuration = backendResult.getRequestDuration();
@@ -107,11 +113,11 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void updateAsync() {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), asJSON());
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), asJSON());
         backendProcessor.processAsync(backendRequest, br->{
             if(br.getStatusCode() != 200){
-                logger.debug("Failed To UPDATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
-                throw new BackendException(br.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
+                logger.debug("Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
+                throw new BackendException(br.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
             }
             fromJSON(br.getPayloadAsJSON());
             lastRequestDuration = br.getRequestDuration();
@@ -120,22 +126,22 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void delete() throws BackendException {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), null);
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), null);
         BackendResult backendResult = backendProcessor.process(backendRequest);
         if(backendResult.getStatusCode() != 200){
-            logger.debug("Failed To DELETE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
-            throw new BackendException(backendResult.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+backendResult.getStatusCode()+")");
+            logger.debug("Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
+            throw new BackendException(backendResult.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+backendResult.getStatusCode()+")");
         }
         lastRequestDuration = backendResult.getRequestDuration();
         onDeletion();
     }
 
     public void deleteAsync() {
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.Token, backendPath, new HashMap<>(), null);
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.Token, getBackendPath(), new HashMap<>(), null);
         backendProcessor.processAsync(backendRequest, br->{
             if(br.getStatusCode() != 200){
-                logger.debug("Failed To DELETE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
-                throw new BackendException(br.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(backendPath.toArray())+" ("+br.getStatusCode()+")");
+                logger.debug("Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
+                throw new BackendException(br.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray())+" ("+br.getStatusCode()+")");
             }
             lastRequestDuration = br.getRequestDuration();
             onDeletion();
@@ -147,7 +153,11 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public List<String> getBackendPath() {
-        return backendPath;
+        List<String> list = new ArrayList<>();
+        for(BackendPathArg bpa : backendPath){
+            list.add(String.valueOf(bpa.getObject()));
+        }
+        return list;
     }
 
     public long getLastRequestDuration() {
@@ -199,4 +209,20 @@ public abstract class APIDataObject implements IJSONSerializable {
 
     @Override
     public abstract void fromJSON(JSONObject jsonObject) throws JSONSerializationException;
+
+    public static class BackendPathArg{
+
+        private final Object object;
+
+        public BackendPathArg(Object object){
+            this.object = object;
+        }
+
+        public Object getObject(){
+            if(object instanceof Function<?,?>){
+                return ((Function<?, ?>) object).apply(null);
+            }
+            return object;
+        }
+    }
 }

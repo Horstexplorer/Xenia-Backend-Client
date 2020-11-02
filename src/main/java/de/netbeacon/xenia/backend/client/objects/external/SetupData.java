@@ -22,8 +22,6 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.List;
-
 public class SetupData extends APIDataObject {
 
     private long clientId;
@@ -35,7 +33,8 @@ public class SetupData extends APIDataObject {
     private String messageCryptHash;
 
     public SetupData(BackendProcessor backendProcessor) {
-        super(backendProcessor, List.of("setup", "bot"));
+        super(backendProcessor);
+        setBackendPath("setup", "bot");
     }
 
     public long getClientId() {

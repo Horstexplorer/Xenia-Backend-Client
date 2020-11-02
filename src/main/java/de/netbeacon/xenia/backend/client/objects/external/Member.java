@@ -22,7 +22,6 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Member extends APIDataObject {
@@ -37,13 +36,18 @@ public class Member extends APIDataObject {
     private boolean metaIsOwner = false;
 
     public Member(BackendProcessor backendProcessor, long guildId, long userId) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "members", String.valueOf(userId)));
+        super(backendProcessor);
         this.guildId = guildId;
         this.userId = userId;
+        setBackendPath("data", "guilds", this.guildId, "members", this.userId);
     }
 
     public long getId(){
         return userId;
+    }
+
+    public long getGuildId() {
+        return guildId;
     }
 
     public long getCreationTimestamp() {

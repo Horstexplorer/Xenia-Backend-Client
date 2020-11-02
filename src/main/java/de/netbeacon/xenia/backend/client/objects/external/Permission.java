@@ -21,8 +21,6 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.List;
-
 public class Permission extends APIDataObject {
 
     private final long guildId;
@@ -34,10 +32,11 @@ public class Permission extends APIDataObject {
     private boolean permissionGranted;
 
     public Permission(BackendProcessor backendProcessor, long guildId, long roleId, int permId) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "roles", String.valueOf(roleId), String.valueOf(permId)));
+        super(backendProcessor);
         this.guildId = guildId;
         this.roleId = roleId;
         this.permId = permId;
+        setBackendPath("data", "guilds", this.guildId, "roles", this.roleId, this.permId);
     }
 
     public int getId(){

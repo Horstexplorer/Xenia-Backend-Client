@@ -38,9 +38,10 @@ public class Role extends APIDataObject {
     private final Logger logger = LoggerFactory.getLogger(Role.class);
 
     public Role(BackendProcessor backendProcessor, long guildId, long roleId) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "roles", String.valueOf(roleId)));
+        super(backendProcessor);
         this.guildId = guildId;
         this.roleId = roleId;
+        setBackendPath("data", "guilds", this.guildId, "roles", this.roleId);
     }
 
     public long getId(){

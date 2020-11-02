@@ -21,8 +21,6 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.List;
-
 public class User extends APIDataObject {
 
     private final long userId;
@@ -34,8 +32,9 @@ public class User extends APIDataObject {
     private String metaUsername = "unknown_username";
 
     public User(BackendProcessor backendProcessor, long userId) {
-        super(backendProcessor, List.of("data", "users", String.valueOf(userId)));
+        super(backendProcessor);
         this.userId = userId;
+        setBackendPath("data", "users", this.userId);
     }
 
     public long getId(){

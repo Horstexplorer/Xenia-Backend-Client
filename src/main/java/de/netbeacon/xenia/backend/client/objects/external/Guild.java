@@ -27,6 +27,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class Guild extends APIDataObject {
 
@@ -41,12 +42,13 @@ public class Guild extends APIDataObject {
     private final MiscCaches miscCaches;
 
     public Guild(BackendProcessor backendProcessor, long guildId) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId)));
+        super(backendProcessor);
         this.guildId = guildId;
         this.channelCache = new ChannelCache(backendProcessor, guildId);
         this.memberCache = new MemberCache(backendProcessor, guildId);
         this.roleCache = new RoleCache(backendProcessor, guildId);
         this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId));
+        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getId());
     }
 
     public long getId(){

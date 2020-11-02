@@ -25,7 +25,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.function.Function;
 
 public class Info extends APIDataObject {
 
@@ -47,8 +47,9 @@ public class Info extends APIDataObject {
     private final Logger logger = LoggerFactory.getLogger(Info.class);
 
     public Info(BackendProcessor backendProcessor, Mode mode) {
-        super(backendProcessor, List.of("info", mode.toString().toLowerCase()));
+        super(backendProcessor);
         this.mode = mode;
+        setBackendPath("info", (Function<Void, String>) o -> mode.toString().toLowerCase());
     }
 
     @Override

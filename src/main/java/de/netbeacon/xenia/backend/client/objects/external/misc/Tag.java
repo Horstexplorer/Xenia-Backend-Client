@@ -22,7 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.List;
+import java.util.function.Function;
 
 public class Tag extends APIDataObject {
 
@@ -33,9 +33,10 @@ public class Tag extends APIDataObject {
     private String tagContent;
 
     public Tag(BackendProcessor backendProcessor, long guildId, String tagName) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "misc", "tags", tagName));
+        super(backendProcessor);
         this.guildId = guildId;
         this.tagName = tagName;
+        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "misc", "tags", (Function<Void, String>) o -> getId());
     }
 
     public Tag lSetInitialData(long userId, String tagContent){

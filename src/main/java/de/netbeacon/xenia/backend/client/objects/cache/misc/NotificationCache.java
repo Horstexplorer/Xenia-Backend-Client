@@ -121,7 +121,7 @@ public class NotificationCache extends Cache<Long, Notification> {
         try{
             idBasedLockHolder.getLock(notificationId).lock();
             Notification notification = getFromCache(notificationId);
-            Objects.requireNonNullElseGet(notification, ()->new Notification(getBackendProcessor(), guildId, -1)).delete();
+            Objects.requireNonNullElseGet(notification, ()->new Notification(getBackendProcessor(), guildId, notificationId)).delete();
             removeFromCache(notificationId);
         }catch (CacheException e){
             throw e;

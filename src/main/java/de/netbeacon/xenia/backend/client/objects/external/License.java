@@ -26,7 +26,6 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 public class License extends APIDataObject {
 
@@ -43,8 +42,9 @@ public class License extends APIDataObject {
     private int perk_MISC_NOTIFICATIONS_C;
 
     public License(BackendProcessor backendProcessor, long guildId) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "license"));
+        super(backendProcessor);
         this.guildId = guildId;
+        setBackendPath("data", "guilds", this.guildId, "license");
     }
 
     public void update(String licenseKey) throws BackendException {

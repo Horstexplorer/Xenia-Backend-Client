@@ -22,7 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.List;
+import java.util.function.Function;
 
 public class Channel extends APIDataObject {
 
@@ -39,13 +39,22 @@ public class Channel extends APIDataObject {
     private final MessageCache messageCache;
 
     public Channel(BackendProcessor backendProcessor, long guildId, long channelId) {
-        super(backendProcessor, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelId)));
+        super(backendProcessor);
         this.guildId = guildId;
         this.channelId = channelId;
         this.messageCache = new MessageCache(backendProcessor, guildId, channelId);
+        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "channels", (Function<Void, Long>) o -> getChannelId());
     }
 
     public long getId(){
+        return channelId;
+    }
+
+    public long getGuildId() {
+        return guildId;
+    }
+
+    public long getChannelId() {
         return channelId;
     }
 
