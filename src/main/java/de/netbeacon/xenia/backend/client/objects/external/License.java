@@ -58,6 +58,9 @@ public class License extends APIDataObject {
         fromJSON(backendResult.getPayloadAsJSON());
     }
 
+    public long getGuildId() {
+        return guildId;
+    }
 
     public String getLicenseName(){
         return licenseName;

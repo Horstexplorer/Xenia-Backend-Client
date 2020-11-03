@@ -25,8 +25,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Function;
-
 public class Info extends APIDataObject {
 
     public enum Mode {
@@ -49,7 +47,7 @@ public class Info extends APIDataObject {
     public Info(BackendProcessor backendProcessor, Mode mode) {
         super(backendProcessor);
         this.mode = mode;
-        setBackendPath("info", (Function<Void, String>) o -> mode.toString().toLowerCase());
+        setBackendPath("info", mode.toString().toLowerCase());
     }
 
     @Override

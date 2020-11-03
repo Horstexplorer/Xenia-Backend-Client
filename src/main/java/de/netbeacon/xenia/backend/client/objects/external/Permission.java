@@ -21,11 +21,13 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.function.Function;
+
 public class Permission extends APIDataObject {
 
     private final long guildId;
     private final long roleId;
-    private final int permId;
+    private int permId;
 
     private String permissionName;
     private String permissionDescription;
@@ -36,11 +38,19 @@ public class Permission extends APIDataObject {
         this.guildId = guildId;
         this.roleId = roleId;
         this.permId = permId;
-        setBackendPath("data", "guilds", this.guildId, "roles", this.roleId, this.permId);
+        setBackendPath("data", "guilds", this.guildId, "roles", this.roleId, (Function<Void, Integer>) o -> getId());
     }
 
     public int getId(){
         return permId;
+    }
+
+    public long getGuildId() {
+        return guildId;
+    }
+
+    public long getRoleId() {
+        return roleId;
     }
 
     public String getPermissionName() {
@@ -75,6 +85,7 @@ public class Permission extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
+        this.permId = jsonObject.getInt("permissionId");
         this.permissionName = jsonObject.getString("permissionName");
         this.permissionDescription = jsonObject.getString("permissionDescription");
         this.permissionGranted = jsonObject.getBoolean("permissionGranted");

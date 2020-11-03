@@ -21,9 +21,11 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.function.Function;
+
 public class User extends APIDataObject {
 
-    private final long userId;
+    private long userId;
 
     private long creationTimestamp;
     private String internalRole;
@@ -34,7 +36,7 @@ public class User extends APIDataObject {
     public User(BackendProcessor backendProcessor, long userId) {
         super(backendProcessor);
         this.userId = userId;
-        setBackendPath("data", "users", this.userId);
+        setBackendPath("data", "users", (Function<Void, Long>) o -> getId());
     }
 
     public long getId(){
@@ -98,9 +100,7 @@ public class User extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if(jsonObject.getLong("userId") != userId){
-            throw new JSONSerializationException("Object Do Not Match");
-        }
+        this.userId = jsonObject.getLong("userId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.internalRole = jsonObject.getString("internalRole");
         this.preferredLanguage = jsonObject.getString("preferredLanguage");

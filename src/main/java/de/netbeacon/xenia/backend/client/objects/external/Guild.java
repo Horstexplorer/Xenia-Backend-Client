@@ -31,7 +31,7 @@ import java.util.function.Function;
 
 public class Guild extends APIDataObject {
 
-    private final long guildId;
+    private long guildId;
 
     private long creationTimestamp;
     private String preferredLanguage;
@@ -114,9 +114,7 @@ public class Guild extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if(jsonObject.getLong("guildId") != guildId){
-            throw new JSONSerializationException("Object Do Not Match");
-        }
+        this.guildId = jsonObject.getLong("guildId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
     }

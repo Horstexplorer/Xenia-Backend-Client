@@ -36,7 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class NotificationCache extends Cache<Long, Notification> {
 
-    private long guildId;
+    private final long guildId;
     private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
     private final Logger logger = LoggerFactory.getLogger(NotificationCache.class);
 

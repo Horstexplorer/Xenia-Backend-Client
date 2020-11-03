@@ -26,8 +26,8 @@ import java.util.function.Function;
 
 public class Tag extends APIDataObject {
 
-    private final long guildId;
-    private final String tagName;
+    private long guildId;
+    private String tagName;
     private long creationTimestamp;
     private long userId;
     private String tagContent;
@@ -86,7 +86,9 @@ public class Tag extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
+        this.tagName = jsonObject.getString("tagName");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+        this.guildId = jsonObject.getLong("guildId");
         this.userId = jsonObject.getLong("userId");
         this.tagContent = jsonObject.getString("tagContent");
     }

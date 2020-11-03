@@ -26,8 +26,8 @@ import java.util.function.Function;
 
 public class Channel extends APIDataObject {
 
-    private final long guildId;
-    private final long channelId;
+    private long guildId;
+    private long channelId;
 
     private long creationTimestamp;
     private boolean accessRestriction;
@@ -146,9 +146,8 @@ public class Channel extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if((jsonObject.getLong("guildId") != guildId) || (jsonObject.getLong("channelId") != channelId)){
-            throw new JSONSerializationException("Object Do Not Match");
-        }
+        this.guildId = jsonObject.getLong("guildId");
+        this.channelId = jsonObject.getLong("channelId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.accessRestriction = jsonObject.getBoolean("accessRestriction");
         this.channelMode = jsonObject.getString("channelMode");

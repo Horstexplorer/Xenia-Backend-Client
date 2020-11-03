@@ -23,11 +23,12 @@ import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 public class Member extends APIDataObject {
 
-    private final long guildId;
-    private final long userId;
+    private long guildId;
+    private long userId;
     private long creationTimestamp;
     private Set<Long> roles = new HashSet<>();
     // meta data - initialize with values
@@ -39,7 +40,7 @@ public class Member extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.userId = userId;
-        setBackendPath("data", "guilds", this.guildId, "members", this.userId);
+        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "members", (Function<Void, Long>) o -> getId());
     }
 
     public long getId(){
@@ -106,9 +107,8 @@ public class Member extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if((jsonObject.getLong("guildId") != guildId) || (jsonObject.getLong("userId") != userId)){
-            throw new JSONSerializationException("Object Do Not Match");
-        }
+        this.guildId = jsonObject.getLong("guildId");
+        this.userId = jsonObject.getLong("userId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         for(int i = 0; i < jsonObject.getJSONArray("roles").length(); i++){
             this.roles.add(jsonObject.getJSONArray("roles").getLong(i));

@@ -26,11 +26,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class Role extends APIDataObject {
 
-    private final long guildId;
-    private final long roleId;
+    private long guildId;
+    private long roleId;
 
     private String roleName;
     private final List<Permission> permissions = new ArrayList<>();
@@ -41,11 +42,15 @@ public class Role extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.roleId = roleId;
-        setBackendPath("data", "guilds", this.guildId, "roles", this.roleId);
+        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "roles", (Function<Void, Long>) o -> getId());
     }
 
     public long getId(){
         return roleId;
+    }
+
+    public long getGuildId() {
+        return guildId;
     }
 
     public String getRoleName(){
@@ -80,9 +85,8 @@ public class Role extends APIDataObject {
 
     @Override
     public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if((jsonObject.getLong("guildId") != guildId) || (jsonObject.getLong("roleId") != roleId)){
-            throw new JSONSerializationException("Object Do Not Match");
-        }
+        this.guildId = jsonObject.getLong("guildId");
+        this.roleId = jsonObject.getLong("roleId");
         this.roleName = jsonObject.getString("roleName");
         permissions.clear();
         for(int i = 0; i < jsonObject.getJSONArray("permissions").length(); i++){
