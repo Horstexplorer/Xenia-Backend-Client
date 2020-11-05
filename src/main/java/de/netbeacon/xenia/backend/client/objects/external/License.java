@@ -40,6 +40,7 @@ public class License extends APIDataObject {
     private int perk_GUILD_ROLE_C;
     private int perk_MISC_TAGS_C;
     private int perk_MISC_NOTIFICATIONS_C;
+    private int perk_MISC_POLLS_C;
 
     public License(BackendProcessor backendProcessor, long guildId) {
         super(backendProcessor);
@@ -94,6 +95,10 @@ public class License extends APIDataObject {
         return perk_MISC_TAGS_C;
     }
 
+    public int getPerk_MISC_POLLS_C() {
+        return perk_MISC_POLLS_C;
+    }
+
     @Override
     public void create() throws BackendException {}
 
@@ -124,6 +129,7 @@ public class License extends APIDataObject {
                         .put("guildRoles", perk_GUILD_ROLE_C)
                         .put("miscTags", perk_MISC_TAGS_C)
                         .put("miscNotifications", perk_MISC_NOTIFICATIONS_C)
+                        .put("miscPolls", perk_MISC_POLLS_C)
                 );
     }
 
@@ -133,9 +139,11 @@ public class License extends APIDataObject {
         this.licenseDescription = jsonObject.getString("licenseDescription");
         this.activationTimestamp = jsonObject.getLong("activationTimestamp");
         this.durationDays = jsonObject.getInt("durationDays");
-        this.perk_CHANNEL_LOGGING_C = jsonObject.getJSONObject("perks").getInt("channelLogging");
-        this.perk_GUILD_ROLE_C = jsonObject.getJSONObject("perks").getInt("guildRoles");
-        this.perk_MISC_TAGS_C = jsonObject.getJSONObject("perks").getInt("miscTags");
-        this.perk_MISC_NOTIFICATIONS_C = jsonObject.getJSONObject("perks").getInt("miscNotifications");
+        JSONObject perks = jsonObject.getJSONObject("perks");
+        this.perk_CHANNEL_LOGGING_C = perks.getInt("channelLogging");
+        this.perk_GUILD_ROLE_C = perks.getInt("guildRoles");
+        this.perk_MISC_TAGS_C = perks.getInt("miscTags");
+        this.perk_MISC_NOTIFICATIONS_C = perks.getInt("miscNotifications");
+        this.perk_MISC_POLLS_C = perks.getInt("perk_MISC_POLLS_C");
     }
 }
