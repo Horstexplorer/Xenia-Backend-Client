@@ -144,6 +144,6 @@ public class License extends APIDataObject {
         this.perk_GUILD_ROLE_C = perks.getInt("guildRoles");
         this.perk_MISC_TAGS_C = perks.getInt("miscTags");
         this.perk_MISC_NOTIFICATIONS_C = perks.getInt("miscNotifications");
-        this.perk_MISC_POLLS_C = perks.getInt("perk_MISC_POLLS_C");
+        this.perk_MISC_POLLS_C = perks.getInt("miscPolls");
     }
 }
