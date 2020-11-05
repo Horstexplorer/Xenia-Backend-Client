@@ -94,6 +94,9 @@ public class RoleCache extends Cache<Long, Role> {
 
     public Role createNew() throws CacheException {
         try{
+            if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_GUILD_ROLE_C()){
+                throw new RuntimeException("Cache Is Full");
+            }
             Role role = new Role(getBackendProcessor(), guildId, -1);
             role.create();
             addToCache(role.getId(), role);
