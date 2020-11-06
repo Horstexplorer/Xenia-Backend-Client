@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 public class Poll extends APIDataObject {
@@ -131,7 +132,7 @@ public class Poll extends APIDataObject {
 
         private int id;
         private String description;
-        private int count;
+        private final AtomicInteger count = new AtomicInteger(0);
         private final Poll poll;
 
         protected Option(Poll poll){
@@ -153,7 +154,7 @@ public class Poll extends APIDataObject {
         }
 
         public int getCount() {
-            return count;
+            return count.get();
         }
 
         public void vote(long userId){
@@ -163,6 +164,7 @@ public class Poll extends APIDataObject {
                 if(backendResult.getStatusCode() != 202){
                     throw new RuntimeException("Vote Failed");
                 }
+                count.incrementAndGet();
             }catch (Exception e){
                 throw new RuntimeException("Vote Failed");
             }
@@ -179,7 +181,7 @@ public class Poll extends APIDataObject {
         @Override
         public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
             this.id = jsonObject.getInt("id");
-            this.count = jsonObject.getInt("cont");
+            this.count.set(jsonObject.getInt("cont"));
             this.description = jsonObject.getString("description");
         }
 
