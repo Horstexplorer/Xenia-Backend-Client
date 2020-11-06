@@ -181,7 +181,7 @@ public class Poll extends APIDataObject {
         @Override
         public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
             this.id = jsonObject.getInt("id");
-            this.count.set(jsonObject.getInt("cont"));
+            this.count.set(jsonObject.getInt("count"));
             this.description = jsonObject.getString("description");
         }
 
