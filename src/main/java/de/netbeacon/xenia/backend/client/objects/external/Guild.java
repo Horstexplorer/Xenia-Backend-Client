@@ -21,7 +21,6 @@ import de.netbeacon.xenia.backend.client.objects.cache.ChannelCache;
 import de.netbeacon.xenia.backend.client.objects.cache.MemberCache;
 import de.netbeacon.xenia.backend.client.objects.cache.RoleCache;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.NotificationCache;
-import de.netbeacon.xenia.backend.client.objects.cache.misc.PollCache;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.TagCache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
@@ -48,7 +47,7 @@ public class Guild extends APIDataObject {
         this.channelCache = new ChannelCache(backendProcessor, guildId);
         this.memberCache = new MemberCache(backendProcessor, guildId);
         this.roleCache = new RoleCache(backendProcessor, guildId);
-        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId), new PollCache(backendProcessor, guildId));
+        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId));
         setBackendPath("data", "guilds", (Function<Void, Long>) o -> getId());
     }
 
@@ -99,7 +98,6 @@ public class Guild extends APIDataObject {
 
         getMiscCaches().getTagCache().retrieveAllFromBackend();
         getMiscCaches().getNotificationCache().retrieveAllFromBackend();
-        getMiscCaches().getPollCache().retrieveAllFromBackend();
     }
 
     public void initAsync(){
@@ -132,12 +130,10 @@ public class Guild extends APIDataObject {
 
         private final TagCache tagCache;
         private final NotificationCache notificationCache;
-        private final PollCache pollCache;
 
-        public MiscCaches(TagCache tagCache, NotificationCache notificationCache, PollCache pollCache){
+        public MiscCaches(TagCache tagCache, NotificationCache notificationCache){
             this.tagCache = tagCache;
             this.notificationCache = notificationCache;
-            this.pollCache = pollCache;
         }
 
         public TagCache getTagCache() {
@@ -148,14 +144,9 @@ public class Guild extends APIDataObject {
             return notificationCache;
         }
 
-        public PollCache getPollCache() {
-            return pollCache;
-        }
-
         public void clear(){
             tagCache.clear();
             notificationCache.clear();
-            pollCache.clear();
         }
     }
 }
