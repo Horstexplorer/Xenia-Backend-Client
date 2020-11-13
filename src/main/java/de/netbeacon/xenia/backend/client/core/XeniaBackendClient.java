@@ -61,7 +61,9 @@ public class XeniaBackendClient implements IShutdown {
         // check login
         backendProcessor.activateToken();
         // create update task
-        scheduledExecutorService.scheduleAtFixedRate(backendProcessor::activateToken, 2, 2, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleAtFixedRate(()->{
+            try{backendProcessor.activateToken();}catch (Exception ignore){}
+        }, 2, 2, TimeUnit.MINUTES);
         // activate websocket
         webSocketListener = new WebSocketListener(this);
         webSocketListener.start();
