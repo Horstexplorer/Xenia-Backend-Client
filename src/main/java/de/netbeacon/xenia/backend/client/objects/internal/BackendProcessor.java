@@ -80,9 +80,12 @@ public class BackendProcessor implements IShutdown {
                 }
             }
             return this;
+        }catch (Exception e){
+            logger.error("Something went wrong activating the token: ",e);
         }finally {
             lock.unlock();
         }
+        return null;
     }
 
     public BackendResult process(BackendRequest backendRequest) throws BackendException {
