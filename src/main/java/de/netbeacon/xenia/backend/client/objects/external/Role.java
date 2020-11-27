@@ -19,13 +19,8 @@ package de.netbeacon.xenia.backend.client.objects.external;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 public class Role extends APIDataObject {
@@ -34,14 +29,13 @@ public class Role extends APIDataObject {
     private long roleId;
 
     private String roleName;
-    private final List<Permission> permissions = new ArrayList<>();
-
-    private final Logger logger = LoggerFactory.getLogger(Role.class);
+    private Permissions permissions;
 
     public Role(BackendProcessor backendProcessor, long guildId, long roleId) {
         super(backendProcessor);
         this.guildId = guildId;
         this.roleId = roleId;
+        this.permissions = new Permissions(0);
         setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "roles", (Function<Void, Long>) o -> getId());
     }
 
@@ -66,21 +60,17 @@ public class Role extends APIDataObject {
         this.roleName = roleName;
     }
 
-    public List<Permission> getPermissions() {
+    public Permissions getPermissions() {
         return permissions;
     }
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
-        JSONArray jsonArray = new JSONArray();
-        for(Permission permission : permissions){
-            jsonArray.put(permission.asJSON());
-        }
         return new JSONObject()
                 .put("guildId", guildId)
                 .put("roleId", roleId)
                 .put("roleName", roleName)
-                .put("permissions", jsonArray);
+                .put("rolePermissions", permissions.getPermVal());
     }
 
     @Override
@@ -88,16 +78,88 @@ public class Role extends APIDataObject {
         this.guildId = jsonObject.getLong("guildId");
         this.roleId = jsonObject.getLong("roleId");
         this.roleName = jsonObject.getString("roleName");
-        permissions.clear();
-        for(int i = 0; i < jsonObject.getJSONArray("permissions").length(); i++){
-            int permId = jsonObject.getJSONArray("permissions").getJSONObject(i).getInt("permissionId");
-            Permission permission = new Permission(getBackendProcessor(), guildId, roleId, permId);
-            try{
-                permission.get();
-                permissions.add(permission);
-            }catch (Exception e){
-                logger.error("Failed To Load Permission "+guildId+" "+roleId+" "+permId);
+        this.permissions = new Permissions(jsonObject.getLong("rolePermissions"));
+    }
+
+    static class Permissions {
+
+        private long permVal;
+
+        public enum Bit{
+
+            UNUSED_PERMISSION_BIT_31(31),
+            UNUSED_PERMISSION_BIT_30(30),
+            UNUSED_PERMISSION_BIT_29(29),
+            UNUSED_PERMISSION_BIT_28(28),
+            UNUSED_PERMISSION_BIT_27(27),
+            UNUSED_PERMISSION_BIT_26(26),
+            UNUSED_PERMISSION_BIT_25(25),
+            UNUSED_PERMISSION_BIT_24(24),
+            UNUSED_PERMISSION_BIT_23(23),
+            UNUSED_PERMISSION_BIT_22(22),
+            UNUSED_PERMISSION_BIT_21(21),
+            UNUSED_PERMISSION_BIT_20(20),
+            UNUSED_PERMISSION_BIT_19(19),
+            UNUSED_PERMISSION_BIT_18(18),
+            UNUSED_PERMISSION_BIT_17(17),
+            UNUSED_PERMISSION_BIT_16(16),
+            UNUSED_PERMISSION_BIT_15(15),
+            UNUSED_PERMISSION_BIT_14(14),
+            UNUSED_PERMISSION_BIT_13(13),
+            UNUSED_PERMISSION_BIT_12(12),
+            UNUSED_PERMISSION_BIT_11(11),
+            UNUSED_PERMISSION_BIT_10(10),
+            UNUSED_PERMISSION_BIT_9(9),
+            UNUSED_PERMISSION_BIT_8(8),
+            UNUSED_PERMISSION_BIT_7(7),
+            UNUSED_PERMISSION_BIT_6(6),
+            UNUSED_PERMISSION_BIT_5(5),
+            UNUSED_PERMISSION_BIT_4(4),
+            UNUSED_PERMISSION_BIT_3(3),
+            UNUSED_PERMISSION_BIT_2(2),
+            UNUSED_PERMISSION_BIT_1(1),
+            UNUSED_PERMISSION_BIT_0(0);
+
+            private final int pos;
+
+            private Bit(int pos){
+                this.pos = pos;
+            }
+
+            public int getPos() {
+                return pos;
             }
         }
+
+        public Permissions(long permVal){
+            this.permVal = permVal;
+        }
+
+        public long getPermVal(){
+            return permVal;
+        }
+
+        public synchronized void enable(Bit...bits){
+            for(Bit b : bits){
+                if(b.getPos() == 31){
+                    continue;
+                }
+                permVal |= 1 << b.pos;
+            }
+        }
+
+        public synchronized void disable(Bit...bits){
+            for(Bit b : bits){
+                if(b.getPos() == 31){
+                    continue;
+                }
+                permVal |= 1 << b.pos;
+            }
+        }
+
+        public boolean hasPermission(Bit bit){
+            return ((permVal >> bit.getPos()) & 1) == 1;
+        }
+
     }
 }
