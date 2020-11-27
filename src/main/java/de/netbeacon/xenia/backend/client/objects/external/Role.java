@@ -35,7 +35,7 @@ public class Role extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.roleId = roleId;
-        this.permissions = new Permissions(0);
+        this.permissions = new Permissions(this, 0);
         setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "roles", (Function<Void, Long>) o -> getId());
     }
 
@@ -78,11 +78,12 @@ public class Role extends APIDataObject {
         this.guildId = jsonObject.getLong("guildId");
         this.roleId = jsonObject.getLong("roleId");
         this.roleName = jsonObject.getString("roleName");
-        this.permissions = new Permissions(jsonObject.getLong("rolePermissions"));
+        this.permissions = new Permissions(this, jsonObject.getLong("rolePermissions"));
     }
 
     static class Permissions {
 
+        private final Role role;
         private long permVal;
 
         public enum Bit{
@@ -131,7 +132,8 @@ public class Role extends APIDataObject {
             }
         }
 
-        public Permissions(long permVal){
+        public Permissions(Role role, long permVal){
+            this.role = role;
             this.permVal = permVal;
         }
 
@@ -140,15 +142,26 @@ public class Role extends APIDataObject {
         }
 
         public synchronized void enable(Bit...bits){
+            lenable(bits);
+            role.update();
+        }
+
+        public synchronized void lenable(Bit...bits){
             for(Bit b : bits){
                 if(b.getPos() == 31){
                     continue;
                 }
                 permVal |= 1 << b.pos;
             }
+
         }
 
         public synchronized void disable(Bit...bits){
+            ldisable(bits);
+            role.update();
+        }
+
+        public synchronized void ldisable(Bit...bits){
             for(Bit b : bits){
                 if(b.getPos() == 31){
                     continue;
