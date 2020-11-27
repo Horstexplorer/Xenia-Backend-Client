@@ -142,11 +142,11 @@ public class Role extends APIDataObject {
         }
 
         public synchronized void enable(Bit...bits){
-            lenable(bits);
+            lEnable(bits);
             role.update();
         }
 
-        public synchronized void lenable(Bit...bits){
+        public synchronized void lEnable(Bit...bits){
             for(Bit b : bits){
                 if(b.getPos() == 31){
                     continue;
@@ -157,11 +157,11 @@ public class Role extends APIDataObject {
         }
 
         public synchronized void disable(Bit...bits){
-            ldisable(bits);
+            lDisable(bits);
             role.update();
         }
 
-        public synchronized void ldisable(Bit...bits){
+        public synchronized void lDisable(Bit...bits){
             for(Bit b : bits){
                 if(b.getPos() == 31){
                     continue;
