@@ -90,7 +90,7 @@ public class Role extends APIDataObject {
 
         public enum Bit{
 
-            UNUSED_PERMISSION_BIT_63(63),
+            // UNUSED_PERMISSION_BIT_63(63),
             UNUSED_PERMISSION_BIT_62(62),
             UNUSED_PERMISSION_BIT_61(61),
             UNUSED_PERMISSION_BIT_60(60),
@@ -157,7 +157,7 @@ public class Role extends APIDataObject {
 
             private final int pos;
 
-            private Bit(int pos){
+            Bit(int pos){
                 this.pos = pos;
             }
 
