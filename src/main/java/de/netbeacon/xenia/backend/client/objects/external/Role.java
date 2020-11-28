@@ -81,6 +81,8 @@ public class Role extends APIDataObject {
         this.permissions = new Permissions(this, jsonObject.getLong("rolePermissions"));
     }
 
+    private static final int LOCKED_PERMISSION_BIT_RANGE = 0;
+
     static class Permissions {
 
         private final Role role;
@@ -88,6 +90,38 @@ public class Role extends APIDataObject {
 
         public enum Bit{
 
+            UNUSED_PERMISSION_BIT_63(63),
+            UNUSED_PERMISSION_BIT_62(62),
+            UNUSED_PERMISSION_BIT_61(61),
+            UNUSED_PERMISSION_BIT_60(60),
+            UNUSED_PERMISSION_BIT_59(59),
+            UNUSED_PERMISSION_BIT_58(58),
+            UNUSED_PERMISSION_BIT_57(57),
+            UNUSED_PERMISSION_BIT_56(56),
+            UNUSED_PERMISSION_BIT_55(55),
+            UNUSED_PERMISSION_BIT_54(54),
+            UNUSED_PERMISSION_BIT_53(53),
+            UNUSED_PERMISSION_BIT_52(52),
+            UNUSED_PERMISSION_BIT_51(51),
+            UNUSED_PERMISSION_BIT_50(50),
+            UNUSED_PERMISSION_BIT_49(49),
+            UNUSED_PERMISSION_BIT_48(48),
+            UNUSED_PERMISSION_BIT_47(47),
+            UNUSED_PERMISSION_BIT_46(46),
+            UNUSED_PERMISSION_BIT_45(45),
+            UNUSED_PERMISSION_BIT_44(44),
+            UNUSED_PERMISSION_BIT_43(43),
+            UNUSED_PERMISSION_BIT_42(42),
+            UNUSED_PERMISSION_BIT_41(41),
+            UNUSED_PERMISSION_BIT_40(40),
+            UNUSED_PERMISSION_BIT_39(39),
+            UNUSED_PERMISSION_BIT_38(38),
+            UNUSED_PERMISSION_BIT_37(37),
+            UNUSED_PERMISSION_BIT_36(36),
+            UNUSED_PERMISSION_BIT_35(35),
+            UNUSED_PERMISSION_BIT_34(34),
+            UNUSED_PERMISSION_BIT_33(33),
+            UNUSED_PERMISSION_BIT_32(32),
             UNUSED_PERMISSION_BIT_31(31),
             UNUSED_PERMISSION_BIT_30(30),
             UNUSED_PERMISSION_BIT_29(29),
@@ -148,10 +182,10 @@ public class Role extends APIDataObject {
 
         public synchronized void lEnable(Bit...bits){
             for(Bit b : bits){
-                if(b.getPos() == 31){
+                if(b.getPos() >= LOCKED_PERMISSION_BIT_RANGE){
                     continue;
                 }
-                permVal |= 1 << b.pos;
+                permVal |= 1 << b.getPos();
             }
 
         }
@@ -163,10 +197,10 @@ public class Role extends APIDataObject {
 
         public synchronized void lDisable(Bit...bits){
             for(Bit b : bits){
-                if(b.getPos() == 31){
+                if(b.getPos() >= LOCKED_PERMISSION_BIT_RANGE){
                     continue;
                 }
-                permVal |= 1 << b.pos;
+                permVal &= ~(1 << b.getPos());
             }
         }
 
