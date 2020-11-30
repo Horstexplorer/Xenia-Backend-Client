@@ -131,6 +131,12 @@ public class Channel extends APIDataObject {
         return messageCache;
     }
 
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         return new JSONObject()

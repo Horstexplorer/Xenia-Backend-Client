@@ -17,6 +17,9 @@
 package de.netbeacon.xenia.backend.client.objects.external.misc;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
+import de.netbeacon.xenia.backend.client.objects.external.Channel;
+import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.external.Member;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
@@ -91,6 +94,20 @@ public class Notification extends APIDataObject {
 
     public void lSetNotificationMessage(String notificationMessage) {
         this.notificationMessage = notificationMessage;
+    }
+
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
+    public Channel getChannel(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getChannelCache().get(channelId);
+    }
+
+    public Member getMember(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getMemberCache().get(userId);
     }
 
     @Override

@@ -119,6 +119,20 @@ public class Message extends APIDataObject {
         update();
     }
 
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
+    public Channel getChannel(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getChannelCache().get(channelId);
+    }
+
+    public Member getMember(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getMemberCache().get(userId);
+    }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         return new JSONObject()

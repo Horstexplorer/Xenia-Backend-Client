@@ -64,6 +64,12 @@ public class Role extends APIDataObject {
         return permissions;
     }
 
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         return new JSONObject()
@@ -83,7 +89,7 @@ public class Role extends APIDataObject {
 
     private static final int LOCKED_PERMISSION_BIT_RANGE = 0;
 
-    static class Permissions {
+    public static class Permissions {
 
         private final Role role;
         private long permVal;
@@ -206,6 +212,15 @@ public class Role extends APIDataObject {
 
         public boolean hasPermission(Bit bit){
             return ((permVal >> bit.getPos()) & 1) == 1;
+        }
+
+        public boolean hasAllPermission(Bit...bits){
+            for(Bit b : bits){
+                if(((permVal >> b.getPos()) & 1) == 0){
+                    return false;
+                }
+            }
+            return true;
         }
 
     }

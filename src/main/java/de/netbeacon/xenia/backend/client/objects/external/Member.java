@@ -30,7 +30,7 @@ public class Member extends APIDataObject {
     private long guildId;
     private long userId;
     private long creationTimestamp;
-    private Set<Long> roles = new HashSet<>();
+    private Set<Long> roleIDs = new HashSet<>();
     // meta data - initialize with values
     private String metaNickname = "unknown_nickname";
     private boolean metaIsAdministrator = false;
@@ -56,7 +56,7 @@ public class Member extends APIDataObject {
     }
 
     public Set<Long> getRoleIds() {
-        return roles;
+        return roleIDs;
     }
 
     public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner){
@@ -88,7 +88,30 @@ public class Member extends APIDataObject {
     }
 
     public void lSetRoleIds(Set<Long> roles){
-        this.roles = roles;
+        this.roleIDs = roles;
+    }
+
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
+    public User getUser(){
+        return getBackendProcessor().getBackendClient().getUserCache().get(userId);
+    }
+
+    public Set<Role> getRoles(){
+        Guild g = getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+        Set<Role> roles = new HashSet<>();
+        for(Long l : new HashSet<>(roleIDs)){
+            try{
+                roles.add(g.getRoleCache().get(l));
+            }catch (Exception e) {
+                roleIDs.remove(l);
+            }
+        }
+        return roles;
     }
 
     @Override
@@ -97,7 +120,7 @@ public class Member extends APIDataObject {
                 .put("guildId", guildId)
                 .put("userId", userId)
                 .put("creationTimestamp", creationTimestamp)
-                .put("roles", roles)
+                .put("roles", roleIDs)
                 .put("meta", new JSONObject()
                         .put("nickname", metaNickname)
                         .put("isAdministrator", metaIsAdministrator)
@@ -111,7 +134,7 @@ public class Member extends APIDataObject {
         this.userId = jsonObject.getLong("userId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         for(int i = 0; i < jsonObject.getJSONArray("roles").length(); i++){
-            this.roles.add(jsonObject.getJSONArray("roles").getLong(i));
+            this.roleIDs.add(jsonObject.getJSONArray("roles").getLong(i));
         }
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaNickname = meta.getString("nickname");

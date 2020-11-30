@@ -17,6 +17,8 @@
 package de.netbeacon.xenia.backend.client.objects.external.misc;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
+import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.external.Member;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
@@ -72,6 +74,16 @@ public class Tag extends APIDataObject {
 
     public void lSetTagContent(String tagContent) throws BackendException {
         this.tagContent = tagContent;
+    }
+
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
+    public Member getMember(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getMemberCache().get(userId);
     }
 
     @Override

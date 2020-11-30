@@ -94,6 +94,12 @@ public class License extends APIDataObject {
         return perk_MISC_TAGS_C;
     }
 
+    // SECONDARY
+
+    public Guild getGuild(){
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+    }
+
     @Override
     public void create() throws BackendException {}
 
