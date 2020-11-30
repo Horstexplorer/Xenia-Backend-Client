@@ -35,6 +35,7 @@ public class Guild extends APIDataObject {
 
     private long creationTimestamp;
     private String preferredLanguage;
+    private boolean useVPerms;
 
     private final ChannelCache channelCache;
     private final MemberCache memberCache;
@@ -70,6 +71,19 @@ public class Guild extends APIDataObject {
 
     public void lSetPreferredLanguage(String preferredLanguage){
         this.preferredLanguage = preferredLanguage;
+    }
+
+    public boolean useVPerms(){
+        return useVPerms;
+    }
+
+    public void setVPermsEnabled(boolean value){
+        lSetVPermsEnabled(value);
+        update();
+    }
+
+    public void lSetVPermsEnabled(boolean value){
+        this.useVPerms = value;
     }
 
 
@@ -109,7 +123,8 @@ public class Guild extends APIDataObject {
         return new JSONObject()
                 .put("guildId", guildId)
                 .put("creationTimestamp", creationTimestamp)
-                .put("preferredLanguage", preferredLanguage);
+                .put("preferredLanguage", preferredLanguage)
+                .put("useVPerms", useVPerms);
     }
 
     @Override
@@ -117,6 +132,7 @@ public class Guild extends APIDataObject {
         this.guildId = jsonObject.getLong("guildId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
+        this.useVPerms = jsonObject.getBoolean("useVPerms");
     }
 
     public void clear(){
