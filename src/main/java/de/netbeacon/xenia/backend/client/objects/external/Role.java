@@ -35,7 +35,7 @@ public class Role extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.roleId = roleId;
-        this.permissions = new Permissions(this, 0);
+        this.permissions = new Permissions(this, 1);
         setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "roles", (Function<Void, Long>) o -> getId());
     }
 
@@ -87,7 +87,7 @@ public class Role extends APIDataObject {
         this.permissions = new Permissions(this, jsonObject.getLong("rolePermissions"));
     }
 
-    private static final int LOCKED_PERMISSION_BIT_RANGE = 0;
+    private static final int LOCKED_PERMISSION_BIT_RANGE = 63;
 
     public static class Permissions {
 
@@ -97,8 +97,12 @@ public class Role extends APIDataObject {
         public enum Bit{
 
             // UNUSED_PERMISSION_BIT_63(63),
-            UNUSED_PERMISSION_BIT_62(62),
-            UNUSED_PERMISSION_BIT_61(61),
+
+            // ADMIN
+            GUILD_ADMIN_OVERRIDE(62),
+            // ROLE
+            MANAGE_ROLES_OVERRIDE(61),
+
             UNUSED_PERMISSION_BIT_60(60),
             UNUSED_PERMISSION_BIT_59(59),
             UNUSED_PERMISSION_BIT_58(58),
@@ -152,14 +156,18 @@ public class Role extends APIDataObject {
             UNUSED_PERMISSION_BIT_10(10),
             UNUSED_PERMISSION_BIT_9(9),
             UNUSED_PERMISSION_BIT_8(8),
-            UNUSED_PERMISSION_BIT_7(7),
-            UNUSED_PERMISSION_BIT_6(6),
-            UNUSED_PERMISSION_BIT_5(5),
-            UNUSED_PERMISSION_BIT_4(4),
-            UNUSED_PERMISSION_BIT_3(3),
-            UNUSED_PERMISSION_BIT_2(2),
-            UNUSED_PERMISSION_BIT_1(1),
-            UNUSED_PERMISSION_BIT_0(0);
+            // MESSAGE_RESTORE
+            MESSAGE_RESTORE_OVERRIDE(7),
+            MESSAGE_RESTORE_USE(6),
+            // NOTIFICATION
+            NOTIFICATION_OVERRIDE(5),
+            NOTIFICATION_USE(4),
+            // TAG
+            TAG_OVERRIDE(3),
+            TAG_CREATE(2),
+            TAG_USE(1),
+            // INTERACT
+            BOT_INTERACT(0);
 
             private final int pos;
 
