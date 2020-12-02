@@ -98,12 +98,13 @@ public class Role extends APIDataObject {
 
             // UNUSED_PERMISSION_BIT_63(63),
 
-            // ADMIN
-            GUILD_ADMIN_OVERRIDE(62),
-            // ROLE
-            MANAGE_ROLES_OVERRIDE(61),
+            // OWNER
+            GUILD_OWNER_OVERRIDE(62),
+            // SETTINGS
+            GUILD_SETTINGS_OVERRIDE(61),
+            // WEBINTERFACE
+            WEBINTERFACE_USE(60),
 
-            UNUSED_PERMISSION_BIT_60(60),
             UNUSED_PERMISSION_BIT_59(59),
             UNUSED_PERMISSION_BIT_58(58),
             UNUSED_PERMISSION_BIT_57(57),
