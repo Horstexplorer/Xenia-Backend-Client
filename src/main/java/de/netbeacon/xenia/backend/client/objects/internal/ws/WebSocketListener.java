@@ -103,7 +103,7 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
         if(code == 1000 && shutdown.get()|| code == 3401 || code == 3403){
             logger.warn("Websocket Closed - Wont Open Again "+code+" "+reason);
         }else{
-            logger.warn("Reconnecting On: "+code);
+            logger.debug("Reconnecting On: "+code);
             try{
                 TimeUnit.SECONDS.sleep(1);
                 start();
@@ -113,7 +113,11 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
 
     @Override
     public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
-        logger.warn("Websocket Failure - Trying To Reconnect "+response, t);
+        if(response != null){
+            logger.warn("Websocket Failure - Trying To Reconnect: "+response.code()+" "+response.message(), t);
+        }else{
+            logger.warn("Websocket Failure - Trying To Reconnect: No Response", t);
+        }
         try{
             TimeUnit.SECONDS.sleep(2);
             start();
