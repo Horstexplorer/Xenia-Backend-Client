@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -206,5 +207,50 @@ public class BackendProcessor implements IShutdown {
         scalingExecutor.shutdown();
         scalingExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
         okHttpClient.dispatcher().executorService().shutdown();
+    }
+
+    public static class Interceptor implements okhttp3.Interceptor {
+
+        private final XeniaBackendClient client;
+
+        private long lastUpdate;
+        private final Lock lock = new ReentrantLock();
+
+        private final static long forceUpdateDelay = 2500;
+
+        public Interceptor(XeniaBackendClient client){
+            this.client = client;
+        }
+
+        @NotNull
+        @Override
+        public Response intercept(@NotNull Chain chain) throws IOException {
+            Request request = chain.request();
+            Response response = chain.proceed(request);
+            if(response.code() == 403 && request.headers().get("Authorization") != null && request.headers().get("Authorization").startsWith("Token")){
+                try{
+                    lock.lock();
+                    if(lastUpdate+forceUpdateDelay < System.currentTimeMillis()){
+                        // update token
+                        lastUpdate = System.currentTimeMillis();
+                        client.getBackendProcessor().activateToken();
+                    }else{
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(forceUpdateDelay/2);
+                        } catch (InterruptedException ignore) {}
+                    }
+                    // retry request
+                    response.close();
+                    response = client.getOkHttpClient().newCall(request.newBuilder()
+                            .removeHeader("Authorization")
+                            .addHeader("Authorization", "Token "+client.getBackendProcessor().getBackendSettings().getToken())
+                            .build()
+                    ).execute();
+                }finally {
+                    lock.unlock();
+                }
+            }
+            return response;
+        }
     }
 }
