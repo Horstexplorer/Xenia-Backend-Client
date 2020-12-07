@@ -217,6 +217,9 @@ public class BackendProcessor implements IShutdown {
         private final Lock lock = new ReentrantLock();
 
         private final static long forceUpdateDelay = 2500;
+        private final static int maxRetries = 4;
+
+        private final Logger logger = LoggerFactory.getLogger(BackendProcessor.Interceptor.class);
 
         public Interceptor(XeniaBackendClient client){
             this.client = client;
@@ -231,21 +234,35 @@ public class BackendProcessor implements IShutdown {
                 try{
                     lock.lock();
                     if(lastUpdate+forceUpdateDelay < System.currentTimeMillis()){
+                        logger.warn("Received 403 response from backend for token auth - Requesting new token");
                         // update token
                         lastUpdate = System.currentTimeMillis();
                         client.getBackendProcessor().activateToken();
                     }else{
+                        logger.debug("Received 403 response from backend for token auth - Token has been exchanged recently, wont request a new one.");
                         try {
                             TimeUnit.MILLISECONDS.sleep(forceUpdateDelay/2);
                         } catch (InterruptedException ignore) {}
                     }
-                    // retry request
+                    int retries = 1;
+                    if(response.headers().get("Request-Retries") != null){
+                        try{
+                            retries = Integer.parseInt(response.headers().get("Request-Retries"));
+                        }catch (Exception ignore){}
+                    }
                     response.close();
-                    response = client.getOkHttpClient().newCall(request.newBuilder()
-                            .removeHeader("Authorization")
-                            .addHeader("Authorization", "Token "+client.getBackendProcessor().getBackendSettings().getToken())
-                            .build()
-                    ).execute();
+                    // retry request
+                    if(retries <= maxRetries){
+                        logger.debug("Retrying request - "+retries+" of "+maxRetries);
+                        response = client.getOkHttpClient().newCall(request.newBuilder()
+                                .removeHeader("Authorization")
+                                .addHeader("Authorization", "Token "+client.getBackendProcessor().getBackendSettings().getToken())
+                                .addHeader("Request-Retries", String.valueOf(retries))
+                                .build()
+                        ).execute();
+                    }else{
+                        logger.debug("Wont retry request - max retries utilized");
+                    }
                 }finally {
                     lock.unlock();
                 }
