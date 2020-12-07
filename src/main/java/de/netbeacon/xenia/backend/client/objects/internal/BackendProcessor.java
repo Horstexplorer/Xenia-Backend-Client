@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 
 public class BackendProcessor implements IShutdown {
 
-    private XeniaBackendClient xeniaBackendClient;
+    private final XeniaBackendClient xeniaBackendClient;
     private final OkHttpClient okHttpClient;
     private final BackendSettings backendSettings;
     private final Logger logger = LoggerFactory.getLogger(BackendProcessor.class);
