@@ -104,9 +104,11 @@ public class Role extends APIDataObject {
             GUILD_SETTINGS_OVERRIDE(61),
             // WEBINTERFACE
             WEBINTERFACE_USE(60),
+            // ROLES
+            GUILD_ROLES_OVERRIDE(59),
+            // CHANNELS
+            GUILD_CHANNEL_OVERRIDE(58),
 
-            UNUSED_PERMISSION_BIT_59(59),
-            UNUSED_PERMISSION_BIT_58(58),
             UNUSED_PERMISSION_BIT_57(57),
             UNUSED_PERMISSION_BIT_56(56),
             UNUSED_PERMISSION_BIT_55(55),
