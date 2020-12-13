@@ -65,7 +65,7 @@ public class TagCache extends Cache<String, Tag> {
     public List<Tag> retrieveAllFromBackend() throws CacheException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
-            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guilds", String.valueOf(guildId), "misc", "tags"), new HashMap<>(), null);
+            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "tags"), new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
             if(backendResult.getStatusCode() != 200){
                 logger.warn("Failed To Get Tags From The Backend");

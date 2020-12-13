@@ -28,7 +28,7 @@ public class BackendRequest {
     }
 
     public enum AuthType {
-        Basic, Token
+        BASIC, BEARER
     }
 
     private final Method method;

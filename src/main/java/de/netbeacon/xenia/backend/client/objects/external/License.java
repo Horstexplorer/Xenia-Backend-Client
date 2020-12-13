@@ -50,7 +50,7 @@ public class License extends APIDataObject {
     public void update(String licenseKey) throws BackendException {
         HashMap<String, String> map = new HashMap<>();
         map.put("licenseKey", licenseKey);
-        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.Token, getBackendPath(), map, asJSON());
+        BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), map, asJSON());
         BackendResult backendResult = getBackendProcessor().process(backendRequest);
         if(backendResult.getStatusCode() != 200){
             throw new BackendException(backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray()));

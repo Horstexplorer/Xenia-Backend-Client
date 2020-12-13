@@ -68,7 +68,7 @@ public class RoleCache extends Cache<Long, Role> {
     public List<Role> retrieveAllFromBackend() throws CacheException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
-            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, List.of("data", "guilds", String.valueOf(guildId), "roles"),new HashMap<>(), null);
+            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "roles"),new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
             if(backendResult.getStatusCode() != 200){
                 logger.warn("Failed To Get All Roles From The Backend");

@@ -58,7 +58,7 @@ public class BackendProcessor implements IShutdown {
             lock.lock();
             if(backendSettings.getToken() == null || backendSettings.getToken().isBlank()){
                 // send request to backend to get a new token
-                BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Basic, Arrays.asList("auth", "token"), new HashMap<>(), null);
+                BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BASIC, Arrays.asList("auth", "token"), new HashMap<>(), null);
                 BackendResult backendResult = process(backendRequest);
                 if(backendResult.getStatusCode() == 200){
                     backendSettings.setToken(backendResult.getPayloadAsJSON().getString("token"));
@@ -69,7 +69,7 @@ public class BackendProcessor implements IShutdown {
                 }
             }else{
                 // renew this token
-                BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.Token, Arrays.asList("auth", "token", "renew"), new HashMap<>(), null);
+                BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, Arrays.asList("auth", "token", "renew"), new HashMap<>(), null);
                 BackendResult backendResult = process(backendRequest);
                 if(backendResult.getStatusCode() == 200){
                     logger.debug("Renewed Token Successfully");
@@ -150,10 +150,10 @@ public class BackendProcessor implements IShutdown {
             Request.Builder requestBuilder = new Request.Builder()
                     .url(urlBuilder.build());
             switch (backendRequest.getAuthType()){
-                case Token:
-                    requestBuilder.header("Authorization", "Token "+backendSettings.getToken());
+                case BEARER:
+                    requestBuilder.header("Authorization", "Bearer "+backendSettings.getToken());
                     break;
-                case Basic:
+                case BASIC:
                     requestBuilder.header("Authorization", Credentials.basic(backendSettings.getClientIdAsString(), backendSettings.getPassword()));
                     break;
             }
@@ -230,7 +230,7 @@ public class BackendProcessor implements IShutdown {
         public Response intercept(@NotNull Chain chain) throws IOException {
             Request request = chain.request();
             Response response = chain.proceed(request);
-            if(response.code() == 403 && request.headers().get("Authorization") != null && request.headers().get("Authorization").startsWith("Token")){
+            if(response.code() == 403 && request.headers().get("Authorization") != null && request.headers().get("Authorization").startsWith("Bearer")){
                 try{
                     lock.lock();
                     if(lastUpdate+forceUpdateDelay < System.currentTimeMillis()){
@@ -256,7 +256,7 @@ public class BackendProcessor implements IShutdown {
                         logger.debug("Retrying request - "+retries+" of "+maxRetries);
                         response = client.getOkHttpClient().newCall(request.newBuilder()
                                 .removeHeader("Authorization")
-                                .addHeader("Authorization", "Token "+client.getBackendProcessor().getBackendSettings().getToken())
+                                .addHeader("Authorization", "Bearer "+client.getBackendProcessor().getBackendSettings().getToken())
                                 .addHeader("Request-Retries", String.valueOf(retries))
                                 .build()
                         ).execute();
