@@ -114,9 +114,9 @@ public class WebSocketListener extends okhttp3.WebSocketListener implements IShu
     @Override
     public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
         if(response != null){
-            logger.debug("Websocket Failure - Trying To Reconnect: "+response.code()+" "+response.message(), t);
+            logger.warn("Websocket Failure - Trying To Reconnect: "+response.code()+" "+response.message(), t);
         }else{
-            logger.debug("Websocket Failure - Trying To Reconnect: No Response", t);
+            logger.warn("Websocket Failure - Trying To Reconnect: No Response", t);
         }
         try{
             TimeUnit.SECONDS.sleep(2);
