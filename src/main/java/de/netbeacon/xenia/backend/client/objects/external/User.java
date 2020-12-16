@@ -113,6 +113,6 @@ public class User extends APIDataObject {
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaUsername = meta.getString("username");
-        this.metaIconUrl = (meta.has("icon")) ? meta.getString("icon") : null;
+        this.metaIconUrl = meta.get("icon") != JSONObject.NULL ? meta.getString("icon") : null;
     }
 }
