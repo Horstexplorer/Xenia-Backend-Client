@@ -32,6 +32,7 @@ public class User extends APIDataObject {
     private String preferredLanguage;
     // meta data - initialize with values
     private String metaUsername = "unknown_username";
+    private String metaIconUrl = null;
 
     public User(BackendProcessor backendProcessor, long userId) {
         super(backendProcessor);
@@ -55,12 +56,13 @@ public class User extends APIDataObject {
         return preferredLanguage;
     }
 
-    public void lSetMetaData(String username){
+    public void lSetMetaData(String username, String iconUrl){
         this.metaUsername = username;
+        this.metaIconUrl = iconUrl;
     }
 
-    public void setMetaData(String username){
-        lSetMetaData(username);
+    public void setMetaData(String username, String iconUrl){
+        lSetMetaData(username, iconUrl);
         update();
     }
 
@@ -68,8 +70,12 @@ public class User extends APIDataObject {
         return metaUsername;
     }
 
+    public String getMetaIconUrl(){
+        return metaIconUrl;
+    }
+
     public void setInternalRole(String internalRole){
-        lSetMetaData(internalRole);
+        lSetInternalRole(internalRole);
         update();
     }
 
@@ -95,6 +101,7 @@ public class User extends APIDataObject {
                 .put("preferredLanguage", preferredLanguage)
                 .put("meta", new JSONObject()
                         .put("username", metaUsername)
+                        .put("icon", (metaIconUrl != null)? metaIconUrl : JSONObject.NULL)
                 );
     }
 
@@ -106,5 +113,6 @@ public class User extends APIDataObject {
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaUsername = meta.getString("username");
+        this.metaIconUrl = (meta.has("icon")) ? meta.getString("icon") : null;
     }
 }
