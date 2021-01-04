@@ -54,7 +54,7 @@ public class IdBasedLockHolder<T> {
             }
             return lockMap.get(t);
         }finally {
-            globalLock.readLock().lock();
+            globalLock.readLock().unlock();
         }
     }
 
