@@ -26,6 +26,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.PrimaryWebsocketListener;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.SecondaryWebsocketListener;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.mindrot.jbcrypt.BCrypt;
@@ -41,6 +42,7 @@ public class XeniaBackendClient implements IShutdown {
     private final OkHttpClient okHttpClient;
     private final BackendProcessor backendProcessor;
     private final PrimaryWebsocketListener primaryWebSocketListener;
+    private final SecondaryWebsocketListener secondaryWebsocketListener;
 
     private final UserCache userCache;
     private final GuildCache guildCache;
@@ -69,6 +71,8 @@ public class XeniaBackendClient implements IShutdown {
         // activate websocket
         primaryWebSocketListener = new PrimaryWebsocketListener(this);
         primaryWebSocketListener.start();
+        secondaryWebsocketListener = new SecondaryWebsocketListener(this);
+        secondaryWebsocketListener.start();
         // create main caches
         this.userCache = new UserCache(backendProcessor);
         this.guildCache = new GuildCache(backendProcessor);
@@ -90,7 +94,7 @@ public class XeniaBackendClient implements IShutdown {
     public SetupData getSetupData() {
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
-        // check if the setup data matches the gived key
+        // check if the setup data matches the given key
         if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
             throw new BackendException(-1, "Invalid Message Crypt Hash Specified");
         }
@@ -113,6 +117,14 @@ public class XeniaBackendClient implements IShutdown {
 
     public LicenseCache getLicenseCache() {
         return licenseCache;
+    }
+
+    public PrimaryWebsocketListener getPrimaryWebSocketListener() {
+        return primaryWebSocketListener;
+    }
+
+    public SecondaryWebsocketListener getSecondaryWebsocketListener() {
+        return secondaryWebsocketListener;
     }
 
     @Override
