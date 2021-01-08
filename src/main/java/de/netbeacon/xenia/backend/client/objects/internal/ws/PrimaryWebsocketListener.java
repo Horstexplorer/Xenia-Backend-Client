@@ -285,9 +285,4 @@ public class PrimaryWebsocketListener extends WebsocketListener {
             logger.warn("Error Processing Message, Cache Might Be Inconsistent: "+message.toString());
         }
     }
-
-    @Override
-    public void onShutdown() throws Exception {
-        stop();
-    }
 }
