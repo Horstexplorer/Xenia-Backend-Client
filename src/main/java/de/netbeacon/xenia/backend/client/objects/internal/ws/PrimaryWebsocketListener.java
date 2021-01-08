@@ -16,13 +16,9 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws;
 
-import de.netbeacon.utils.executor.ScalingExecutor;
-import de.netbeacon.utils.shutdownhook.IShutdown;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.external.Guild;
-import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
-import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okio.ByteString;
@@ -32,47 +28,14 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WebSocketListener extends okhttp3.WebSocketListener implements IShutdown {
+public class PrimaryWebsocketListener extends WebsocketListener {
 
-    private final Logger logger = LoggerFactory.getLogger(WebSocketListener.class);
-    private final XeniaBackendClient xeniaBackendClient;
-    private ScalingExecutor scalingExecutor;
-    private WebSocket webSocket;
-    private AtomicBoolean shutdown = new AtomicBoolean(true);
+    private final Logger logger = LoggerFactory.getLogger(PrimaryWebsocketListener.class);
 
-    public WebSocketListener(XeniaBackendClient xeniaBackendClient){
-        this.xeniaBackendClient = xeniaBackendClient;
-    }
-
-    public void start(){
-        if(scalingExecutor != null){
-            scalingExecutor.shutdown();
-        }
-        if(webSocket != null){
-            webSocket.close(1000, "Reconnecting Soon");
-        }
-        scalingExecutor = new ScalingExecutor(2, 14, 12000, 30, TimeUnit.SECONDS);
-        BackendSettings backendSettings = xeniaBackendClient.getBackendProcessor().getBackendSettings();
-        String host = backendSettings.getHost();
-        int port = backendSettings.getPort();
-        String token = backendSettings.getToken();
-        // build request
-        Request request = new Request.Builder().url("wss://"+host+":"+port+"/ws?token="+URLEncoder.encode(token, StandardCharsets.UTF_8)).build();
-        webSocket = xeniaBackendClient.getOkHttpClient().newWebSocket(request, this);
-        shutdown.set(false);
-    }
-
-    public void stop(){
-        shutdown.set(true);
-        scalingExecutor.shutdown();
-        scalingExecutor = null;
-        webSocket.close(1000, "Closed Connection");
-        webSocket = null;
+    public PrimaryWebsocketListener(XeniaBackendClient xeniaBackendClient){
+        super(xeniaBackendClient, "ws");
     }
 
     @Override
