@@ -18,8 +18,6 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor;
 
 import org.json.JSONObject;
 
-import java.security.SecureRandom;
-
 public class WSResponse {
 
     private final String requestId;
@@ -28,9 +26,7 @@ public class WSResponse {
     private final String action;
     private JSONObject payload;
 
-    private IO way;
-
-    private static final SecureRandom secureRandom = new SecureRandom();
+    private final IO way;
 
     public enum IO {
         IN,
@@ -93,7 +89,7 @@ public class WSResponse {
 
     public static class Builder {
 
-        private JSONObject jsonObject;
+        private JSONObject jsonObject = new JSONObject();
 
         public Builder requestId(String id){
             jsonObject.put("requestId", id);

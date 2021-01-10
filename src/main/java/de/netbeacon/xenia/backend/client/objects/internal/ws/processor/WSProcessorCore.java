@@ -56,7 +56,7 @@ public class WSProcessorCore implements IShutdown {
                     }catch (InterruptedException e){
                         throw e;
                     }catch (Exception e){
-                        logger.warn("Processing Incoming Request Threw An Exception");
+                        logger.warn("Processing Incoming Request Threw An Exception", e);
                     }
                 }
             }catch (Exception e){
