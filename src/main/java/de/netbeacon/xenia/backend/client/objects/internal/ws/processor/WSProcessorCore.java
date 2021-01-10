@@ -144,7 +144,7 @@ public class WSProcessorCore implements IShutdown {
                 incomingRequestQueue.put( new WSRequest(message, WSRequest.IO.IN, null, -1));
             }
         }catch (Exception e){
-            logger.error("Something Went Wrong Handling An Incoming Message");
+            logger.error("Something Went Wrong Handling An Incoming Message: "+message.toString(), e);
         }
     }
 
