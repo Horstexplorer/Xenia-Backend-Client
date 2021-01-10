@@ -17,6 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.internal.ws;
 
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessorCore;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okio.ByteString;
@@ -30,10 +31,13 @@ import java.util.concurrent.TimeUnit;
 
 public class SecondaryWebsocketListener extends WebsocketListener{
 
+    private final WSProcessorCore wsProcessorCore;
     private final Logger logger = LoggerFactory.getLogger(SecondaryWebsocketListener.class);
 
-    public SecondaryWebsocketListener(XeniaBackendClient xeniaBackendClient) {
+    public SecondaryWebsocketListener(XeniaBackendClient xeniaBackendClient, WSProcessorCore wsProcessorCore) {
         super(xeniaBackendClient, "ws/secondary");
+        this.wsProcessorCore = wsProcessorCore;
+        this.wsProcessorCore.setWSL(this);
     }
 
     @Override
@@ -43,12 +47,12 @@ public class SecondaryWebsocketListener extends WebsocketListener{
 
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-        handle(new JSONObject(text));
+        wsProcessorCore.handle(new JSONObject(text));
     }
 
     @Override
     public void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes) {
-        handle(new JSONObject(bytes.toString()));
+        wsProcessorCore.handle(new JSONObject(bytes.toString()));
     }
 
     @Override
@@ -85,9 +89,13 @@ public class SecondaryWebsocketListener extends WebsocketListener{
         }catch (Exception ignore){}
     }
 
-    private long lastHeartBeat = System.currentTimeMillis();
+    public WSProcessorCore getWsProcessorCore() {
+        return wsProcessorCore;
+    }
 
-    public void handle(JSONObject message){
-
+    @Override
+    public void onShutdown() throws Exception {
+        super.onShutdown();
+        wsProcessorCore.onShutdown();
     }
 }
