@@ -49,6 +49,8 @@ public class XeniaBackendClient implements IShutdown {
     private final GuildCache guildCache;
     private final LicenseCache licenseCache;
 
+    private SetupData setupDataCache = null;
+
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     public XeniaBackendClient(BackendSettings backendSettings){
@@ -95,6 +97,9 @@ public class XeniaBackendClient implements IShutdown {
     }
 
     public SetupData getSetupData() {
+        if(setupDataCache != null){
+            return setupDataCache;
+        }
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
         // check if the setup data matches the given key
