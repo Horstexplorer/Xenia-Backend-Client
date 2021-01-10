@@ -71,6 +71,10 @@ public abstract class WebsocketListener extends okhttp3.WebSocketListener implem
         webSocket = null;
     }
 
+    public void send(String message){
+        webSocket.send(message);
+    }
+
     @Override
     public abstract void onOpen(@NotNull WebSocket webSocket, @NotNull Response response);
 
