@@ -84,6 +84,7 @@ public class WSResponse {
     public JSONObject asJSON(){
         return new JSONObject()
                 .put("requestId", requestId)
+                .put("requestMode", "RESPONSE")
                 .put("recipient", recipient)
                 .put("sender", sender)
                 .put("action", action)
