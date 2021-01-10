@@ -89,7 +89,7 @@ public class WSResponse {
 
     public static class Builder {
 
-        private JSONObject jsonObject = new JSONObject();
+        private final JSONObject jsonObject = new JSONObject();
 
         public Builder requestId(String id){
             jsonObject.put("requestId", id);
