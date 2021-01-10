@@ -27,6 +27,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.PrimaryWebsocketListener;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.SecondaryWebsocketListener;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessorCore;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.mindrot.jbcrypt.BCrypt;
@@ -71,7 +72,9 @@ public class XeniaBackendClient implements IShutdown {
         // activate websocket
         primaryWebSocketListener = new PrimaryWebsocketListener(this);
         primaryWebSocketListener.start();
-        secondaryWebsocketListener = new SecondaryWebsocketListener(this);
+
+        WSProcessorCore wsProcessorCore = new WSProcessorCore();
+        secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
         secondaryWebsocketListener.start();
         // create main caches
         this.userCache = new UserCache(backendProcessor);
