@@ -30,6 +30,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.ws.SecondaryWebsocketL
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessorCore;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.HeartbeatProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.IdentifyProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.StatisticsProcessor;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.mindrot.jbcrypt.BCrypt;
@@ -80,7 +81,8 @@ public class XeniaBackendClient implements IShutdown {
         WSProcessorCore wsProcessorCore = new WSProcessorCore()
                 .registerProcessors(
                         new HeartbeatProcessor(),
-                        new IdentifyProcessor(this)
+                        new IdentifyProcessor(this),
+                        new StatisticsProcessor(this)
                 );
         secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
         secondaryWebsocketListener.start();
@@ -108,6 +110,7 @@ public class XeniaBackendClient implements IShutdown {
         }
         SetupData setupData = new SetupData(backendProcessor);
         setupData.get();
+        this.setupDataCache = setupData;
         // check if the setup data matches the given key
         if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
             throw new BackendException(-1, "Invalid Message Crypt Hash Specified");
