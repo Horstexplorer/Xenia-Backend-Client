@@ -29,19 +29,17 @@ public class CacheException extends RuntimeException {
      */
 
     private final int type;
-    private final String message;
-    private Exception exception;
+    private final Exception exception;
 
     public CacheException(int type, String message){
         super(message);
-        this.message = message;
         this.type = type;
+        this.exception = null;
     }
 
     public CacheException(int type, String message, Exception exception){
         super(message, exception);
         this.type = type;
-        this.message = message;
         this.exception = exception;
     }
 
