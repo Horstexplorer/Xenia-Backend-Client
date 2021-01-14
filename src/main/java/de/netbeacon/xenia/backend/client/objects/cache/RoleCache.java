@@ -65,9 +65,11 @@ public class RoleCache extends Cache<Long, Role> {
         }
     }
 
-    public List<Role> retrieveAllFromBackend() throws CacheException {
+    public List<Role> retrieveAllFromBackend(boolean cacheInsert) throws CacheException {
         try{
-            idBasedLockHolder.getLock().writeLock().lock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().lock();
+            }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "roles"),new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
             if(backendResult.getStatusCode() != 200){
@@ -80,7 +82,9 @@ public class RoleCache extends Cache<Long, Role> {
                 JSONObject jsonObject = roles.getJSONObject(i);
                 Role role = new Role(getBackendProcessor(), guildId, jsonObject.getLong("roleId"));
                 role.fromJSON(jsonObject); // manually insert the data as we already received it
-                addToCache(role.getId(), role); // this will overwrite already existing ones
+                if(cacheInsert){
+                    addToCache(role.getId(), role); // this will overwrite already existing ones
+                }
                 rolesList.add(role);
             }
             return rolesList;
@@ -89,7 +93,9 @@ public class RoleCache extends Cache<Long, Role> {
         }catch (Exception e){
             throw new CacheException(-11, "Failed To Retrieve All Roles", e);
         }finally {
-            idBasedLockHolder.getLock().writeLock().unlock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().unlock();
+            }
         }
     }
 

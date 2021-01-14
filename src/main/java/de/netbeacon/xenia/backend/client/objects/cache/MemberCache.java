@@ -73,9 +73,11 @@ public class MemberCache extends Cache<Long, Member> {
         }
     }
 
-    public List<Member> retrieveAllFromBackend() throws CacheException {
+    public List<Member> retrieveAllFromBackend(boolean cacheInsert) throws CacheException {
         try{
-            idBasedLockHolder.getLock().writeLock().lock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().lock();
+            }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "members"),new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
             if(backendResult.getStatusCode() != 200){
@@ -88,7 +90,9 @@ public class MemberCache extends Cache<Long, Member> {
                 JSONObject jsonObject = members.getJSONObject(i);
                 Member member = new Member(getBackendProcessor(), guildId, jsonObject.getLong("userId"));
                 member.fromJSON(jsonObject); // manually insert the data
-                addToCache(member.getId(), member); // this will overwrite already existing ones
+                if(cacheInsert){
+                    addToCache(member.getId(), member); // this will overwrite already existing ones
+                }
                 memberList.add(member);
             }
             return memberList;
@@ -97,7 +101,9 @@ public class MemberCache extends Cache<Long, Member> {
         }catch (Exception e){
             throw new CacheException(-11, "Failed To Retrieve All Members", e);
         }finally {
-            idBasedLockHolder.getLock().writeLock().unlock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().unlock();
+            }
         }
     }
 

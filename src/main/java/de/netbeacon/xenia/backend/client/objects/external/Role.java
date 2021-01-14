@@ -156,7 +156,8 @@ public class Role extends APIDataObject {
             UNUSED_PERMISSION_BIT_11(11),
             UNUSED_PERMISSION_BIT_10(10),
             UNUSED_PERMISSION_BIT_9(9),
-            UNUSED_PERMISSION_BIT_8(8),
+            // HASTEBIN
+            HASTEBIN_UPLOAD_USE(8),
             // MESSAGE_RESTORE
             MESSAGE_RESTORE_OVERRIDE(7),
             MESSAGE_RESTORE_USE(6),

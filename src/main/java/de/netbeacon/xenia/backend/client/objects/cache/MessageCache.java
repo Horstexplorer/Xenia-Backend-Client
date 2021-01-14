@@ -95,12 +95,16 @@ public class MessageCache extends Cache<Long, Message> {
         }
     }
 
-    public List<Message> retrieveAllFromBackend() throws CacheException {
+    public List<Message> retrieveAllFromBackend(boolean enforceLimit, boolean cacheInsert) throws CacheException {
         try{
-            idBasedLockHolder.getLock().writeLock().lock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().lock();
+            }
             int limit = getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C();
             HashMap<String, String> hashMap = new HashMap<>();
-            hashMap.put("limit", String.valueOf(limit));
+            if(enforceLimit){
+                hashMap.put("limit", String.valueOf(limit));
+            }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelid), "messages"), hashMap, null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
             if(backendResult.getStatusCode() != 200){
@@ -113,7 +117,9 @@ public class MessageCache extends Cache<Long, Message> {
                 JSONObject jsonObject = messages.getJSONObject(i);
                 Message message = new Message(getBackendProcessor(), guildId, channelid, jsonObject.getLong("messageId"));
                 message.fromJSON(jsonObject);
-                addToCache(message.getId(), message);
+                if(cacheInsert){
+                    addToCache(message.getId(), message);
+                }
                 messageList.add(message);
             }
             return messageList;
@@ -122,7 +128,9 @@ public class MessageCache extends Cache<Long, Message> {
         }catch (Exception e){
             throw new CacheException(-11, "Failed To Retrieve Messages", e);
         }finally {
-            idBasedLockHolder.getLock().writeLock().unlock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().unlock();
+            }
         }
     }
 

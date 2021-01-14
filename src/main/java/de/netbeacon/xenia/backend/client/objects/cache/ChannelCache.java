@@ -73,9 +73,11 @@ public class ChannelCache extends Cache<Long, Channel> {
         }
     }
 
-    public List<Channel> retrieveAllFromBackend() throws CacheException {
+    public List<Channel> retrieveAllFromBackend(boolean cacheInsert) throws CacheException {
         try{
-            idBasedLockHolder.getLock().writeLock().lock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().lock();
+            }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels"),new HashMap<>(), null);
             BackendResult backendResult = getBackendProcessor().process(backendRequest);
             if(backendResult.getStatusCode() != 200){
@@ -88,7 +90,9 @@ public class ChannelCache extends Cache<Long, Channel> {
                 JSONObject jsonObject = channels.getJSONObject(i);
                 Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channelId"));
                 channel.fromJSON(jsonObject); // manually insert the data
-                addToCache(channel.getId(), channel); // this will overwrite already existing ones
+                if(cacheInsert){
+                    addToCache(channel.getId(), channel); // this will overwrite already existing ones
+                }
                 channelList.add(channel);
             }
             return channelList;
@@ -97,7 +101,9 @@ public class ChannelCache extends Cache<Long, Channel> {
         }catch (Exception e){
             throw new CacheException(-11, "Failed To Retrieve All Channels", e);
         }finally {
-            idBasedLockHolder.getLock().writeLock().unlock();
+            if(cacheInsert){
+                idBasedLockHolder.getLock().writeLock().unlock();
+            }
         }
     }
 
