@@ -36,6 +36,7 @@ public class Guild extends APIDataObject {
     private long creationTimestamp;
     private String preferredLanguage;
     private boolean useVPerms;
+    private String prefix;
     // meta data - initialize with values
     private String metaGuildName = "unknown_name";
     private String metaIconUrl = null;
@@ -89,6 +90,18 @@ public class Guild extends APIDataObject {
         this.useVPerms = value;
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix){
+        lSetPrefix(prefix);
+        update();
+    }
+
+    public void lSetPrefix(String prefix){
+        this.prefix = prefix;
+    }
 
     public String getMetaGuildName(){
         return metaGuildName;
@@ -145,6 +158,7 @@ public class Guild extends APIDataObject {
                 .put("guildId", guildId)
                 .put("creationTimestamp", creationTimestamp)
                 .put("preferredLanguage", preferredLanguage)
+                .put("prefix", prefix)
                 .put("useVPerms", useVPerms)
                 .put("meta", new JSONObject()
                         .put("name", metaGuildName)
@@ -157,7 +171,9 @@ public class Guild extends APIDataObject {
         this.guildId = jsonObject.getLong("guildId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
+        this.prefix = jsonObject.getString("prefix");
         this.useVPerms = jsonObject.getBoolean("useVPerms");
+
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaGuildName = meta.getString("name");
         this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
