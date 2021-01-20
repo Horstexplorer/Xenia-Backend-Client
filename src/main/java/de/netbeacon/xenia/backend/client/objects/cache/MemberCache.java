@@ -46,6 +46,10 @@ public class MemberCache extends Cache<Long, Member> {
     }
 
     public Member get(long userId) throws CacheException{
+        return get(userId, true);
+    }
+
+    public Member get(long userId, boolean init) throws CacheException{
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);
@@ -56,7 +60,7 @@ public class MemberCache extends Cache<Long, Member> {
             try{
                 member.get();
             }catch (BackendException e){
-                if(e.getId() == 404){
+                if(e.getId() == 404 && init){
                     member.create();
                 }else{
                     throw e;

@@ -34,6 +34,10 @@ public class GuildCache extends Cache<Long, Guild> {
     }
 
     public Guild get(long guildId) throws CacheException {
+        return get(guildId, true);
+    }
+
+    public Guild get(long guildId, boolean init) throws CacheException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
@@ -44,7 +48,7 @@ public class GuildCache extends Cache<Long, Guild> {
             try {
                 guild.get();
             }catch (BackendException e){
-                if(e.getId() == 404){
+                if(e.getId() == 404 && init){
                     guild.create();
                 }else{
                     throw e;

@@ -46,6 +46,10 @@ public class ChannelCache extends Cache<Long, Channel> {
     }
 
     public Channel get(long channelId) throws CacheException {
+        return get(channelId, true);
+    }
+
+    public Channel get(long channelId, boolean init) throws CacheException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
@@ -56,7 +60,7 @@ public class ChannelCache extends Cache<Long, Channel> {
             try{
                 channel.get();
             }catch (BackendException e){
-                if(e.getId() == 404){
+                if(e.getId() == 404 && init){
                     channel.create();
                 }else{
                     throw e;

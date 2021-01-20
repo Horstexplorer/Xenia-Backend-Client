@@ -34,6 +34,10 @@ public class UserCache extends Cache<Long, User> {
     }
 
     public User get(long userId) throws CacheException {
+        return get(userId, true);
+    }
+
+    public User get(long userId, boolean init) throws CacheException {
        try{
            idBasedLockHolder.getLock(userId).lock();
            User user = getFromCache(userId);
@@ -44,7 +48,7 @@ public class UserCache extends Cache<Long, User> {
            try{
                user.get();
            }catch (BackendException e){
-               if(e.getId() == 404){
+               if(e.getId() == 404 && init){
                    user.create();
                }else{
                    throw e;
