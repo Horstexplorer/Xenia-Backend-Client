@@ -36,6 +36,9 @@ public class Channel extends APIDataObject {
     private boolean tmpLoggingActive;
     private long tmpLoggingChannelId;
 
+    private String metaChannelName;
+    private String metaChannelTopic;
+
     private final MessageCache messageCache;
 
     public Channel(BackendProcessor backendProcessor, long guildId, long channelId) {
@@ -131,6 +134,25 @@ public class Channel extends APIDataObject {
         return messageCache;
     }
 
+    public String getMetaChannelName() {
+        return metaChannelName;
+    }
+
+    public String getMetaChannelTopic(){
+        return metaChannelTopic;
+    }
+
+    public void setMetaData(String channelName, String channelTopic){
+        lSetMetaData(channelName, channelTopic);
+        update();
+    }
+
+    public void lSetMetaData(String channelName, String channelTopic){
+        this.metaChannelName = channelName;
+        this.metaChannelTopic = channelTopic;
+    }
+
+
     // SECONDARY
 
     public Guild getGuild(){
@@ -147,7 +169,11 @@ public class Channel extends APIDataObject {
                 .put("channelMode", channelMode)
                 .put("channelType", channelType)
                 .put("tmpLoggingActive", tmpLoggingActive)
-                .put("tmpLoggingChannelId", tmpLoggingChannelId);
+                .put("tmpLoggingChannelId", tmpLoggingChannelId)
+                .put("meta", new JSONObject()
+                        .put("name", metaChannelName)
+                        .put("topic", metaChannelTopic)
+                );
     }
 
     @Override
@@ -160,6 +186,9 @@ public class Channel extends APIDataObject {
         this.channelType = jsonObject.getString("channelType");
         this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
         this.tmpLoggingChannelId = jsonObject.getLong("tmpLoggingChannelId");
+        JSONObject meta = jsonObject.getJSONObject("meta");
+        this.metaChannelName = meta.getString("name");
+        this.metaChannelTopic = meta.getString("topic");
     }
 
     public void clear(){
