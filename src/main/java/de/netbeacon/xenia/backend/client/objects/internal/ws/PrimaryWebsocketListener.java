@@ -288,14 +288,14 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
                     switch (action.toLowerCase()){
                         case "create":
-                            scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("notificationId")));
+                            scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")));
                             break;
                         case "update":
-                            g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("notificationId"));
-                            scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("notificationId")));
+                            g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("twitchNotificationId"));
+                            scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")));
                             break;
                         case "delete":
-                            g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("notificationId"));
+                            g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("twitchNotificationId"));
                             break;
                     }
                 }
