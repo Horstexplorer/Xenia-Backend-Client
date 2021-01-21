@@ -100,6 +100,10 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TWITCHNOTIFICATIONS_C()){
                 throw new RuntimeException("Cache Is Full");
             }
+            // check if we already know the name
+            if(getDataMap().values().stream().anyMatch(tn -> tn.getTwitchChannelName().equalsIgnoreCase(twitchName))){
+                throw new RuntimeException("Already Exists");
+            }
             TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, -1).lSetInitialData(twitchName, channelId);
             if(customMessage != null){
                 tnotific.lSetNotificationMessage(customMessage);
