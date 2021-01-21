@@ -149,7 +149,7 @@ public class Channel extends APIDataObject {
 
     public void lSetMetaData(String channelName, String channelTopic){
         this.metaChannelName = channelName;
-        this.metaChannelTopic = channelTopic;
+        this.metaChannelTopic = channelTopic != null ? channelTopic : "Unknown topic";
     }
 
 
