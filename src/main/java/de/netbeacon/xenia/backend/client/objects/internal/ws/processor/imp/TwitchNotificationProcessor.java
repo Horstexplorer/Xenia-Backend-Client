@@ -60,7 +60,7 @@ public class TwitchNotificationProcessor extends WSProcessor {
             // get the channel
             TextChannel textChannel = guild.getTextChannelById(twitchNotification.getChannelId());
             // check permissions
-            if(!guild.getSelfMember().hasAccess(textChannel) || textChannel.canTalk(guild.getSelfMember())){
+            if(textChannel == null || !guild.getSelfMember().hasAccess(textChannel) || !textChannel.canTalk(guild.getSelfMember())){
                 // delete
                 notificationCache.delete(twitchNotification.getId());
                 return null;

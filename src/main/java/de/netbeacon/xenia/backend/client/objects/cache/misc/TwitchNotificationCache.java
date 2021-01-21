@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
@@ -138,18 +139,12 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
         try{
             idBasedLockHolder.getLock(twitchNotificationId).lock();
             TwitchNotification tnotific = getFromCache(twitchNotificationId);
-            if(tnotific == null){
-                try{
-                    tnotific = new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId);
-                    tnotific.get();
-                }catch (Exception e){
-                    throw new CacheException(-21, "TwitchNotification Does Not Exist");
-                }
-            }
+            Objects.requireNonNullElseGet(tnotific, () -> new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId)).delete();
+            removeFromCache(tnotific.getId());
         }catch (CacheException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete A TwitchNotification", e);
+            throw new CacheException(-3, "Failed To Delete A Twitch Notification", e);
         }finally {
             idBasedLockHolder.getLock(twitchNotificationId).unlock();
         }
