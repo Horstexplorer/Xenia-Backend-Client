@@ -22,6 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.cache.MemberCache;
 import de.netbeacon.xenia.backend.client.objects.cache.RoleCache;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.NotificationCache;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.TagCache;
+import de.netbeacon.xenia.backend.client.objects.cache.misc.TwitchNotificationCache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
@@ -52,7 +53,7 @@ public class Guild extends APIDataObject {
         this.channelCache = new ChannelCache(backendProcessor, guildId);
         this.memberCache = new MemberCache(backendProcessor, guildId);
         this.roleCache = new RoleCache(backendProcessor, guildId);
-        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId));
+        this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId), new TwitchNotificationCache(backendProcessor, guildId));
         setBackendPath("data", "guilds", (Function<Void, Long>) o -> getId());
     }
 
@@ -190,10 +191,12 @@ public class Guild extends APIDataObject {
 
         private final TagCache tagCache;
         private final NotificationCache notificationCache;
+        private final TwitchNotificationCache twitchNotificationCache;
 
-        public MiscCaches(TagCache tagCache, NotificationCache notificationCache){
+        public MiscCaches(TagCache tagCache, NotificationCache notificationCache, TwitchNotificationCache twitchNotificationCache){
             this.tagCache = tagCache;
             this.notificationCache = notificationCache;
+            this.twitchNotificationCache = twitchNotificationCache;
         }
 
         public TagCache getTagCache() {
@@ -204,9 +207,14 @@ public class Guild extends APIDataObject {
             return notificationCache;
         }
 
+        public TwitchNotificationCache getTwitchNotificationCache() {
+            return twitchNotificationCache;
+        }
+
         public void clear(){
             tagCache.clear();
             notificationCache.clear();
+            twitchNotificationCache.clear();
         }
     }
 }

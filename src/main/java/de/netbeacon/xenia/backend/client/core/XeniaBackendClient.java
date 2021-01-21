@@ -31,6 +31,8 @@ import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcess
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.HeartbeatProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.IdentifyProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.StatisticsProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.TwitchNotificationProcessor;
+import net.dv8tion.jda.api.sharding.ShardManager;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import org.mindrot.jbcrypt.BCrypt;
@@ -38,6 +40,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class XeniaBackendClient implements IShutdown {
 
@@ -54,10 +57,13 @@ public class XeniaBackendClient implements IShutdown {
 
     private SetupData setupDataCache = null;
 
+    private Supplier<ShardManager> shardManagerSupplier;
+
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-    public XeniaBackendClient(BackendSettings backendSettings){
+    public XeniaBackendClient(BackendSettings backendSettings, Supplier<ShardManager> shardManagerSupplier){
         this.backendSettings = backendSettings;
+        this.shardManagerSupplier = shardManagerSupplier;
         // create okhttp client
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(128);
@@ -82,7 +88,8 @@ public class XeniaBackendClient implements IShutdown {
                 .registerProcessors(
                         new HeartbeatProcessor(),
                         new IdentifyProcessor(this),
-                        new StatisticsProcessor(this)
+                        new StatisticsProcessor(this),
+                        new TwitchNotificationProcessor(this, shardManagerSupplier)
                 );
         secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
         secondaryWebsocketListener.start();
