@@ -76,6 +76,7 @@ public class TwitchNotificationProcessor extends WSProcessor {
             MessageEmbed messageEmbed = new EmbedBuilder()
                     .setTitle("Stream Notification: "+twitchNotification.getTwitchChannelName().substring(0,1).toUpperCase()+twitchNotification.getTwitchChannelName().substring(1), url)
                     .setDescription(customMessage)
+                    .setThumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_"+twitchNotification.getTwitchChannelName()+"-320x180.jpg")
                     .build();
             // send
             textChannel.sendMessage(messageEmbed).queue();
