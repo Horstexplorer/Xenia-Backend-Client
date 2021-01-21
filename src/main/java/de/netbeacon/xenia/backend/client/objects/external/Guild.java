@@ -28,6 +28,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class Guild extends APIDataObject {
@@ -150,8 +151,13 @@ public class Guild extends APIDataObject {
         getMiscCaches().getTwitchNotificationCache().retrieveAllFromBackend();
     }
 
-    public void initAsync(){
-        getBackendProcessor().getScalingExecutor().execute(this::initSync);
+    public void initAsync(Consumer<Guild> then){
+        getBackendProcessor().getScalingExecutor().execute(()->{
+            this.initSync();
+            if(then != null){
+                then.accept(this);
+            }
+        });
     }
 
     @Override
