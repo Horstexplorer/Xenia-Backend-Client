@@ -147,6 +147,7 @@ public class Guild extends APIDataObject {
 
         getMiscCaches().getTagCache().retrieveAllFromBackend();
         getMiscCaches().getNotificationCache().retrieveAllFromBackend();
+        getMiscCaches().getTwitchNotificationCache().retrieveAllFromBackend();
     }
 
     public void initAsync(){
