@@ -79,11 +79,11 @@ public class Tag extends APIDataObject {
     // SECONDARY
 
     public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
     }
 
     public Member getMember(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getMemberCache().get(userId);
+        return getGuild().getMemberCache().get(userId, false);
     }
 
     @Override

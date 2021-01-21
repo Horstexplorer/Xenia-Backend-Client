@@ -88,11 +88,11 @@ public class TwitchNotification extends APIDataObject {
     // SECONDARY
 
     public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
     }
 
     public Channel getChannel(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId).getChannelCache().get(channelId);
+        return getGuild().getChannelCache().get(channelId, false);
     }
 
 

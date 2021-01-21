@@ -94,15 +94,15 @@ public class Member extends APIDataObject {
     // SECONDARY
 
     public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
     }
 
     public User getUser(){
-        return getBackendProcessor().getBackendClient().getUserCache().get(userId);
+        return getBackendProcessor().getBackendClient().getUserCache().get(userId, false);
     }
 
     public Set<Role> getRoles(){
-        Guild g = getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+        Guild g = getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
         Set<Role> roles = new HashSet<>();
         for(Long l : new HashSet<>(roleIDs)){
             try{
