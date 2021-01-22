@@ -216,8 +216,8 @@ public class BackendProcessor implements IShutdown {
         private long lastUpdate;
         private final Lock lock = new ReentrantLock();
 
-        private final static long forceUpdateDelay = 2500;
-        private final static int maxRetries = 4;
+        private static final long forceUpdateDelay = 2500;
+        private static final int maxRetries = 4;
 
         private final Logger logger = LoggerFactory.getLogger(BackendProcessor.Interceptor.class);
 
