@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.external;
 
+import de.netbeacon.utils.bitflags.IntegerBitFlags;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.cache.MessageCache;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
@@ -30,9 +31,9 @@ public class Channel extends APIDataObject {
     private long channelId;
 
     private long creationTimestamp;
-    private boolean accessRestriction;
-    private String channelMode;
-    private String channelType;
+    private AccessMode accessMode;
+    private ChannelFlags channelFlags;
+    private ChannelSettings channelSettings;
     private boolean tmpLoggingActive;
     private long tmpLoggingChannelId;
 
@@ -65,16 +66,16 @@ public class Channel extends APIDataObject {
         return creationTimestamp;
     }
 
-    public boolean isAccessRestricted(){
-        return accessRestriction;
+    public AccessMode getAccessMode() {
+        return accessMode;
     }
 
-    public String getChannelMode(){
-        return channelMode;
+    public ChannelFlags getChannelFlags() {
+        return channelFlags;
     }
 
-    public String getChannelType(){
-        return channelType;
+    public ChannelSettings getChannelSettings() {
+        return channelSettings;
     }
 
     public boolean tmpLoggingIsActive() {
@@ -85,31 +86,31 @@ public class Channel extends APIDataObject {
         return tmpLoggingChannelId;
     }
 
-    public void setAccessRestriction(boolean accessRestriction) {
-        lSetAccessRestriction(accessRestriction);
+    public void setAccessMode(AccessMode accessMode) {
+        lSetAccessMode(accessMode);
         update();
     }
 
-    public void lSetAccessRestriction(boolean accessRestriction) {
-        this.accessRestriction = accessRestriction;
+    public void lSetAccessMode(AccessMode accessMode) {
+        this.accessMode = accessMode;
     }
 
-    public void setChannelMode(String channelMode) {
-        lSetChannelMode(channelMode);
+    public void setChannelFlags(ChannelFlags channelFlags) {
+        lSetChannelFlags(channelFlags);
         update();
     }
 
-    public void lSetChannelMode(String channelMode) {
-        this.channelMode = channelMode;
+    public void lSetChannelFlags(ChannelFlags channelFlags) {
+        this.channelFlags = channelFlags;
     }
 
-    public void setChannelType(String channelType) {
-        lSetChannelType(channelType);
+    public void setChannelSettings(ChannelSettings channelSettings) {
+        lSetChannelSettings(channelSettings);
         update();
     }
 
-    public void lSetChannelType(String channelType) {
-        this.channelType = channelType;
+    public void lSetChannelSettings(ChannelSettings channelSettings) {
+        this.channelSettings = channelSettings;
     }
 
     public void setTmpLoggingActive(boolean tmpLoggingActive) {
@@ -152,7 +153,6 @@ public class Channel extends APIDataObject {
         this.metaChannelTopic = channelTopic != null ? channelTopic : "Unknown topic";
     }
 
-
     // SECONDARY
 
     public Guild getGuild(){
@@ -165,9 +165,9 @@ public class Channel extends APIDataObject {
                 .put("guildId", guildId)
                 .put("channelId", channelId)
                 .put("creationTimestamp", creationTimestamp)
-                .put("accessRestriction", accessRestriction)
-                .put("channelMode", channelMode)
-                .put("channelType", channelType)
+                .put("accessMode", accessMode.getValue())
+                .put("channelFlags", channelFlags.getValue())
+                .put("channelSettings", channelSettings.getValue())
                 .put("tmpLoggingActive", tmpLoggingActive)
                 .put("tmpLoggingChannelId", tmpLoggingChannelId)
                 .put("meta", new JSONObject()
@@ -181,9 +181,9 @@ public class Channel extends APIDataObject {
         this.guildId = jsonObject.getLong("guildId");
         this.channelId = jsonObject.getLong("channelId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        this.accessRestriction = jsonObject.getBoolean("accessRestriction");
-        this.channelMode = jsonObject.getString("channelMode");
-        this.channelType = jsonObject.getString("channelType");
+        this.accessMode = new AccessMode(jsonObject.getInt("accessMode"));
+        this.channelFlags = new ChannelFlags(jsonObject.getInt("channelFlags"));
+        this.channelSettings = new ChannelSettings(jsonObject.getInt("channelSettings"));
         this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
         this.tmpLoggingChannelId = jsonObject.getLong("tmpLoggingChannelId");
         JSONObject meta = jsonObject.getJSONObject("meta");
@@ -193,5 +193,77 @@ public class Channel extends APIDataObject {
 
     public void clear(){
         messageCache.clear();
+    }
+
+    public static class AccessMode extends IntegerBitFlags {
+
+        public AccessMode(int value) {
+            super(value);
+        }
+
+        public enum Mode implements IntBit{
+
+            DISABLED(2),
+            INACTIVE(1),
+            ACTIVE(0);
+
+            private final int pos;
+
+            private Mode(int pos){
+                this.pos = pos;
+            }
+
+            @Override
+            public int getPos() {
+                return pos;
+            }
+        }
+    }
+
+    public static class ChannelFlags extends IntegerBitFlags{
+
+        public ChannelFlags(int value) {
+            super(value);
+        }
+
+        public enum Flags implements IntBit{
+
+            NEWS(2),
+            NSFW(1);
+
+            private final int pos;
+
+            private Flags(int pos){
+                this.pos = pos;
+            }
+
+            @Override
+            public int getPos() {
+                return pos;
+            }
+        }
+    }
+
+    public static class ChannelSettings extends IntegerBitFlags{
+
+        public ChannelSettings(int value) {
+            super(value);
+        }
+
+        public enum Settings implements IntBit{
+
+            ;
+
+            private final int pos;
+
+            private Settings(int pos){
+                this.pos = pos;
+            }
+
+            @Override
+            public int getPos() {
+                return pos;
+            }
+        }
     }
 }
