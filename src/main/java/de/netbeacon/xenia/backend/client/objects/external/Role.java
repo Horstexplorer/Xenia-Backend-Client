@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.external;
 
+import de.netbeacon.utils.bitflags.LongBitFlags;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
@@ -57,7 +58,7 @@ public class Role extends APIDataObject {
     }
 
     public void lSetRoleName(String name){
-        this.roleName = roleName;
+        this.roleName = name;
     }
 
     public Permissions getPermissions() {
@@ -76,7 +77,7 @@ public class Role extends APIDataObject {
                 .put("guildId", guildId)
                 .put("roleId", roleId)
                 .put("roleName", roleName)
-                .put("rolePermissions", permissions.getPermVal());
+                .put("rolePermissions", permissions.getValue());
     }
 
     @Override
@@ -89,12 +90,11 @@ public class Role extends APIDataObject {
 
     private static final int LOCKED_PERMISSION_BIT_RANGE = 63;
 
-    public static class Permissions {
+    public static class Permissions extends LongBitFlags {
 
         private final Role role;
-        private long permVal;
 
-        public enum Bit{
+        public enum Bit implements LongBit{
 
             UNUSED_PERMISSION_BIT_63(63),
             // OWNER
@@ -178,56 +178,34 @@ public class Role extends APIDataObject {
                 this.pos = pos;
             }
 
+            @Override
             public int getPos() {
                 return pos;
             }
         }
 
         public Permissions(Role role, long permVal){
+            super(permVal);
             this.role = role;
-            this.permVal = permVal;
-        }
-
-        public long getPermVal(){
-            return permVal;
         }
 
         public synchronized void enable(Bit...bits){
-            lEnable(bits);
+            set(bits);
             role.update();
-        }
-
-        public synchronized void lEnable(Bit...bits){
-            for(Bit b : bits){
-                if(b.getPos() >= LOCKED_PERMISSION_BIT_RANGE){
-                    continue;
-                }
-                permVal |= 1 << b.getPos();
-            }
-
         }
 
         public synchronized void disable(Bit...bits){
-            lDisable(bits);
+            unset(bits);
             role.update();
         }
 
-        public synchronized void lDisable(Bit...bits){
-            for(Bit b : bits){
-                if(b.getPos() >= LOCKED_PERMISSION_BIT_RANGE){
-                    continue;
-                }
-                permVal &= ~(1 << b.getPos());
-            }
-        }
-
         public boolean hasPermission(Bit bit){
-            return ((permVal >> bit.getPos()) & 1) == 1;
+            return has(bit);
         }
 
         public boolean hasAllPermission(Bit...bits){
             for(Bit b : bits){
-                if(((permVal >> b.getPos()) & 1) == 0){
+                if(!has(b)){
                     return false;
                 }
             }
