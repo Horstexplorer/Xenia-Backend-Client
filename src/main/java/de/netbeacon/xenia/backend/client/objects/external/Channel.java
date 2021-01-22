@@ -47,6 +47,9 @@ public class Channel extends APIDataObject {
         this.guildId = guildId;
         this.channelId = channelId;
         this.messageCache = new MessageCache(backendProcessor, guildId, channelId);
+        this.accessMode = new AccessMode(1);
+        this.channelFlags = new ChannelFlags(0);
+        this.channelSettings = new ChannelSettings(0);
         setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "channels", (Function<Void, Long>) o -> getChannelId());
     }
 
