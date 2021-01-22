@@ -16,6 +16,9 @@
 
 package de.netbeacon.utils.bitflags;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class IntegerBitFlags {
 
     private int value;
@@ -24,7 +27,7 @@ public abstract class IntegerBitFlags {
         this.value = value;
     }
 
-    public interface IntBit{
+    public interface IntBit {
         int getPos();
     }
 
@@ -47,4 +50,6 @@ public abstract class IntegerBitFlags {
     public boolean has(IntBit bit){
         return ((value >> bit.getPos()) & 1) == 1;
     }
+
+    public <T extends IntBit> List<T> getBits(){ return new ArrayList<>(); }
 }

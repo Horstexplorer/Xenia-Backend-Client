@@ -16,6 +16,9 @@
 
 package de.netbeacon.utils.bitflags;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class LongBitFlags {
 
     private long value;
@@ -48,4 +51,5 @@ public abstract class LongBitFlags {
         return ((value >> bit.getPos()) & 1) == 1;
     }
 
+    public <T extends LongBit> List<T> getBits(){ return new ArrayList<>(); }
 }

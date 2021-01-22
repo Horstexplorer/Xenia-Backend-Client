@@ -23,7 +23,10 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Channel extends APIDataObject {
 
@@ -221,6 +224,11 @@ public class Channel extends APIDataObject {
                 return pos;
             }
         }
+
+        @Override
+        public <T extends IntBit> List<T> getBits() {
+            return (List<T>) Arrays.stream(Mode.values()).filter(this::has).collect(Collectors.toList());
+        }
     }
 
     public static class ChannelFlags extends IntegerBitFlags{
@@ -245,6 +253,11 @@ public class Channel extends APIDataObject {
                 return pos;
             }
         }
+
+        @Override
+        public <T extends IntBit> List<T> getBits() {
+            return (List<T>) Arrays.stream(AccessMode.Mode.values()).filter(this::has).collect(Collectors.toList());
+        }
     }
 
     public static class ChannelSettings extends IntegerBitFlags{
@@ -267,6 +280,11 @@ public class Channel extends APIDataObject {
             public int getPos() {
                 return pos;
             }
+        }
+
+        @Override
+        public <T extends IntBit> List<T> getBits() {
+            return (List<T>) Arrays.stream(AccessMode.Mode.values()).filter(this::has).collect(Collectors.toList());
         }
     }
 }
