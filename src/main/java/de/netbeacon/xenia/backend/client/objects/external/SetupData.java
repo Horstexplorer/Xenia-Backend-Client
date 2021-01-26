@@ -31,6 +31,7 @@ public class SetupData extends APIDataObject {
     private int totalShards;
     private int[] shardIds;
     private String messageCryptHash;
+    private String clientLocation;
 
     public SetupData(BackendProcessor backendProcessor) {
         super(backendProcessor);
@@ -65,6 +66,8 @@ public class SetupData extends APIDataObject {
         return messageCryptHash;
     }
 
+    public String getClientLocation() { return clientLocation; }
+
     @Override
     public void create() throws BackendException {}
 
@@ -93,7 +96,8 @@ public class SetupData extends APIDataObject {
                 .put("cryptHash", messageCryptHash)
                 .put("shards", new JSONObject()
                         .put("total", totalShards)
-                        .put("use", shardIds));
+                        .put("use", shardIds))
+                .put("clientLocation", clientLocation);
     }
 
     @Override
@@ -109,5 +113,6 @@ public class SetupData extends APIDataObject {
             shardIdsI[i] = jsonObject.getJSONObject("shards").getJSONArray("use").getInt(i);
         }
         this.shardIds = shardIdsI;
+        this.clientLocation = jsonObject.getString("clientLocation");
     }
 }
