@@ -31,27 +31,25 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Supplier;
+import java.awt.*;
 
 public class TwitchNotificationProcessor extends WSProcessor {
 
     private final XeniaBackendClient xeniaBackendClient;
-    private final Supplier<ShardManager> shardManagerSupplier;
     private final Logger logger = LoggerFactory.getLogger(TwitchNotificationProcessor.class);
 
-    public TwitchNotificationProcessor(XeniaBackendClient xeniaBackendClient, Supplier<ShardManager> shardManagerSupplier) {
+    public TwitchNotificationProcessor(XeniaBackendClient xeniaBackendClient) {
         super("twitchnotify");
         this.xeniaBackendClient = xeniaBackendClient;
-        this.shardManagerSupplier = shardManagerSupplier;
     }
 
     @Override
     public WSResponse process(WSRequest wsRequest) {
         try{
             JSONObject data = wsRequest.getPayload();
-            if(shardManagerSupplier.get() == null) return null;
+            if(xeniaBackendClient.getShardManagerSupplier().get() == null) return null;
             // get the guild
-            ShardManager shardManager = shardManagerSupplier.get();
+            ShardManager shardManager = xeniaBackendClient.getShardManagerSupplier().get() ;
             Guild guild = shardManager.getGuildById(data.getLong("guildId"));
             if(guild == null){ return null; }
             // get the notification details
@@ -67,16 +65,18 @@ public class TwitchNotificationProcessor extends WSProcessor {
             }
             // prepare message to send
             String customMessage = twitchNotification.getNotificationMessage();
-            customMessage = customMessage.replace("$user$", data.getJSONObject("data").getString("channelName"));
+            customMessage = customMessage.replace("$username$", data.getJSONObject("data").getString("channelName"));
             customMessage = customMessage.replace("$title$", data.getJSONObject("data").getString("streamTitle"));
             customMessage = customMessage.replace("$game$", data.getJSONObject("data").getString("game"));
             String url = "https://twitch.tv/"+twitchNotification.getTwitchChannelName();
-            customMessage += "\n["+data.getJSONObject("data").getString("streamTitle")+"]("+url+")";
             // prepare embed
             MessageEmbed messageEmbed = new EmbedBuilder()
-                    .setTitle("Stream Notification: "+twitchNotification.getTwitchChannelName().substring(0,1).toUpperCase()+twitchNotification.getTwitchChannelName().substring(1), url)
+                    .setTitle(data.getJSONObject("data").getString("streamTitle"), url)
                     .setDescription(customMessage)
-                    .setThumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_"+twitchNotification.getTwitchChannelName()+"-320x180.jpg")
+                    .addField("Game", data.getJSONObject("data").getString("game"), true)
+                    .addField("View", "[ Link ]("+url+")", true)
+                    .setColor(new Color(145,70,225))
+                    .setImage("https://static-cdn.jtvnw.net/previews-ttv/live_user_"+twitchNotification.getTwitchChannelName()+"-640x360.jpg")
                     .build();
             // send
             textChannel.sendMessage(messageEmbed).queue();
