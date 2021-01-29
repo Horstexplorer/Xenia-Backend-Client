@@ -111,7 +111,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     }
                     lastHeartBeat = newHeartBeat;
                 }
-                break;
+                    break;
                 case "user":
                 {
                     if(!xeniaBackendClient.getUserCache().contains(message.getLong("userId"))){
@@ -128,7 +128,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -145,7 +145,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_role":
                 case "guild_role_permission":
                 {
@@ -166,7 +166,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_channel":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -186,7 +186,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_message":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -210,7 +210,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_license":
                 {
                     if(!xeniaBackendClient.getLicenseCache().contains(message.getLong("guildId"))){
@@ -219,7 +219,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                         xeniaBackendClient.getLicenseCache().remove(message.getLong("guildId"));
                     }
                 }
-                break;
+                    break;
                 case "guild_member":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -239,7 +239,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_misc_tag":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -259,7 +259,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_misc_notification":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -279,7 +279,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
                 case "guild_misc_twitchnotification":
                 {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
@@ -299,7 +299,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             break;
                     }
                 }
-                break;
+                    break;
             }
         }catch (Exception e){
             logger.warn("Error Processing Message, Cache Might Be Inconsistent: "+message.toString());

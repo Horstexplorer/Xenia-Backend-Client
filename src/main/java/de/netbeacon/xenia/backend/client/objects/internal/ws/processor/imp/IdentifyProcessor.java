@@ -17,7 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
 
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.SetupData;
+import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;

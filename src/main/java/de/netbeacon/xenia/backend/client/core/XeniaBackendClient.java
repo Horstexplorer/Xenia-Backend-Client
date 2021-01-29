@@ -20,8 +20,8 @@ import de.netbeacon.utils.shutdownhook.IShutdown;
 import de.netbeacon.xenia.backend.client.objects.cache.GuildCache;
 import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
-import de.netbeacon.xenia.backend.client.objects.external.Info;
-import de.netbeacon.xenia.backend.client.objects.external.SetupData;
+import de.netbeacon.xenia.backend.client.objects.external.system.Info;
+import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
@@ -90,7 +90,7 @@ public class XeniaBackendClient implements IShutdown {
                         new IdentifyProcessor(this),
                         new StatisticsProcessor(this),
                         new TwitchNotificationProcessor(this),
-                        new InterruptProcessor(this)
+                        new ShutdownInterruptProcessor(this)
                 );
         secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
         secondaryWebsocketListener.start();

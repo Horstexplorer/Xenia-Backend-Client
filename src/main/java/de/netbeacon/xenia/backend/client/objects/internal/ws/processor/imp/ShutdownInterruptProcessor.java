@@ -17,6 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
 
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
+import de.netbeacon.xenia.backend.client.objects.external.system.Ping;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;
@@ -29,17 +30,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class InterruptProcessor extends WSProcessor {
+public class ShutdownInterruptProcessor extends WSProcessor {
 
     private final XeniaBackendClient xeniaBackendClient;
-    private final Logger logger = LoggerFactory.getLogger(InterruptProcessor.class);
-    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private final Logger logger = LoggerFactory.getLogger(ShutdownInterruptProcessor.class);
+    private Future<?> future;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
 
-    public InterruptProcessor(XeniaBackendClient xeniaBackendClient) {
-        super("irq");
+    public ShutdownInterruptProcessor(XeniaBackendClient xeniaBackendClient) {
+        super("shutdownirq");
         this.xeniaBackendClient = xeniaBackendClient;
     }
 
@@ -61,13 +64,14 @@ public class InterruptProcessor extends WSProcessor {
         }
         final String descriptionOld = descriptionOldT;
         // get new values
-        OnlineStatus onlineStatus = OnlineStatus.fromKey(payload.getString("state"));
-        String description = payload.getString("stateDescription");
-        long initialDelay = payload.getLong("initialDelay");
-        long delay = payload.getLong("delay");
-        logger.warn("Received Interrupt Request. Initial Delay: "+initialDelay+" Delay: "+delay);
+        long delay = payload.getLong("at")-System.currentTimeMillis();
+        logger.warn(
+                "! Received Shutdown Interrupt Request From Backend !\n" +
+                "To Make Sure Nothing Breaks Events Will Be Blocked And The Socket Will Be Shut Down.\n" +
+                "Using Automated Pings To Detect When The Backend Is Up Again"
+        );
         // update presence, "shutdown" event managers
-        shardManager.setPresence(onlineStatus, Activity.playing(description));
+        shardManager.setPresence(OnlineStatus.IDLE, Activity.playing("Backend Offline"));
         shardManager.getShards().stream().map(JDA::getEventManager).forEach(eventManager -> {
             //if(eventManager instanceof MultiThreadedEventManager){
             //    ((MultiThreadedEventManager) eventManager).halt(true);
@@ -77,8 +81,14 @@ public class InterruptProcessor extends WSProcessor {
         scheduledExecutorService.schedule(()->{
             try{
                 xeniaBackendClient.pauseExecution();
-                scheduledExecutorService.schedule(()->{
+                future = scheduledExecutorService.scheduleAtFixedRate(()->{
                     try{
+                        Ping p = new Ping(xeniaBackendClient.getBackendProcessor());
+                        if(!p.ping()){
+                            return;
+                        }
+                        future.cancel(false); // let it run but this is the last time
+                        // reenable everything
                         xeniaBackendClient.resumeExecution();
                         shardManager.getShards().stream().map(JDA::getEventManager).forEach(eventManager -> {
                             //if(eventManager instanceof MultiThreadedEventManager){
@@ -87,13 +97,16 @@ public class InterruptProcessor extends WSProcessor {
                         });
                         shardManager.setPresence(OnlineStatus.ONLINE, Activity.playing(descriptionOld));
                     }catch (Exception e){
-                        logger.error("Failed To Start Backend Client & EventManagers Back Up.");
+                        logger.warn(
+                                "! Failed To Restore From Shutdown Interrupt !\n" +
+                                "The Bot Needs To Get Restarted Manually"
+                        );
                     }
-                }, delay, TimeUnit.MILLISECONDS);
+                }, 10, 10, TimeUnit.SECONDS);
             }catch (Exception e){
                 logger.error("Failed To Pause Backend Client In IRQ");
             }
-        }, initialDelay, TimeUnit.MILLISECONDS);
+        }, delay, TimeUnit.MILLISECONDS);
 
         return null;
     }
