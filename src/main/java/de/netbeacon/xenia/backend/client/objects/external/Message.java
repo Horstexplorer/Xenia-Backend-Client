@@ -24,7 +24,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Message extends APIDataObject {
 
@@ -45,7 +45,7 @@ public class Message extends APIDataObject {
         this.guildId = guildId;
         this.channelId = channelId;
         this.messageId = messageId;
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "channels", (Function<Void, Long>) o -> getChannelId(), "messages", (Function<Void, Long>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId, "messages", (Supplier<Long>) this::getId);
     }
 
     public Message lSetInitialData(long userId, long creationTimestamp, String messageContent, String cryptKey){

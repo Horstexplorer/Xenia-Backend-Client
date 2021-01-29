@@ -24,7 +24,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Notification extends APIDataObject {
 
@@ -40,7 +40,7 @@ public class Notification extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.notificationId = notificationId;
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "misc", "notifications", (Function<Void, Long>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "notifications", (Supplier<Long>) this::getId);
     }
 
     public Notification lSetInitialData(long channelId, long userId, long notificationTarget, String notificationMessage){

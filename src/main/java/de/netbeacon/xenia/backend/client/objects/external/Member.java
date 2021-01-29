@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Member extends APIDataObject {
 
@@ -40,7 +40,7 @@ public class Member extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.userId = userId;
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "members", (Function<Void, Long>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "members", (Supplier<Long>) this::getId);
     }
 
     public long getId(){

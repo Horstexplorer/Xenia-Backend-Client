@@ -22,7 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Role extends APIDataObject {
 
@@ -37,7 +37,7 @@ public class Role extends APIDataObject {
         this.guildId = guildId;
         this.roleId = roleId;
         this.permissions = new Permissions(this, 1);
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "roles", (Function<Void, Long>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "roles", (Supplier<Long>) this::getId);
     }
 
     public long getId(){

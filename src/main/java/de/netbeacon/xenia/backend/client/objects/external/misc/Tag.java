@@ -24,7 +24,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.function.Function;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 
 public class Tag extends APIDataObject {
 
@@ -38,7 +40,7 @@ public class Tag extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.tagName = tagName;
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "misc", "tags", (Function<Void, String>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "tags", (Supplier<String>) () -> URLEncoder.encode(getId(), StandardCharsets.UTF_8));
     }
 
     public Tag lSetInitialData(long userId, String tagContent){

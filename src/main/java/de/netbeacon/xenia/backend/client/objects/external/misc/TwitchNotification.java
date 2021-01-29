@@ -23,7 +23,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class TwitchNotification extends APIDataObject {
 
@@ -39,7 +39,7 @@ public class TwitchNotification extends APIDataObject {
         super(backendProcessor);
         this.guildId = guildId;
         this.twitchNotificationId = twitchNotificationId;
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "misc", "twitchnotifications", (Function<Void, Long>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "twitchnotifications", (Supplier<Long>) this::getId);
     }
 
     public TwitchNotification lSetInitialData(String channelName, long channelId){

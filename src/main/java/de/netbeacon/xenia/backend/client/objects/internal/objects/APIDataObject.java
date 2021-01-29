@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public abstract class APIDataObject implements IJSONSerializable {
 
@@ -219,8 +219,8 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
 
         public Object getObject(){
-            if(object instanceof Function<?,?>){
-                return ((Function<?, ?>) object).apply(null);
+            if(object instanceof Supplier<?>){
+                return ((Supplier<?>) object).get();
             }
             return object;
         }

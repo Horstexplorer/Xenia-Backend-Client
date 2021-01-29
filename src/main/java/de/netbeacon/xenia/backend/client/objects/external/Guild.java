@@ -29,7 +29,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Guild extends APIDataObject {
 
@@ -55,7 +55,7 @@ public class Guild extends APIDataObject {
         this.memberCache = new MemberCache(backendProcessor, guildId);
         this.roleCache = new RoleCache(backendProcessor, guildId);
         this.miscCaches = new MiscCaches(new TagCache(backendProcessor, guildId), new NotificationCache(backendProcessor, guildId), new TwitchNotificationCache(backendProcessor, guildId));
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getId);
     }
 
     public long getId(){

@@ -25,7 +25,7 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Channel extends APIDataObject {
@@ -53,7 +53,7 @@ public class Channel extends APIDataObject {
         this.accessMode = new AccessMode(1);
         this.channelFlags = new ChannelFlags(0);
         this.channelSettings = new ChannelSettings(0);
-        setBackendPath("data", "guilds", (Function<Void, Long>) o -> getGuildId(), "channels", (Function<Void, Long>) o -> getChannelId());
+        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId);
     }
 
     public long getId(){
