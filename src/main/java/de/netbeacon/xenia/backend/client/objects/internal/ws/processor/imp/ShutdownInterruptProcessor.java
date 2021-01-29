@@ -96,10 +96,11 @@ public class ShutdownInterruptProcessor extends WSProcessor {
                             //}
                         });
                         shardManager.setPresence(OnlineStatus.ONLINE, Activity.playing(descriptionOld));
+                        logger.warn("! Restored From Shutdown Interrupt !");
                     }catch (Exception e){
                         logger.warn(
                                 "! Failed To Restore From Shutdown Interrupt !\n" +
-                                        "The Bot Needs To Get Restarted Manually"
+                                "The Bot Needs To Get Restarted Manually"
                         );
                     }
                 }, 10, 10, TimeUnit.SECONDS);
