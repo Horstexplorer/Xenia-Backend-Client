@@ -39,6 +39,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 public class XeniaBackendClient implements IShutdown {
@@ -60,6 +61,9 @@ public class XeniaBackendClient implements IShutdown {
 
     private final ScheduledExecutorService keyUpdateTaskExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> keyUpdateTask;
+
+    private final AtomicBoolean suspended = new AtomicBoolean(true);
+    private final ReentrantLock suspensionLock = new ReentrantLock();
 
     public XeniaBackendClient(BackendSettings backendSettings, Supplier<ShardManager> shardManagerSupplier){
         this.backendSettings = backendSettings;
@@ -98,6 +102,7 @@ public class XeniaBackendClient implements IShutdown {
         this.userCache = new UserCache(backendProcessor);
         this.guildCache = new GuildCache(backendProcessor);
         this.licenseCache = new LicenseCache(backendProcessor);
+
     }
 
     public BackendSettings getBackendSettings() {
@@ -156,26 +161,29 @@ public class XeniaBackendClient implements IShutdown {
         return shardManagerSupplier;
     }
 
-    private final AtomicBoolean suspended = new AtomicBoolean(false);
-
-    public void pauseExecution(){
-        if(!suspended.get()){
-            suspended.set(true);
-            secondaryWebsocketListener.stop();
-            primaryWebSocketListener.stop();
-            keyUpdateTask.cancel(true);
-        }
+    public boolean isSuspended(){
+        return suspended.get();
     }
 
-    public void resumeExecution(){
-        if(suspended.get()){
-            suspended.set(false);
-            backendProcessor.activateToken();
-            keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(()->{
-                try{backendProcessor.activateToken();}catch (Exception ignore){}
-            }, 2, 2, TimeUnit.MINUTES);
-            primaryWebSocketListener.start();
-            secondaryWebsocketListener.start();
+    public void suspendExecution(boolean value){
+        try{
+            suspensionLock.lock();
+            if(value && !suspended.get()){
+                suspended.set(true);
+                secondaryWebsocketListener.stop();
+                primaryWebSocketListener.stop();
+                keyUpdateTask.cancel(true);
+            }else if(!value && suspended.get()){
+                suspended.set(false);
+                backendProcessor.activateToken();
+                keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(()->{
+                    try{backendProcessor.activateToken();}catch (Exception ignore){}
+                }, 2, 2, TimeUnit.MINUTES);
+                primaryWebSocketListener.start();
+                secondaryWebsocketListener.start();
+            }
+        }finally {
+            suspensionLock.unlock();
         }
     }
 

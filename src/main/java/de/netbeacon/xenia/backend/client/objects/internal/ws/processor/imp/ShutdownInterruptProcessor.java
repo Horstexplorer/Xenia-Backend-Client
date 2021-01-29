@@ -64,11 +64,11 @@ public class ShutdownInterruptProcessor extends WSProcessor {
         }
         final String descriptionOld = descriptionOldT;
         // get new values
-        long delay = payload.getLong("at")-System.currentTimeMillis();
+        long delay = System.currentTimeMillis()-payload.getLong("at");
         logger.warn(
                 "! Received Shutdown Interrupt Request From Backend !\n" +
-                "To Make Sure Nothing Breaks Events Will Be Blocked And The Socket Will Be Shut Down.\n" +
-                "Using Automated Pings To Detect When The Backend Is Up Again"
+                        "To Make Sure Nothing Breaks Events Will Be Blocked And The Socket Will Be Shut Down.\n" +
+                        "Using Automated Pings To Detect When The Backend Is Up Again"
         );
         // update presence, "shutdown" event managers
         shardManager.setPresence(OnlineStatus.IDLE, Activity.playing("Backend Offline"));
@@ -80,7 +80,7 @@ public class ShutdownInterruptProcessor extends WSProcessor {
         // initialize backend client shutdown
         scheduledExecutorService.schedule(()->{
             try{
-                xeniaBackendClient.pauseExecution();
+                xeniaBackendClient.suspendExecution(true);
                 future = scheduledExecutorService.scheduleAtFixedRate(()->{
                     try{
                         Ping p = new Ping(xeniaBackendClient.getBackendProcessor());
@@ -89,7 +89,7 @@ public class ShutdownInterruptProcessor extends WSProcessor {
                         }
                         future.cancel(false); // let it run but this is the last time
                         // reenable everything
-                        xeniaBackendClient.resumeExecution();
+                        xeniaBackendClient.suspendExecution(false);
                         shardManager.getShards().stream().map(JDA::getEventManager).forEach(eventManager -> {
                             //if(eventManager instanceof MultiThreadedEventManager){
                             //    ((MultiThreadedEventManager) eventManager).halt(false);
@@ -99,7 +99,7 @@ public class ShutdownInterruptProcessor extends WSProcessor {
                     }catch (Exception e){
                         logger.warn(
                                 "! Failed To Restore From Shutdown Interrupt !\n" +
-                                "The Bot Needs To Get Restarted Manually"
+                                        "The Bot Needs To Get Restarted Manually"
                         );
                     }
                 }, 10, 10, TimeUnit.SECONDS);
