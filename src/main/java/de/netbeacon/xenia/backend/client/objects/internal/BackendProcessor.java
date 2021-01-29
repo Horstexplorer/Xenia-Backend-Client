@@ -99,7 +99,6 @@ public class BackendProcessor implements IShutdown {
                 }
             }
         }catch (Exception e){
-            logger.error("Failed To Process Request: ", e);
             throw new BackendException(-1, e);
         }
     }
@@ -128,7 +127,6 @@ public class BackendProcessor implements IShutdown {
             });
 
         }catch (Exception e){
-            logger.error("Failed To Process Request: ", e);
             throw new BackendException(-1, e);
         }
     }

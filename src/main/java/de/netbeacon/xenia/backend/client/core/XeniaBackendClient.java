@@ -160,6 +160,7 @@ public class XeniaBackendClient implements IShutdown {
 
     public void pauseExecution(){
         if(!suspended.get()){
+            suspended.set(true);
             secondaryWebsocketListener.stop();
             primaryWebSocketListener.stop();
             keyUpdateTask.cancel(true);
@@ -168,6 +169,7 @@ public class XeniaBackendClient implements IShutdown {
 
     public void resumeExecution(){
         if(suspended.get()){
+            suspended.set(false);
             backendProcessor.activateToken();
             keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(()->{
                 try{backendProcessor.activateToken();}catch (Exception ignore){}
@@ -179,10 +181,9 @@ public class XeniaBackendClient implements IShutdown {
 
     @Override
     public void onShutdown() throws Exception {
-        primaryWebSocketListener.stop();
-        secondaryWebsocketListener.stop();
         keyUpdateTaskExecutor.shutdownNow();
         primaryWebSocketListener.onShutdown();
+        secondaryWebsocketListener.onShutdown();
         backendProcessor.onShutdown();
     }
 }
