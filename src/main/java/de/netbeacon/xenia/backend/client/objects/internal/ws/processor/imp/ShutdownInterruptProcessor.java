@@ -67,8 +67,8 @@ public class ShutdownInterruptProcessor extends WSProcessor {
         long delay = System.currentTimeMillis()-payload.getLong("at");
         logger.warn(
                 "! Received Shutdown Interrupt Request From Backend !\n" +
-                        "To Make Sure Nothing Breaks Events Will Be Blocked And The Socket Will Be Shut Down.\n" +
-                        "Using Automated Pings To Detect When The Backend Is Up Again"
+                "To Make Sure Nothing Breaks Events Will Be Blocked And The Socket Will Be Shut Down.\n" +
+                "Using Automated Pings To Detect When The Backend Is Up Again"
         );
         // update presence, "shutdown" event managers
         shardManager.setPresence(OnlineStatus.IDLE, Activity.playing("Backend Offline"));
