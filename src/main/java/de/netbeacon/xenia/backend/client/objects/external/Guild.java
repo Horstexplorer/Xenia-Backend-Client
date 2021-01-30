@@ -16,6 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.external;
 
+import de.netbeacon.utils.bitflags.IntegerBitFlags;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.cache.ChannelCache;
 import de.netbeacon.xenia.backend.client.objects.cache.MemberCache;
@@ -27,9 +28,11 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Guild extends APIDataObject {
 
@@ -37,7 +40,7 @@ public class Guild extends APIDataObject {
 
     private long creationTimestamp;
     private String preferredLanguage;
-    private boolean useVPerms;
+    private GuildSettings settings;
     private String prefix;
     // meta data - initialize with values
     private String metaGuildName = "unknown_name";
@@ -79,17 +82,16 @@ public class Guild extends APIDataObject {
         this.preferredLanguage = preferredLanguage;
     }
 
-    public boolean useVPerms(){
-        return useVPerms;
+    public GuildSettings getSettings(){
+        return settings;
     }
-
-    public void setVPermsEnabled(boolean value){
-        lSetVPermsEnabled(value);
+    public void setGuildSettings(GuildSettings settings){
+        lSetGuildSettings(settings);
         update();
     }
 
-    public void lSetVPermsEnabled(boolean value){
-        this.useVPerms = value;
+    public void lSetGuildSettings(GuildSettings settings){
+        this.settings = settings;
     }
 
     public String getPrefix() {
@@ -167,7 +169,7 @@ public class Guild extends APIDataObject {
                 .put("creationTimestamp", creationTimestamp)
                 .put("preferredLanguage", preferredLanguage)
                 .put("prefix", prefix)
-                .put("useVPerms", useVPerms)
+                .put("settings", settings.getValue())
                 .put("meta", new JSONObject()
                         .put("name", metaGuildName)
                         .put("iconUrl", metaIconUrl != null ? metaIconUrl : JSONObject.NULL)
@@ -180,7 +182,7 @@ public class Guild extends APIDataObject {
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
         this.prefix = jsonObject.getString("prefix");
-        this.useVPerms = jsonObject.getBoolean("useVPerms");
+        this.settings = new GuildSettings(jsonObject.getInt("settings"));
 
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaGuildName = meta.getString("name");
@@ -222,6 +224,34 @@ public class Guild extends APIDataObject {
             tagCache.clear();
             notificationCache.clear();
             twitchNotificationCache.clear();
+        }
+    }
+
+    public static class GuildSettings extends IntegerBitFlags{
+
+        public GuildSettings(int value) {
+            super(value);
+        }
+
+        public enum Settings implements IntBit{
+            ENFORCE_LANGUAGE(1),
+            VPERM_ENABLE(0);
+
+            private final int pos;
+
+            private Settings(int pos){
+                this.pos = pos;
+            }
+
+            @Override
+            public int getPos() {
+                return 0;
+            }
+        }
+
+        @Override
+        public <T extends IntBit> List<T> getBits() {
+            return (List<T>) Arrays.stream(Guild.GuildSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
         }
     }
 }
