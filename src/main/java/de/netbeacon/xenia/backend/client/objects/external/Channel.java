@@ -284,7 +284,7 @@ public class Channel extends APIDataObject {
 
         @Override
         public <T extends IntBit> List<T> getBits() {
-            return (List<T>) Arrays.stream(AccessMode.Mode.values()).filter(this::has).collect(Collectors.toList());
+            return (List<T>) Arrays.stream(ChannelSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
         }
     }
 }
