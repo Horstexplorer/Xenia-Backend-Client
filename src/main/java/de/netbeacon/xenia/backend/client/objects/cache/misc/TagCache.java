@@ -116,7 +116,7 @@ public class TagCache extends Cache<String, Tag> {
         removeFromCache(tagName);
     }
 
-    public void delete(String tagName, long userId) throws CacheException {
+    public void delete(String tagName) throws CacheException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             Tag tag = getFromCache(tagName);
@@ -127,12 +127,6 @@ public class TagCache extends Cache<String, Tag> {
                 }catch (Exception e){
                     throw new CacheException(-21, "Tag Does Not Exist");
                 }
-            }
-            if(tag.getUserId() == userId){
-                tag.delete();
-                removeFromCache(tagName);
-            }else{
-                throw new CacheException(-30, "Cant Delete Tag When Not Owner");
             }
         }catch (CacheException e){
             throw e;
