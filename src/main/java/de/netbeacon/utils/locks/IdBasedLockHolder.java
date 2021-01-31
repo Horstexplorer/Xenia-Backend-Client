@@ -46,7 +46,7 @@ public class IdBasedLockHolder<T> {
      * @param t id object
      * @return ReentrantLock
      */
-    public ReentrantLock getLock(T t){
+    public synchronized ReentrantLock getLock(T t){
         try{
             globalLock.readLock().lock(); // used to see if the object isnt locked globally
             if(!lockMap.containsKey(t)){
