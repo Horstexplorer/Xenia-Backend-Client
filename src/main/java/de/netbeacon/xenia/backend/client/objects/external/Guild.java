@@ -245,7 +245,7 @@ public class Guild extends APIDataObject {
 
             @Override
             public int getPos() {
-                return 0;
+                return pos;
             }
         }
 
