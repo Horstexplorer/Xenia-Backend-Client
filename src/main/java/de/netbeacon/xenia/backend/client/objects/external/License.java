@@ -102,7 +102,7 @@ public class License extends APIDataObject {
     // SECONDARY
 
     public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId);
+        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
     }
 
     @Override

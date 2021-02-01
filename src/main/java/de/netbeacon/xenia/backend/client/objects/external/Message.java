@@ -133,8 +133,6 @@ public class Message extends APIDataObject {
         return getGuild().getMemberCache().get(userId, false);
     }
 
-    public User getUser(){ return getBackendProcessor().getBackendClient().getUserCache().get(userId);}
-
     @Override
     public JSONObject asJSON() throws JSONSerializationException {
         return new JSONObject()

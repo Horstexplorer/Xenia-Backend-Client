@@ -98,7 +98,7 @@ public class Member extends APIDataObject {
     }
 
     public User getUser(){
-        return getBackendProcessor().getBackendClient().getUserCache().get(userId, false);
+        return getBackendProcessor().getBackendClient().getUserCache().get(userId);
     }
 
     public Set<Role> getRoles(){
