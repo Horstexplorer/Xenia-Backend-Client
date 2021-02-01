@@ -73,6 +73,8 @@ public class XeniaBackendClient implements IShutdown {
         dispatcher.setMaxRequests(128);
         dispatcher.setMaxRequestsPerHost(128);
         OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder()
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
                 .dispatcher(dispatcher)
                 .addInterceptor(new BackendProcessor.Interceptor(this));
         this.okHttpClient = okHttpClientBuilder.build();

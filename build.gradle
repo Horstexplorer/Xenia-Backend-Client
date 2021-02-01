@@ -14,7 +14,7 @@ dependencies {
 
     // OKHTTP
 
-    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.0' // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
 
     // JSON
 
