@@ -124,6 +124,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             xeniaBackendClient.getUserCache().get(message.getLong("userId")).getAsync();
                             break;
                         case "delete":
+                            xeniaBackendClient.getUserCache().get(message.getLong("userId")).onDeletion();
                             xeniaBackendClient.getUserCache().remove(message.getLong("userId"));
                             break;
                     }
@@ -141,6 +142,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             xeniaBackendClient.getGuildCache().get(message.getLong("guildId")).getAsync(); // this just gets the new data as we dont want to reload all channels, roles, members,...
                             break;
                         case "delete":
+                            xeniaBackendClient.getGuildCache().get(message.getLong("guildId")).clear(true);
                             xeniaBackendClient.getGuildCache().remove(message.getLong("guildId"));
                             break;
                     }
@@ -162,6 +164,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->g.getRoleCache().get(message.getLong("roleId")));
                             break;
                         case "delete":
+                            g.getRoleCache().get(message.getLong("roleId")).onDeletion();
                             g.getRoleCache().remove(message.getLong("roleId"));
                             break;
                     }
@@ -178,10 +181,12 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->g.getChannelCache().get(message.getLong("channelId")));
                             break;
                         case "update":
+                            g.getChannelCache().get(message.getLong("channelId")).clear(false);
                             g.getChannelCache().remove(message.getLong("channelId"));
                             scalingExecutor.execute(()->g.getChannelCache().get(message.getLong("channelId")));
                             break;
                         case "delete":
+                            g.getChannelCache().get(message.getLong("channelId")).clear(true);
                             g.getChannelCache().remove(message.getLong("channelId"));
                             break;
                     }
@@ -206,6 +211,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->c.getMessageCache().get(message.getLong("messageId")));
                             break;
                         case "delete":
+                            c.getMessageCache().get(message.getLong("messageId")).onDeletion();
                             c.getMessageCache().remove(message.getLong("messageId"));
                             break;
                     }
@@ -235,6 +241,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->g.getMemberCache().get(message.getLong("userId")));
                             break;
                         case "delete":
+                            g.getMemberCache().get(message.getLong("userId")).onDeletion();
                             g.getMemberCache().remove(message.getLong("userId"));
                             break;
                     }
@@ -255,6 +262,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->g.getMiscCaches().getTagCache().get(message.getString("tagName")));
                             break;
                         case "delete":
+                            g.getMiscCaches().getTagCache().get(message.getString("tagName")).onDeletion();
                             g.getMiscCaches().getTagCache().remove(message.getString("tagName"));
                             break;
                     }
@@ -275,6 +283,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")));
                             break;
                         case "delete":
+                            g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")).onDeletion();
                             g.getMiscCaches().getNotificationCache().remove(message.getLong("notificationId"));
                             break;
                     }
@@ -295,6 +304,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")));
                             break;
                         case "delete":
+                            g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")).onDeletion();
                             g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("twitchNotificationId"));
                             break;
                     }

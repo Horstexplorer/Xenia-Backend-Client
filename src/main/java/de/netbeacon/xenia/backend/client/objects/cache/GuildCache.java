@@ -74,6 +74,7 @@ public class GuildCache extends Cache<Long, Guild> {
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
             Objects.requireNonNullElseGet(guild, () -> new Guild(getBackendProcessor(), guildId)).delete();
+            guild.clear(true);
             removeFromCache(guildId);
         }catch (CacheException e){
             throw e;
@@ -85,8 +86,8 @@ public class GuildCache extends Cache<Long, Guild> {
     }
 
     @Override
-    public void clear() {
-        getDataMap().forEach((k, v)->v.clear()); // as the guild also contains caches
-        super.clear();
+    public void clear(boolean deletion) {
+        getDataMap().forEach((k, v)->v.clear(deletion)); // as the guild also contains caches
+        super.clear(deletion);
     }
 }

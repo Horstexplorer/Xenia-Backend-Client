@@ -197,8 +197,8 @@ public class Channel extends APIDataObject {
         this.metaChannelTopic = meta.getString("topic");
     }
 
-    public void clear(){
-        messageCache.clear();
+    public void clear(boolean deletion){
+        messageCache.clear(deletion);
     }
 
     public static class AccessMode extends IntegerBitFlags {

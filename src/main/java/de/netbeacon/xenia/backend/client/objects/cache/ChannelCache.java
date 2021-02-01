@@ -131,8 +131,8 @@ public class ChannelCache extends Cache<Long, Channel> {
     }
 
     @Override
-    public void clear() {
-        getDataMap().forEach((k,v)->v.clear());
-        super.clear();
+    public void clear(boolean deletion) {
+        getDataMap().forEach((k,v)->v.clear(deletion));
+        super.clear(deletion);
     }
 }

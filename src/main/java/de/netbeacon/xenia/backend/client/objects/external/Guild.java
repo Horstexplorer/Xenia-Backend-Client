@@ -189,11 +189,11 @@ public class Guild extends APIDataObject {
         this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
     }
 
-    public void clear(){
-        channelCache.clear();
-        memberCache.clear();
-        roleCache.clear();
-        miscCaches.clear();
+    public void clear(boolean deletion){
+        channelCache.clear(deletion);
+        memberCache.clear(deletion);
+        roleCache.clear(deletion);
+        miscCaches.clear(deletion);
     }
 
     public static class MiscCaches{
@@ -220,10 +220,10 @@ public class Guild extends APIDataObject {
             return twitchNotificationCache;
         }
 
-        public void clear(){
-            tagCache.clear();
-            notificationCache.clear();
-            twitchNotificationCache.clear();
+        public void clear(boolean deletion){
+            tagCache.clear(deletion);
+            notificationCache.clear(deletion);
+            twitchNotificationCache.clear(deletion);
         }
     }
 

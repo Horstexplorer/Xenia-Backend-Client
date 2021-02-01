@@ -164,7 +164,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         return lastRequestDuration;
     }
 
-    private void onRetrieval(){
+    protected void onRetrieval(){
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onRetrieval(this);
@@ -172,7 +172,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
     }
 
-    private void onCreation(){
+    protected void onCreation(){
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onCreation(this);
@@ -180,7 +180,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
     }
 
-    private void onUpdate(){
+    protected void onUpdate(){
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onUpdate(this);
@@ -188,7 +188,7 @@ public abstract class APIDataObject implements IJSONSerializable {
         }
     }
 
-    private void onDeletion(){
+    public void onDeletion(){
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onDeletion(this);

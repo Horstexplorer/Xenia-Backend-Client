@@ -28,6 +28,7 @@ public abstract class Cache<K, T extends APIDataObject> {
 
     private final BackendProcessor backendProcessor;
     private final ConcurrentHashMap<K, T> dataMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<T, K> inverseDataMap = new ConcurrentHashMap<>();
     private final ArrayList<K> orderedKeyMap = new ArrayList<>();
     private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
 
@@ -43,12 +44,27 @@ public abstract class Cache<K, T extends APIDataObject> {
 
     public T addToCache(K id, T t){
         dataMap.put(id, t);
+        inverseDataMap.put(t, id);
         orderedKeyMap.add(id);
         onInsertion(id, t);
         return t;
     }
 
     public void removeFromCache(K id){
+        var t = dataMap.remove(id);
+        if(t == null){
+            return;
+        }
+        inverseDataMap.remove(t);
+        orderedKeyMap.remove(id);
+        onRemoval(id);
+    }
+
+    public void removeFromCache(T t){
+        var id = inverseDataMap.remove(t);
+        if(id == null){
+            return;
+        }
         dataMap.remove(id);
         orderedKeyMap.remove(id);
         onRemoval(id);
@@ -80,10 +96,14 @@ public abstract class Cache<K, T extends APIDataObject> {
         return orderedKeyMap;
     }
 
-    public void clear(){
-        dataMap.forEach((k,v)->v.removeEventListeners()); // remove event listeners of objects
-        dataMap.clear();
-        orderedKeyMap.clear();
+    public void clear(boolean deletion){
+        dataMap.values().forEach(this::removeFromCache); // remove all objects, triggering the remove event for the cache
+        dataMap.forEach((k,v)-> {
+            if(deletion){
+                v.onDeletion(); // trigger deletion event for when this cache gets removed with the deletion as cause
+            }
+            v.removeEventListeners();
+        }); // remove event listeners of objects
     }
 
     private void onInsertion(K newKey, T newObject){
