@@ -140,12 +140,14 @@ public class Guild extends APIDataObject {
 
     public MiscCaches getMiscCaches() { return miscCaches; }
 
-    public void initSync(){
+    public void initSync(boolean preloadMembers){
         List<Channel> channelList = getChannelCache().retrieveAllFromBackend(true);
         for(Channel channel : channelList){
             channel.getMessageCache().retrieveAllFromBackend(true, true);
         }
-        getMemberCache().retrieveAllFromBackend(true);
+        if(preloadMembers){
+            getMemberCache().retrieveAllFromBackend(true);
+        }
         getRoleCache().retrieveAllFromBackend(true);
 
         getMiscCaches().getTagCache().retrieveAllFromBackend();
@@ -153,9 +155,9 @@ public class Guild extends APIDataObject {
         getMiscCaches().getTwitchNotificationCache().retrieveAllFromBackend();
     }
 
-    public void initAsync(Consumer<Guild> then){
+    public void initAsync(boolean preloadMembers, Consumer<Guild> then){
         getBackendProcessor().getScalingExecutor().execute(()->{
-            this.initSync();
+            this.initSync(preloadMembers);
             if(then != null){
                 then.accept(this);
             }
