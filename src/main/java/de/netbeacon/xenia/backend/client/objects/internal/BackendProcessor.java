@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -211,11 +212,11 @@ public class BackendProcessor implements IShutdown {
 
         private final XeniaBackendClient client;
 
-        private long lastUpdate;
         private final Lock lock = new ReentrantLock();
-
+        private long lastTokenUpdate;
         private static final long forceUpdateDelay = 2500;
         private static final int maxRetries = 4;
+        private static final long timeoutRetryDelay = 1000;
 
         private final Logger logger = LoggerFactory.getLogger(BackendProcessor.Interceptor.class);
 
@@ -226,46 +227,122 @@ public class BackendProcessor implements IShutdown {
         @NotNull
         @Override
         public Response intercept(@NotNull Chain chain) throws IOException {
-            Request request = chain.request();
-            Response response = chain.proceed(request);
-            if(response.code() == 403 && request.headers().get("Authorization") != null && request.headers().get("Authorization").startsWith("Bearer")){
+            try{
+                Request request = null;
+                Response response;
+                try{
+                    request = chain.request();
+                    response = chain.proceed(request);
+                    if(response.code() == 403){
+                        throw new RecoverableException(RecoverableException.Type.FORBIDDEN, request, response);
+                    }else if (response.code() == 429){
+                        throw new RecoverableException(RecoverableException.Type.TOO_MANY_REQUESTS, request, response);
+                    }
+                    return response;
+                }catch (SocketTimeoutException socketTimeoutException){
+                    throw new RecoverableException(RecoverableException.Type.TIMEOUT, request, null);
+                }
+            }catch (RecoverableException recoverableException){
                 try{
                     lock.lock();
-                    if(lastUpdate+forceUpdateDelay < System.currentTimeMillis()){
-                        logger.warn("Received 403 response from backend for token auth - Requesting new token");
-                        // update token
-                        lastUpdate = System.currentTimeMillis();
-                        client.getBackendProcessor().activateToken();
-                    }else{
-                        logger.debug("Received 403 response from backend for token auth - Token has been exchanged recently, wont request a new one.");
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(forceUpdateDelay/2);
-                        } catch (InterruptedException ignore) {}
+                    int currentRetries = 0;
+                    if(recoverableException.getRequest().headers().get("Request-Retries") != null){
+                        currentRetries = Integer.parseInt(recoverableException.getRequest().headers().get("Request-Retries"));
                     }
-                    int retries = 1;
-                    if(response.headers().get("Request-Retries") != null){
-                        try{
-                            retries = Integer.parseInt(response.headers().get("Request-Retries"));
-                        }catch (Exception ignore){}
+                    currentRetries++;
+                    if(currentRetries > maxRetries){
+                        if(recoverableException.getResponse() != null){
+                            return recoverableException.getResponse();
+                        }
+                        throw new IOException("Failed To Retry Request "+recoverableException.getRequest()+" ("+recoverableException.getType()+"). Max retries reached");
+                    }else if(recoverableException.getResponse() != null){
+                        recoverableException.getResponse().close();
                     }
-                    response.close();
-                    // retry request
-                    if(retries <= maxRetries){
-                        logger.debug("Retrying request - "+retries+" of "+maxRetries);
-                        response = client.getOkHttpClient().newCall(request.newBuilder()
+                    switch (recoverableException.getType()){
+                        case TOO_MANY_REQUESTS:{
+                            // add later, for now we use the default behaviour of timeout
+                        }
+                        case TIMEOUT:{
+                            try {
+                                TimeUnit.MILLISECONDS.sleep(timeoutRetryDelay);
+                            } catch (InterruptedException ignore) {}
+                        }
+                        break;
+                        case FORBIDDEN:{
+                            if(recoverableException.getRequest().headers().get("Authorization") != null && recoverableException.getRequest().headers().get("Authorization").startsWith("Bearer")){
+                                if(lastTokenUpdate+forceUpdateDelay < System.currentTimeMillis()){
+                                    logger.warn("Received 403 response from backend for token auth - Requesting new token");
+                                    lastTokenUpdate = System.currentTimeMillis();
+                                    client.getBackendProcessor().activateToken(); // update token
+                                }else{
+                                    logger.debug("Received 403 response from backend for token auth - Token has been exchanged recently, wont request a new one.");
+                                    try {
+                                        TimeUnit.MILLISECONDS.sleep(forceUpdateDelay/4);
+                                    } catch (InterruptedException ignore) {}
+                                }
+                            }
+                        }
+                        break;
+                        default: {
+                            throw new IOException("Unknown Error");
+                        }
+                    }
+                    if(recoverableException.getRequest().headers().get("Authorization") != null && recoverableException.getRequest().headers().get("Authorization").startsWith("Bearer")){
+                        return client.getOkHttpClient().newCall(recoverableException.getRequest().newBuilder()
                                 .removeHeader("Authorization")
                                 .addHeader("Authorization", "Bearer "+client.getBackendProcessor().getBackendSettings().getToken())
-                                .addHeader("Request-Retries", String.valueOf(retries))
+                                .addHeader("Request-Retries", String.valueOf(currentRetries))
+                                .build()
+                        ).execute();
+                    }else if(recoverableException.getRequest().headers().get("Authorization") != null && recoverableException.getRequest().headers().get("Authorization").startsWith("Basic")){
+                        return client.getOkHttpClient().newCall(recoverableException.getRequest().newBuilder()
+                                .removeHeader("Authorization")
+                                .addHeader("Authorization", Credentials.basic(client.getBackendSettings().getClientIdAsString(), client.getBackendSettings().getPassword()))
+                                .addHeader("Request-Retries", String.valueOf(currentRetries))
                                 .build()
                         ).execute();
                     }else{
-                        logger.debug("Wont retry request - max retries utilized");
+                        return client.getOkHttpClient().newCall(recoverableException.getRequest().newBuilder()
+                                .addHeader("Request-Retries", String.valueOf(currentRetries))
+                                .build()
+                        ).execute();
                     }
-                }finally {
+                } finally {
                     lock.unlock();
                 }
             }
-            return response;
         }
+
+        public static class RecoverableException extends Exception{
+
+            public enum Type{
+                TIMEOUT,
+                FORBIDDEN,
+                TOO_MANY_REQUESTS
+            }
+
+            private final Type type;
+            private final Request request;
+            private final Response response;
+
+            public RecoverableException(Type type, Request request, Response response){
+                this.type = type;
+                this.request = request;
+                this.response = response;
+            }
+
+            public Type getType(){
+                return type;
+            }
+
+            public Request getRequest() {
+                return request;
+            }
+
+            public Response getResponse() {
+                return response;
+            }
+        }
+
     }
 }
