@@ -41,7 +41,7 @@ public abstract class APIDataObject implements IJSONSerializable {
     private long lastRequestDuration;
     private final ArrayList<APIDataEventListener> apiDataEventListeners = new ArrayList<>();
 
-    private final AtomicBoolean isStable = new AtomicBoolean(false);
+    private final AtomicBoolean isStable = new AtomicBoolean(true);
     private JSONObject shadowCopy;
 
     public APIDataObject(BackendProcessor backendProcessor){
