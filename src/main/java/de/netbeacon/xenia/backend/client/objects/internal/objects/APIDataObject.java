@@ -209,7 +209,6 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             lastRequestDuration = backendResult.getRequestDuration();
             this.onDeletion();
-            this.fromJSON(null); // delete after
         }catch (Exception e){
             this.restore();
             throw e;
@@ -232,7 +231,6 @@ public abstract class APIDataObject implements IJSONSerializable {
                     }
                     lastRequestDuration = backendResult.getRequestDuration();
                     this.onDeletion();
-                    this.fromJSON(null); // delete after
                 }catch (Exception e){
                     this.restore();
                 }finally {
