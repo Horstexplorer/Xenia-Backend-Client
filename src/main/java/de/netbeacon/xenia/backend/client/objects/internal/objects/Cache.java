@@ -17,6 +17,8 @@
 package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +33,7 @@ public abstract class Cache<K, T extends APIDataObject> {
     private final ConcurrentHashMap<T, K> inverseDataMap = new ConcurrentHashMap<>();
     private final ArrayList<K> orderedKeyMap = new ArrayList<>();
     private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
+    private final Logger logger = LoggerFactory.getLogger(Cache.class);
 
     public Cache(BackendProcessor backendProcessor){
         this.backendProcessor = backendProcessor;
@@ -110,7 +113,9 @@ public abstract class Cache<K, T extends APIDataObject> {
         for(var listener : new ArrayList<>(cacheListeners)){
             try{
                 listener.onInsertion(newKey, newObject);
-            }catch (Exception ignore){}
+            }catch (Exception e){
+                logger.error("Uncaught exception on Cache onInsertion listener "+e);
+            }
         }
     }
 
@@ -118,7 +123,9 @@ public abstract class Cache<K, T extends APIDataObject> {
         for(var listener : new ArrayList<>(cacheListeners)){
             try{
                 listener.onRemoval(oldKey);
-            }catch (Exception e){}
+            }catch (Exception e){
+                logger.error("Uncaught exception on Cache onRemoval listener "+e);
+            }
         }
     }
 

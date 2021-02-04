@@ -278,7 +278,9 @@ public abstract class APIDataObject implements IJSONSerializable {
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onRetrieval(this);
-            }catch (Exception ignore){}
+            }catch (Exception e){
+                logger.error("Uncaught exception on APIDataObject onRetrieval listener "+e);
+            }
         }
     }
 
@@ -286,7 +288,9 @@ public abstract class APIDataObject implements IJSONSerializable {
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onCreation(this);
-            }catch (Exception ignore){}
+            }catch (Exception e){
+                logger.error("Uncaught exception on APIDataObject onCreation listener "+e);
+            }
         }
     }
 
@@ -294,7 +298,9 @@ public abstract class APIDataObject implements IJSONSerializable {
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onUpdate(this);
-            }catch (Exception ignore){}
+            }catch (Exception e){
+                logger.error("Uncaught exception on APIDataObject onUpdate listener "+e);
+            }
         }
     }
 
@@ -302,7 +308,9 @@ public abstract class APIDataObject implements IJSONSerializable {
         for(var listener : new ArrayList<>(apiDataEventListeners)){
             try{
                 listener.onDeletion(this);
-            }catch (Exception ignore){}
+            }catch (Exception e){
+                logger.error("Uncaught exception on APIDataObject onDeletion listener "+e);
+            }
         }
     }
 
