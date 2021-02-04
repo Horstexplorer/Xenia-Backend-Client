@@ -233,8 +233,8 @@ public class BackendProcessor implements IShutdown {
                 try{
                     request = chain.request();
                     response = chain.proceed(request);
-                    if(response.code() == 403){
-                        throw new RecoverableException(RecoverableException.Type.FORBIDDEN, request, response);
+                    if(response.code() == 401 && request.headers().get("Authorization") != null && request.headers().get("Authorization").startsWith("Bearer")){
+                        throw new RecoverableException(RecoverableException.Type.UNAUTHORIZED, request, response); // only for when we used a bearer
                     }else if (response.code() == 429){
                         throw new RecoverableException(RecoverableException.Type.TOO_MANY_REQUESTS, request, response);
                     }
@@ -268,14 +268,14 @@ public class BackendProcessor implements IShutdown {
                             } catch (InterruptedException ignore) {}
                         }
                         break;
-                        case FORBIDDEN:{
+                        case UNAUTHORIZED:{
                             if(recoverableException.getRequest().headers().get("Authorization") != null && recoverableException.getRequest().headers().get("Authorization").startsWith("Bearer")){
                                 if(lastTokenUpdate+forceUpdateDelay < System.currentTimeMillis()){
-                                    logger.warn("Received 403 response from backend for token auth - Requesting new token");
+                                    logger.warn("Received 401 response from backend for token auth - Requesting new token");
                                     lastTokenUpdate = System.currentTimeMillis();
                                     client.getBackendProcessor().activateToken(); // update token
                                 }else{
-                                    logger.debug("Received 403 response from backend for token auth - Token has been exchanged recently, wont request a new one.");
+                                    logger.debug("Received 401 response from backend for token auth - Token has been exchanged recently, wont request a new one.");
                                     try {
                                         TimeUnit.MILLISECONDS.sleep(forceUpdateDelay/4);
                                     } catch (InterruptedException ignore) {}
@@ -317,7 +317,7 @@ public class BackendProcessor implements IShutdown {
 
             public enum Type{
                 TIMEOUT,
-                FORBIDDEN,
+                UNAUTHORIZED,
                 TOO_MANY_REQUESTS
             }
 
