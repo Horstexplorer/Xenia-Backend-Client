@@ -58,6 +58,7 @@ public class Role extends APIDataObject {
     }
 
     public void lSetRoleName(String name){
+        secure();
         this.roleName = name;
     }
 
@@ -87,8 +88,6 @@ public class Role extends APIDataObject {
         this.roleName = jsonObject.getString("roleName");
         this.permissions = new Permissions(this, jsonObject.getLong("rolePermissions"));
     }
-
-    private static final int LOCKED_PERMISSION_BIT_RANGE = 63;
 
     public static class Permissions extends LongBitFlags {
 

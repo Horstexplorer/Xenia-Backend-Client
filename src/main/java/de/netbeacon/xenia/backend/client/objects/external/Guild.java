@@ -79,6 +79,7 @@ public class Guild extends APIDataObject {
     }
 
     public void lSetPreferredLanguage(String preferredLanguage){
+        secure();
         this.preferredLanguage = preferredLanguage;
     }
 
@@ -91,6 +92,7 @@ public class Guild extends APIDataObject {
     }
 
     public void lSetGuildSettings(GuildSettings settings){
+        secure();
         this.settings = settings;
     }
 
@@ -104,6 +106,7 @@ public class Guild extends APIDataObject {
     }
 
     public void lSetPrefix(String prefix){
+        secure();
         this.prefix = prefix;
     }
 
@@ -116,6 +119,7 @@ public class Guild extends APIDataObject {
     }
 
     public void lSetMetaData(String guildName, String iconUrl){
+        secure();
         this.metaGuildName = guildName;
         this.metaIconUrl = iconUrl;
     }

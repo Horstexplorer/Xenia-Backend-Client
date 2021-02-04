@@ -84,6 +84,7 @@ public class Notification extends APIDataObject {
         update();
     }
     public void lSetNotificationTarget(long notificationTarget) {
+        secure();
         this.notificationTarget = notificationTarget;
     }
 
@@ -93,6 +94,7 @@ public class Notification extends APIDataObject {
     }
 
     public void lSetNotificationMessage(String notificationMessage) {
+        secure();
         this.notificationMessage = notificationMessage;
     }
 

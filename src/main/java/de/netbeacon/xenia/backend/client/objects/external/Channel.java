@@ -107,6 +107,7 @@ public class Channel extends APIDataObject {
     }
 
     public void lSetChannelFlags(ChannelFlags channelFlags) {
+        secure();
         this.channelFlags = channelFlags;
     }
 
@@ -125,6 +126,7 @@ public class Channel extends APIDataObject {
     }
 
     public void lSetTmpLoggingActive(boolean tmpLoggingActive) {
+        secure();
         this.tmpLoggingActive = tmpLoggingActive;
     }
 
@@ -134,6 +136,7 @@ public class Channel extends APIDataObject {
     }
 
     public void lSetTmpLoggingChannelId(long tmpLoggingChannelId) {
+        secure();
         this.tmpLoggingChannelId = tmpLoggingChannelId;
     }
 
@@ -155,6 +158,7 @@ public class Channel extends APIDataObject {
     }
 
     public void lSetMetaData(String channelName, String channelTopic){
+        secure();
         this.metaChannelName = channelName;
         this.metaChannelTopic = channelTopic != null ? channelTopic : "Unknown topic";
     }
