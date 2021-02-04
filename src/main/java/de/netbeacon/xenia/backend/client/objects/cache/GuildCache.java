@@ -33,11 +33,11 @@ public class GuildCache extends Cache<Long, Guild> {
         super(backendProcessor);
     }
 
-    public Guild get(long guildId) throws CacheException {
+    public Guild get(long guildId) throws CacheException, DataException {
         return get(guildId, true);
     }
 
-    public Guild get(long guildId, boolean init) throws CacheException {
+    public Guild get(long guildId, boolean init) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
@@ -56,10 +56,10 @@ public class GuildCache extends Cache<Long, Guild> {
             }
             addToCache(guildId, guild);
             return guild;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-1, "Failed To Get Guild", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Guild", e);
         }finally {
             idBasedLockHolder.getLock(guildId).unlock();
         }
@@ -69,17 +69,17 @@ public class GuildCache extends Cache<Long, Guild> {
         removeFromCache(guildId);
     }
 
-    public void delete(long guildId) throws CacheException {
+    public void delete(long guildId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
             Objects.requireNonNullElseGet(guild, () -> new Guild(getBackendProcessor(), guildId)).delete();
             guild.clear(true);
             removeFromCache(guildId);
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete Guild", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Guild", e);
         }finally {
             idBasedLockHolder.getLock(guildId).unlock();
         }

@@ -37,7 +37,7 @@ public class UserCache extends Cache<Long, User> {
         return get(userId, true);
     }
 
-    public User get(long userId, boolean init) throws CacheException {
+    public User get(long userId, boolean init) throws CacheException, DataException {
        try{
            idBasedLockHolder.getLock(userId).lock();
            User user = getFromCache(userId);
@@ -56,10 +56,10 @@ public class UserCache extends Cache<Long, User> {
            }
            addToCache(userId, user);
            return user;
-       }catch (CacheException e){
+       }catch (CacheException | DataException e){
            throw e;
        }catch (Exception e){
-           throw new CacheException(-1, "Failed To Get User", e);
+           throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get User", e);
        }finally {
            idBasedLockHolder.getLock(userId).unlock();
        }
@@ -69,16 +69,16 @@ public class UserCache extends Cache<Long, User> {
         removeFromCache(userId);
     }
 
-    public void delete(long userId) throws CacheException {
+    public void delete(long userId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(userId).lock();
             User user = getFromCache(userId);
             Objects.requireNonNullElseGet(user, ()->new User(getBackendProcessor(), userId)).delete();
             removeFromCache(userId);
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete User", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete User", e);
         }finally {
             idBasedLockHolder.getLock(userId).unlock();
         }

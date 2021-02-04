@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.misc.Notification;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
@@ -45,7 +46,7 @@ public class NotificationCache extends Cache<Long, Notification> {
         this.guildId = guildId;
     }
 
-    public Notification get(long notificationId) throws CacheException {
+    public Notification get(long notificationId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(notificationId).lock();
             if(contains(notificationId)){
@@ -55,16 +56,16 @@ public class NotificationCache extends Cache<Long, Notification> {
             notification.get();
             addToCache(notificationId, notification);
             return notification;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-1, "Failed To Get Notification", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Notification", e);
         }finally {
             idBasedLockHolder.getLock(notificationId).unlock();
         }
     }
 
-    public List<Notification> retrieveAllFromBackend() throws CacheException {
+    public List<Notification> retrieveAllFromBackend() throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "notifications"), new HashMap<>(), null);
@@ -83,10 +84,10 @@ public class NotificationCache extends Cache<Long, Notification> {
                 notificationList.add(notification);
             }
             return notificationList;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-11, "Failed To Retrieve All Notifications", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Notifications", e);
         }finally {
             idBasedLockHolder.getLock().writeLock().unlock();
         }
@@ -94,20 +95,20 @@ public class NotificationCache extends Cache<Long, Notification> {
 
     private final ReentrantLock creationLock = new ReentrantLock();
 
-    public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage){
+    public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage) throws CacheException, DataException{
         try{
             creationLock.lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_NOTIFICATIONS_C()){
-                throw new RuntimeException("Cache Is Full");
+                throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
             }
             Notification notification = new Notification(getBackendProcessor(), guildId, -1).lSetInitialData(channelId, userId, notificationTarget, notificationMessage);
             notification.create();
             addToCache(notification.getId(), notification);
             return notification;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-2, "Failed To Create A New Notification", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create A New Notification", e);
         }finally {
             creationLock.unlock();
         }
@@ -117,16 +118,16 @@ public class NotificationCache extends Cache<Long, Notification> {
         removeFromCache(notificationId);
     }
 
-    public void delete(long notificationId){
+    public void delete(long notificationId) throws CacheException, DataException{
         try{
             idBasedLockHolder.getLock(notificationId).lock();
             Notification notification = getFromCache(notificationId);
             Objects.requireNonNullElseGet(notification, ()->new Notification(getBackendProcessor(), guildId, notificationId)).delete();
             removeFromCache(notificationId);
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete Notification", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Notification", e);
         }finally {
             idBasedLockHolder.getLock(notificationId).unlock();
         }

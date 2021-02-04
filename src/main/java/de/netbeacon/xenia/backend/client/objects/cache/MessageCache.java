@@ -48,7 +48,7 @@ public class MessageCache extends Cache<Long, Message> {
         this.channelid = channelId;
     }
 
-    public Message get(long messageId) throws CacheException {
+    public Message get(long messageId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             Message message = getFromCache(messageId);
@@ -67,16 +67,16 @@ public class MessageCache extends Cache<Long, Message> {
             }
             addToCache(messageId, message);
             return message;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-1, "Failed To Get Message", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Message", e);
         }finally {
             idBasedLockHolder.getLock(messageId).unlock();
         }
     }
 
-    public Message create(long messageId, long creationTime, long userId, String messageContent) throws CacheException {
+    public Message create(long messageId, long creationTime, long userId, String messageContent) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             if(contains(messageId)){
@@ -86,16 +86,16 @@ public class MessageCache extends Cache<Long, Message> {
             message.createAsync(); // can be async as we process a lot of em
             addToCache(messageId, message);
             return message;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-2, "Failed To Create Message", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create Message", e);
         }finally {
             idBasedLockHolder.getLock(messageId).unlock();
         }
     }
 
-    public List<Message> retrieveAllFromBackend(boolean enforceLimit, boolean cacheInsert) throws CacheException {
+    public List<Message> retrieveAllFromBackend(boolean enforceLimit, boolean cacheInsert) throws CacheException, DataException {
         try{
             if(cacheInsert){
                 idBasedLockHolder.getLock().writeLock().lock();
@@ -123,10 +123,10 @@ public class MessageCache extends Cache<Long, Message> {
                 messageList.add(message);
             }
             return messageList;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-11, "Failed To Retrieve Messages", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Messages", e);
         }finally {
             if(cacheInsert){
                 idBasedLockHolder.getLock().writeLock().unlock();
@@ -138,16 +138,16 @@ public class MessageCache extends Cache<Long, Message> {
         removeFromCache(messageId);
     }
 
-    public void delete(long messageId) throws CacheException {
+    public void delete(long messageId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             Message message = getFromCache(messageId);
             Objects.requireNonNullElseGet(message, ()->new Message(getBackendProcessor(), guildId, channelid, messageId)).delete();
             removeFromCache(messageId);
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete Message", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Message", e);
         }finally {
             idBasedLockHolder.getLock(messageId).unlock();
         }

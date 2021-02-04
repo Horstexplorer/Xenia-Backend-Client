@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.misc.Tag;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
@@ -43,7 +44,7 @@ public class TagCache extends Cache<String, Tag> {
         this.guildId = guildId;
     }
 
-    public Tag get(String tagName) throws CacheException {
+    public Tag get(String tagName) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             if(contains(tagName)){
@@ -53,16 +54,16 @@ public class TagCache extends Cache<String, Tag> {
             tag.get();
             addToCache(tagName, tag);
             return tag;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-1, "Failed To Get Tag", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Tag", e);
         }finally {
             idBasedLockHolder.getLock(tagName).unlock();
         }
     }
 
-    public List<Tag> retrieveAllFromBackend() throws CacheException {
+    public List<Tag> retrieveAllFromBackend() throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock().writeLock().lock();
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "tags"), new HashMap<>(), null);
@@ -81,32 +82,32 @@ public class TagCache extends Cache<String, Tag> {
                 tagList.add(tag);
             }
             return tagList;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-11, "Failed To Retrieve All Tags", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Tags", e);
         }finally {
             idBasedLockHolder.getLock().writeLock().unlock();
         }
     }
 
-    public Tag createNew(String tagName, long userId, String content) throws CacheException {
+    public Tag createNew(String tagName, long userId, String content) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TAGS_C()){
-                throw new RuntimeException("Cache Is Full");
+                throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
             }
             if(contains(tagName)){
-                throw new CacheException(-20, "Tag Already Exists");
+                throw new CacheException(CacheException.Type.ALREADY_EXISTS, "Tag Already Exists");
             }
             Tag tag = new Tag(getBackendProcessor(), guildId, tagName).lSetInitialData(userId, content);
             tag.create(); // fails if a tag already exists on the backend which hasnt synced already with the client
             addToCache(tagName, tag);
             return tag;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-2, "Failed To Create A New Tag", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create A New Tag", e);
         }finally {
             idBasedLockHolder.getLock(tagName).unlock();
         }
@@ -116,22 +117,18 @@ public class TagCache extends Cache<String, Tag> {
         removeFromCache(tagName);
     }
 
-    public void delete(String tagName) throws CacheException {
+    public void delete(String tagName) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             Tag tag = getFromCache(tagName);
             if(tag == null){
-                try{
-                    tag = new Tag(getBackendProcessor(), guildId, tagName);
-                    tag.get();
-                }catch (Exception e){
-                    throw new CacheException(-21, "Tag Does Not Exist");
-                }
+                tag = new Tag(getBackendProcessor(), guildId, tagName);
+                tag.delete();
             }
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete A Tag", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete A Tag", e);
         }finally {
             idBasedLockHolder.getLock(tagName).unlock();
         }

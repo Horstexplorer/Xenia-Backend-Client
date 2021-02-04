@@ -18,29 +18,24 @@ package de.netbeacon.xenia.backend.client.objects.internal.exceptions;
 
 public class CacheException extends RuntimeException {
 
-    /**
-     * Types
-     * -1,-2,-3,-4 get/create/delete
-     * -11 get all
-     *
-     * -20 already exists
-     * -21 does not exist
-     * -30 cant do this
-     */
-
-    private final int type;
-    private final Exception exception;
-
-    public CacheException(int type, String message){
-        super(message);
-        this.type = type;
-        this.exception = null;
+    public enum Type{
+        UNKNOWN,
+        NOT_FOUND,
+        ALREADY_EXISTS,
+        IS_FULL
     }
 
-    public CacheException(int type, String message, Exception exception){
+    private final Type type;
+    private Exception exception;
+
+    public CacheException(Type type, String message){
+        super(message);
+        this.type = type;
+    }
+
+    public CacheException(Type type, String message, Exception exception){
         super(message, exception);
         this.type = type;
-        this.exception = exception;
     }
 
     @Override
@@ -48,16 +43,11 @@ public class CacheException extends RuntimeException {
         return "Type: "+type+" Message: "+super.getMessage();
     }
 
-    public int getType() {
+    public Type getType() {
         return type;
     }
 
     public Exception getSubException() {
-        return exception;
-    }
-
-    @Override
-    public synchronized Throwable getCause() {
         return exception;
     }
 }

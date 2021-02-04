@@ -45,11 +45,11 @@ public class ChannelCache extends Cache<Long, Channel> {
         this.guildId = guildId;
     }
 
-    public Channel get(long channelId) throws CacheException {
+    public Channel get(long channelId) throws CacheException, DataException {
         return get(channelId, true);
     }
 
-    public Channel get(long channelId, boolean init) throws CacheException {
+    public Channel get(long channelId, boolean init) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
@@ -68,16 +68,16 @@ public class ChannelCache extends Cache<Long, Channel> {
             }
             addToCache(channelId, channel);
             return channel;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-1, "Failed To Get Channel", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Channel", e);
         }finally {
             idBasedLockHolder.getLock(channelId).unlock();
         }
     }
 
-    public List<Channel> retrieveAllFromBackend(boolean cacheInsert) throws CacheException {
+    public List<Channel> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException {
         try{
             if(cacheInsert){
                 idBasedLockHolder.getLock().writeLock().lock();
@@ -100,10 +100,10 @@ public class ChannelCache extends Cache<Long, Channel> {
                 channelList.add(channel);
             }
             return channelList;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-11, "Failed To Retrieve All Channels", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Channels", e);
         }finally {
             if(cacheInsert){
                 idBasedLockHolder.getLock().writeLock().unlock();
@@ -115,16 +115,16 @@ public class ChannelCache extends Cache<Long, Channel> {
         removeFromCache(channelId);
     }
 
-    public void delete(long channelId) throws CacheException {
+    public void delete(long channelId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
             Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete();
             removeFromCache(channelId);
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete Channel", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Channel", e);
         }finally {
             idBasedLockHolder.getLock(channelId).unlock();
         }

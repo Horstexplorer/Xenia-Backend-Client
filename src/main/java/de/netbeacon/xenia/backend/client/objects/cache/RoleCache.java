@@ -20,6 +20,7 @@ import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Role;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
@@ -45,7 +46,7 @@ public class RoleCache extends Cache<Long, Role> {
         this.guildId = guildId;
     }
 
-    public Role get(long roleId) throws CacheException {
+    public Role get(long roleId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(roleId).lock();
             Role role = getFromCache(roleId);
@@ -56,16 +57,16 @@ public class RoleCache extends Cache<Long, Role> {
             role.get();
             addToCache(roleId, role);
             return role;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-1, "Failed To Get Role", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Role", e);
         }finally {
             idBasedLockHolder.getLock(roleId).unlock();
         }
     }
 
-    public List<Role> retrieveAllFromBackend(boolean cacheInsert) throws CacheException {
+    public List<Role> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException {
         try{
             if(cacheInsert){
                 idBasedLockHolder.getLock().writeLock().lock();
@@ -88,10 +89,10 @@ public class RoleCache extends Cache<Long, Role> {
                 rolesList.add(role);
             }
             return rolesList;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-11, "Failed To Retrieve All Roles", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Roles", e);
         }finally {
             if(cacheInsert){
                 idBasedLockHolder.getLock().writeLock().unlock();
@@ -101,7 +102,7 @@ public class RoleCache extends Cache<Long, Role> {
 
     private final ReentrantLock creationLock = new ReentrantLock();
 
-    public Role createNew() throws CacheException {
+    public Role createNew() throws CacheException, DataException {
         try{
             creationLock.lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_GUILD_ROLE_C()){
@@ -111,10 +112,10 @@ public class RoleCache extends Cache<Long, Role> {
             role.create();
             addToCache(role.getId(), role);
             return role;
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-2, "Failed To Create Role", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create Role", e);
         }finally {
             creationLock.unlock();
         }
@@ -124,16 +125,16 @@ public class RoleCache extends Cache<Long, Role> {
         removeFromCache(roleId);
     }
 
-    public void delete(long roleId) throws CacheException {
+    public void delete(long roleId) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(roleId).lock();
             Role role = getFromCache(roleId);
             Objects.requireNonNullElseGet(role, ()->new Role(getBackendProcessor(), guildId, roleId)).delete();
             removeFromCache(roleId);
-        }catch (CacheException e){
+        }catch (CacheException | DataException e){
             throw e;
         }catch (Exception e){
-            throw new CacheException(-3, "Failed To Delete Role", e);
+            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Role", e);
         }finally {
             idBasedLockHolder.getLock(roleId).unlock();
         }
