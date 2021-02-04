@@ -19,8 +19,8 @@ package de.netbeacon.xenia.backend.client.objects.cache;
 import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Member;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
-import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
@@ -59,8 +59,8 @@ public class MemberCache extends Cache<Long, Member> {
             member = new Member(getBackendProcessor(), guildId, userId);
             try{
                 member.get();
-            }catch (BackendException e){
-                if(e.getId() == 404 && init){
+            }catch (DataException e){
+                if(e.getCode() == 404 && init){
                     member.create();
                 }else{
                     throw e;

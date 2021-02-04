@@ -19,8 +19,8 @@ package de.netbeacon.xenia.backend.client.objects.cache;
 import de.netbeacon.utils.locks.IdBasedLockHolder;
 import de.netbeacon.xenia.backend.client.objects.external.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
-import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
 import java.util.Objects;
@@ -47,8 +47,8 @@ public class GuildCache extends Cache<Long, Guild> {
             guild = new Guild(getBackendProcessor(), guildId);
             try {
                 guild.get();
-            }catch (BackendException e){
-                if(e.getId() == 404 && init){
+            }catch (DataException e){
+                if(e.getCode() == 404 && init){
                     guild.create();
                 }else{
                     throw e;
