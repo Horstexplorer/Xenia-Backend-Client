@@ -19,6 +19,7 @@ package de.netbeacon.xenia.backend.client.objects.external;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
+import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
@@ -54,7 +55,7 @@ public class License extends APIDataObject {
         BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), map, asJSON());
         BackendResult backendResult = getBackendProcessor().process(backendRequest);
         if(backendResult.getStatusCode() != 200){
-            throw new BackendException(backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray()));
+            throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray()));
         }
         fromJSON(backendResult.getPayloadAsJSON());
     }
