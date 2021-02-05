@@ -55,8 +55,12 @@ public abstract class APIDataObject implements IJSONSerializable {
     }
 
     public void get() throws DataException {
+        get(false);
+    }
+
+    public void get(boolean securityOverride) throws DataException {
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
@@ -71,34 +75,55 @@ public abstract class APIDataObject implements IJSONSerializable {
             this.restore();
             throw e;
         }finally {
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
         }
     }
 
-    public void getAsync() throws DataException{
+    public void getAsync(){
+        getAsync(false);
+    }
+
+    public void getAsync(boolean securityOverride) throws DataException{
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
             backendProcessor.processAsync(backendRequest, backendResult->{
-                if(backendResult.getStatusCode() != 200){
-                    throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
+                try{
+                    if(backendResult.getStatusCode() != 200){
+                        throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
+                    }
+                    fromJSON(backendResult.getPayloadAsJSON());
+                    synchronized (this){lastRequestDuration = backendResult.getRequestDuration();}
+                    onRetrieval();
+                }catch (Exception e){
+                    this.restore();
+                    throw e;
+                }finally {
+                    if(!securityOverride){
+                        isStable.set(true);
+                    }
                 }
-                fromJSON(backendResult.getPayloadAsJSON());
-                synchronized (this){lastRequestDuration = backendResult.getRequestDuration();}
             });
-            onRetrieval();
         }catch (Exception e){
             this.restore();
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
             throw e;
         }
     }
 
-    public void create() throws DataException{
+    public void create(){
+        create(false);
+    }
+
+    public void create(boolean securityOverride) throws DataException{
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
@@ -113,13 +138,19 @@ public abstract class APIDataObject implements IJSONSerializable {
             this.restore();
             throw e;
         }finally {
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
         }
     }
 
-    public void createAsync() throws DataException{
+    public void createAsync(){
+        createAsync(false);
+    }
+
+    public void createAsync(boolean securityOverride) throws DataException{
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
@@ -135,19 +166,27 @@ public abstract class APIDataObject implements IJSONSerializable {
                     this.restore();
                     throw e;
                 }finally {
-                    isStable.set(true);
+                    if(!securityOverride){
+                        isStable.set(true);
+                    }
                 }
             });
         }catch (Exception e){
             this.restore();
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
             throw e;
         }
     }
 
-    public void update() throws DataException {
+    public void update(){
+        update(false);
+    }
+
+    public void update(boolean securityOverride) throws DataException {
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
@@ -162,13 +201,19 @@ public abstract class APIDataObject implements IJSONSerializable {
             this.restore();
             throw e;
         }finally {
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
         }
     }
 
-    public void updateAsync() throws DataException{
+    public void updateAsync(){
+        updateAsync(false);
+    }
+
+    public void updateAsync(boolean securityOverride) throws DataException{
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
@@ -184,19 +229,27 @@ public abstract class APIDataObject implements IJSONSerializable {
                     this.restore();
                     throw e;
                 }finally {
-                    isStable.set(true);
+                    if(!securityOverride){
+                        isStable.set(true);
+                    }
                 }
             });
         }catch (Exception e){
             this.restore();
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
             throw e;
         }
     }
 
-    public void delete() throws DataException {
+    public void delete(){
+        delete(false);
+    }
+
+    public void delete(boolean securityOverride) throws DataException {
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
@@ -210,13 +263,19 @@ public abstract class APIDataObject implements IJSONSerializable {
             this.restore();
             throw e;
         }finally {
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
         }
     }
 
-    public void deleteAsync() throws DataException{
+    public void deleteAsync(){
+        deleteAsync(false);
+    }
+
+    public void deleteAsync(boolean securityOverride) throws DataException{
         try{
-            if(!isStable.compareAndSet(true, false)){
+            if(!isStable.compareAndSet(true, false) && !securityOverride){
                 throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
@@ -230,12 +289,16 @@ public abstract class APIDataObject implements IJSONSerializable {
                 }catch (Exception e){
                     this.restore();
                 }finally {
-                    isStable.set(true);
+                    if(!securityOverride){
+                        isStable.set(true);
+                    }
                 }
             });
         }catch (Exception e){
             this.restore();
-            isStable.set(true);
+            if(!securityOverride){
+                isStable.set(true);
+            }
             throw e;
         }
     }
