@@ -19,6 +19,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.external.User;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okio.ByteString;
@@ -117,14 +118,15 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getUserCache().contains(message.getLong("userId"))){
                         return;
                     }
+                    User u = xeniaBackendClient.getUserCache().get(message.getLong("userId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             break;
                         case "update":
-                            xeniaBackendClient.getUserCache().get(message.getLong("userId")).getAsync();
+                            u.getAsync(true);
                             break;
                         case "delete":
-                            xeniaBackendClient.getUserCache().get(message.getLong("userId")).onDeletion();
+                            u.onDeletion();
                             xeniaBackendClient.getUserCache().remove(message.getLong("userId"));
                             break;
                     }
@@ -135,14 +137,15 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             break;
                         case "update":
-                            xeniaBackendClient.getGuildCache().get(message.getLong("guildId")).getAsync(); // this just gets the new data as we dont want to reload all channels, roles, members,...
+                            g.getAsync(true); // this just gets the new data as we dont want to reload all channels, roles, members,...
                             break;
                         case "delete":
-                            xeniaBackendClient.getGuildCache().get(message.getLong("guildId")).clear(true);
+                            g.clear(true);
                             xeniaBackendClient.getGuildCache().remove(message.getLong("guildId"));
                             break;
                     }
@@ -154,14 +157,13 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             scalingExecutor.execute(()->g.getRoleCache().get(message.getLong("roleId")));
                             break;
                         case "update":
-                            g.getRoleCache().remove(message.getLong("roleId"));
-                            scalingExecutor.execute(()->g.getRoleCache().get(message.getLong("roleId")));
+                            g.getRoleCache().get(message.getLong("roleId")).getAsync(true);
                             break;
                         case "delete":
                             g.getRoleCache().get(message.getLong("roleId")).onDeletion();
@@ -175,15 +177,13 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             scalingExecutor.execute(()->g.getChannelCache().get(message.getLong("channelId")));
                             break;
                         case "update":
-                            g.getChannelCache().get(message.getLong("channelId")).clear(false);
-                            g.getChannelCache().remove(message.getLong("channelId"));
-                            scalingExecutor.execute(()->g.getChannelCache().get(message.getLong("channelId")));
+                            g.getChannelCache().get(message.getLong("channelId")).getAsync(true);
                             break;
                         case "delete":
                             g.getChannelCache().get(message.getLong("channelId")).clear(true);
@@ -197,7 +197,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     if(!g.getChannelCache().contains(message.getLong("channelId"))){
                         return;
                     }
@@ -207,8 +207,7 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                             scalingExecutor.execute(()->c.getMessageCache().get(message.getLong("messageId")));
                             break;
                         case "update":
-                            c.getMessageCache().remove(message.getLong("messageId"));
-                            scalingExecutor.execute(()->c.getMessageCache().get(message.getLong("messageId")));
+                            c.getMessageCache().get(message.getLong("messageId")).updateAsync(true);
                             break;
                         case "delete":
                             c.getMessageCache().remove(message.getLong("messageId"));
@@ -230,14 +229,13 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             scalingExecutor.execute(()->g.getMemberCache().get(message.getLong("userId")));
                             break;
                         case "update":
-                            g.getMemberCache().remove(message.getLong("userId"));
-                            scalingExecutor.execute(()->g.getMemberCache().get(message.getLong("userId")));
+                            g.getMemberCache().get(message.getLong("userId")).getAsync(true);
                             break;
                         case "delete":
                             g.getMemberCache().get(message.getLong("userId")).onDeletion();
@@ -251,14 +249,13 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             scalingExecutor.execute(()->g.getMiscCaches().getTagCache().get(message.getString("tagName")));
                             break;
                         case "update":
-                            g.getMiscCaches().getTagCache().remove(message.getString("tagName"));
-                            scalingExecutor.execute(()->g.getMiscCaches().getTagCache().get(message.getString("tagName")));
+                            g.getMiscCaches().getTagCache().get(message.getString("tagName")).getAsync(true);
                             break;
                         case "delete":
                             g.getMiscCaches().getTagCache().get(message.getString("tagName")).onDeletion();
@@ -272,14 +269,13 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             scalingExecutor.execute(()->g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")));
                             break;
                         case "update":
-                            g.getMiscCaches().getNotificationCache().remove(message.getLong("notificationId"));
-                            scalingExecutor.execute(()->g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")));
+                            g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")).getAsync(true);
                             break;
                         case "delete":
                             g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")).onDeletion();
@@ -293,14 +289,13 @@ public class PrimaryWebsocketListener extends WebsocketListener {
                     if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
                         return;
                     }
-                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"));
+                    Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
                     switch (action.toLowerCase()){
                         case "create":
                             scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")));
                             break;
                         case "update":
-                            g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("twitchNotificationId"));
-                            scalingExecutor.execute(()->g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")));
+                            g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")).getAsync(true);
                             break;
                         case "delete":
                             g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")).onDeletion();
