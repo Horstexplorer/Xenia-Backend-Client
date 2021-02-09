@@ -338,7 +338,7 @@ public class Channel extends APIDataObject {
         public enum Settings implements IntBit{
 
             ACTIVATE_SELF_LEARNING(1),
-            ACTIVATE_D43Z1(0);
+            ACTIVE(0);
 
             private final int pos;
 
