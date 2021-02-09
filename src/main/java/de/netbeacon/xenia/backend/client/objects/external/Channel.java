@@ -25,6 +25,7 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,9 @@ public class Channel extends APIDataObject {
     private boolean tmpLoggingActive;
     private long tmpLoggingChannelId;
 
+    private D43Z1Settings d43z1Settings;
+    private UUID d43z1CustomContextPoolUUID;
+
     private String metaChannelName;
     private String metaChannelTopic;
 
@@ -53,6 +57,7 @@ public class Channel extends APIDataObject {
         this.accessMode = new AccessMode(1);
         this.channelFlags = new ChannelFlags(0);
         this.channelSettings = new ChannelSettings(0);
+        this.d43z1Settings = new D43Z1Settings(0);
         setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId);
     }
 
@@ -140,6 +145,34 @@ public class Channel extends APIDataObject {
         this.tmpLoggingChannelId = tmpLoggingChannelId;
     }
 
+    public D43Z1Settings getD43Z1Settings(){
+        return d43z1Settings;
+    }
+
+    public void setD43Z1Settings(D43Z1Settings d43Z1Settings){
+        lSetD43Z1Settings(d43Z1Settings);
+        update();
+    }
+
+    public void lSetD43Z1Settings(D43Z1Settings d43Z1Settings){
+        secure();
+        this.d43z1Settings = d43Z1Settings;
+    }
+
+    public UUID getD43Z1CustomContextPoolUUID(){
+        return d43z1CustomContextPoolUUID;
+    }
+
+    public void setD43Z1CustomContextPoolUUID(UUID uuid){
+        lSetD43Z1CustomContextPoolUUID(uuid);
+        update();
+    }
+
+    public void lSetD43Z1CustomContextPoolUUID(UUID uuid){
+        secure();
+        this.d43z1CustomContextPoolUUID = uuid;
+    }
+
     public MessageCache getMessageCache(){
         return messageCache;
     }
@@ -180,6 +213,8 @@ public class Channel extends APIDataObject {
                 .put("channelSettings", channelSettings.getValue())
                 .put("tmpLoggingActive", tmpLoggingActive)
                 .put("tmpLoggingChannelId", tmpLoggingChannelId)
+                .put("d43z1Settings", d43z1Settings.getValue())
+                .put("d43z1CustomContextPoolUUID", d43z1CustomContextPoolUUID)
                 .put("meta", new JSONObject()
                         .put("name", metaChannelName)
                         .put("topic", metaChannelTopic)
@@ -196,6 +231,8 @@ public class Channel extends APIDataObject {
         this.channelSettings = new ChannelSettings(jsonObject.getInt("channelSettings"));
         this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
         this.tmpLoggingChannelId = jsonObject.getLong("tmpLoggingChannelId");
+        this.d43z1Settings = new D43Z1Settings(jsonObject.getInt("d43z1Settings"));
+        this.d43z1CustomContextPoolUUID = UUID.fromString(jsonObject.getString("d43z1CustomContextPoolUUID"));
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaChannelName = meta.getString("name");
         this.metaChannelTopic = meta.getString("topic");
@@ -243,8 +280,8 @@ public class Channel extends APIDataObject {
 
         public enum Flags implements IntBit{
 
-            NEWS(2),
-            NSFW(1);
+            NEWS(1),
+            NSFW(0);
 
             private final int pos;
 
@@ -289,6 +326,35 @@ public class Channel extends APIDataObject {
         @Override
         public <T extends IntBit> List<T> getBits() {
             return (List<T>) Arrays.stream(ChannelSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
+        }
+    }
+
+    public static class D43Z1Settings extends IntegerBitFlags{
+
+        public D43Z1Settings(int value){
+            super(value);
+        }
+
+        public enum Settings implements IntBit{
+
+            ACTIVATE_SELF_LEARNING(1),
+            ACTIVATE_D43Z1(0);
+
+            private final int pos;
+
+            private Settings(int pos){
+                this.pos = pos;
+            }
+
+            @Override
+            public int getPos() {
+                return pos;
+            }
+        }
+
+        @Override
+        public <T extends IntBit> List<T> getBits() {
+            return (List<T>) Arrays.stream(D43Z1Settings.Settings.values()).filter(this::has).collect(Collectors.toList());
         }
     }
 }
