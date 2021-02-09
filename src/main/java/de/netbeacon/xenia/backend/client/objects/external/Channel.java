@@ -214,7 +214,7 @@ public class Channel extends APIDataObject {
                 .put("tmpLoggingActive", tmpLoggingActive)
                 .put("tmpLoggingChannelId", tmpLoggingChannelId)
                 .put("d43z1Settings", d43z1Settings.getValue())
-                .put("d43z1CustomContextPoolUUID", d43z1CustomContextPoolUUID)
+                .put("d43z1CustomContextPoolUUID", d43z1CustomContextPoolUUID.toString())
                 .put("meta", new JSONObject()
                         .put("name", metaChannelName)
                         .put("topic", metaChannelTopic)
