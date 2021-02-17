@@ -45,13 +45,17 @@ public class TagCache extends Cache<String, Tag> {
     }
 
     public Tag get(String tagName) throws CacheException, DataException {
+        return get(tagName, false);
+    }
+
+    public Tag get(String tagName, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             if(contains(tagName)){
                 return getFromCache(tagName);
             }
             Tag tag = new Tag(getBackendProcessor(), guildId, tagName);
-            tag.get();
+            tag.get(securityOverride);
             addToCache(tagName, tag);
             return tag;
         }catch (CacheException | DataException e){
@@ -92,6 +96,10 @@ public class TagCache extends Cache<String, Tag> {
     }
 
     public Tag createNew(String tagName, long userId, String content) throws CacheException, DataException {
+        return createNew(tagName, userId, content, false);
+    }
+
+    public Tag createNew(String tagName, long userId, String content, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TAGS_C()){
@@ -101,7 +109,7 @@ public class TagCache extends Cache<String, Tag> {
                 throw new CacheException(CacheException.Type.ALREADY_EXISTS, "Tag Already Exists");
             }
             Tag tag = new Tag(getBackendProcessor(), guildId, tagName).lSetInitialData(userId, content);
-            tag.create(); // fails if a tag already exists on the backend which hasnt synced already with the client
+            tag.create(securityOverride); // fails if a tag already exists on the backend which hasnt synced already with the client
             addToCache(tagName, tag);
             return tag;
         }catch (CacheException | DataException e){
@@ -118,12 +126,16 @@ public class TagCache extends Cache<String, Tag> {
     }
 
     public void delete(String tagName) throws CacheException, DataException {
+        delete(tagName, false);
+    }
+
+    public void delete(String tagName, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(tagName).lock();
             Tag tag = getFromCache(tagName);
             if(tag == null){
                 tag = new Tag(getBackendProcessor(), guildId, tagName);
-                tag.delete();
+                tag.delete(securityOverride);
             }
         }catch (CacheException | DataException e){
             throw e;

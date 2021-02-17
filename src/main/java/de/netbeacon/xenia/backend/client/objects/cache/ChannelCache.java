@@ -46,10 +46,14 @@ public class ChannelCache extends Cache<Long, Channel> {
     }
 
     public Channel get(long channelId) throws CacheException, DataException {
-        return get(channelId, true);
+        return get(channelId, true, false);
     }
 
     public Channel get(long channelId, boolean init) throws CacheException, DataException {
+        return get(channelId, init, false);
+    }
+
+    public Channel get(long channelId, boolean init, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
@@ -58,10 +62,10 @@ public class ChannelCache extends Cache<Long, Channel> {
             }
             channel = new Channel(getBackendProcessor(), guildId, channelId);
             try{
-                channel.get();
+                channel.get(securityOverride);
             }catch (DataException e){
                 if(e.getCode() == 404 && init){
-                    channel.create();
+                    channel.create(securityOverride);
                 }else{
                     throw e;
                 }
@@ -116,10 +120,14 @@ public class ChannelCache extends Cache<Long, Channel> {
     }
 
     public void delete(long channelId) throws CacheException, DataException {
+        delete(channelId, false);
+    }
+
+    public void delete(long channelId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(channelId).lock();
             Channel channel = getFromCache(channelId);
-            Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete();
+            Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete(securityOverride);
             removeFromCache(channelId);
         }catch (CacheException | DataException e){
             throw e;

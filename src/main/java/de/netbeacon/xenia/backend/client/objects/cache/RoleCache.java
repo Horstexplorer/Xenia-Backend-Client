@@ -47,6 +47,10 @@ public class RoleCache extends Cache<Long, Role> {
     }
 
     public Role get(long roleId) throws CacheException, DataException {
+        return get(roleId, false);
+    }
+
+    public Role get(long roleId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(roleId).lock();
             Role role = getFromCache(roleId);
@@ -54,7 +58,7 @@ public class RoleCache extends Cache<Long, Role> {
                 return role;
             }
             role = new Role(getBackendProcessor(), guildId, roleId);
-            role.get();
+            role.get(securityOverride);
             addToCache(roleId, role);
             return role;
         }catch (CacheException | DataException e){
@@ -103,13 +107,17 @@ public class RoleCache extends Cache<Long, Role> {
     private final ReentrantLock creationLock = new ReentrantLock();
 
     public Role createNew() throws CacheException, DataException {
+        return createNew(false);
+    }
+
+    public Role createNew(boolean securityOverride) throws CacheException, DataException {
         try{
             creationLock.lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_GUILD_ROLE_C()){
                 throw new RuntimeException("Cache Is Full");
             }
             Role role = new Role(getBackendProcessor(), guildId, -1);
-            role.create();
+            role.create(securityOverride);
             addToCache(role.getId(), role);
             return role;
         }catch (CacheException | DataException e){
@@ -126,10 +134,14 @@ public class RoleCache extends Cache<Long, Role> {
     }
 
     public void delete(long roleId) throws CacheException, DataException {
+        delete(roleId, false);
+    }
+
+    public void delete(long roleId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(roleId).lock();
             Role role = getFromCache(roleId);
-            Objects.requireNonNullElseGet(role, ()->new Role(getBackendProcessor(), guildId, roleId)).delete();
+            Objects.requireNonNullElseGet(role, ()->new Role(getBackendProcessor(), guildId, roleId)).delete(securityOverride);
             removeFromCache(roleId);
         }catch (CacheException | DataException e){
             throw e;

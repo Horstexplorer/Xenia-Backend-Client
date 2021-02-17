@@ -32,6 +32,10 @@ public class LicenseCache extends Cache<Long, License> {
     }
 
     public License get(long guildId) throws CacheException, DataException {
+        return get(guildId, false);
+    }
+
+    public License get(long guildId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             License license = getFromCache(guildId);
@@ -39,7 +43,7 @@ public class LicenseCache extends Cache<Long, License> {
                 return license;
             }
             license = new License(getBackendProcessor(), guildId);
-            license.get();
+            license.get(securityOverride);
             addToCache(guildId, license);
             return license;
         }catch (CacheException | DataException e){

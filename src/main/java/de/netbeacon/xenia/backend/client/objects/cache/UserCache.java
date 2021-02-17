@@ -33,11 +33,15 @@ public class UserCache extends Cache<Long, User> {
         super(backendProcessor);
     }
 
-    public User get(long userId) throws CacheException {
-        return get(userId, true);
+    public User get(long userId) throws CacheException, DataException {
+        return get(userId, true, false);
     }
 
     public User get(long userId, boolean init) throws CacheException, DataException {
+        return get(userId, init, false);
+    }
+
+    public User get(long userId, boolean init, boolean securityOverride) throws CacheException, DataException {
        try{
            idBasedLockHolder.getLock(userId).lock();
            User user = getFromCache(userId);
@@ -46,10 +50,10 @@ public class UserCache extends Cache<Long, User> {
            }
            user = new User(getBackendProcessor(), userId);
            try{
-               user.get();
+               user.get(securityOverride);
            }catch (DataException e){
                if(e.getCode() == 404 && init){
-                   user.create();
+                   user.create(securityOverride);
                }else{
                    throw e;
                }
@@ -70,10 +74,14 @@ public class UserCache extends Cache<Long, User> {
     }
 
     public void delete(long userId) throws CacheException, DataException {
+        delete(userId, false);
+    }
+
+    public void delete(long userId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(userId).lock();
             User user = getFromCache(userId);
-            Objects.requireNonNullElseGet(user, ()->new User(getBackendProcessor(), userId)).delete();
+            Objects.requireNonNullElseGet(user, ()->new User(getBackendProcessor(), userId)).delete(securityOverride);
             removeFromCache(userId);
         }catch (CacheException | DataException e){
             throw e;

@@ -34,10 +34,14 @@ public class GuildCache extends Cache<Long, Guild> {
     }
 
     public Guild get(long guildId) throws CacheException, DataException {
-        return get(guildId, true);
+        return get(guildId, true, false);
     }
 
     public Guild get(long guildId, boolean init) throws CacheException, DataException {
+        return get(guildId, init, false);
+    }
+
+    public Guild get(long guildId, boolean init, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
@@ -46,10 +50,10 @@ public class GuildCache extends Cache<Long, Guild> {
             }
             guild = new Guild(getBackendProcessor(), guildId);
             try {
-                guild.get();
+                guild.get(securityOverride);
             }catch (DataException e){
                 if(e.getCode() == 404 && init){
-                    guild.create();
+                    guild.create(securityOverride);
                 }else{
                     throw e;
                 }
@@ -70,10 +74,14 @@ public class GuildCache extends Cache<Long, Guild> {
     }
 
     public void delete(long guildId) throws CacheException, DataException {
+        delete(guildId, false);
+    }
+
+    public void delete(long guildId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(guildId).lock();
             Guild guild = getFromCache(guildId);
-            Objects.requireNonNullElseGet(guild, () -> new Guild(getBackendProcessor(), guildId)).delete();
+            Objects.requireNonNullElseGet(guild, () -> new Guild(getBackendProcessor(), guildId)).delete(securityOverride);
             guild.clear(true);
             removeFromCache(guildId);
         }catch (CacheException | DataException e){

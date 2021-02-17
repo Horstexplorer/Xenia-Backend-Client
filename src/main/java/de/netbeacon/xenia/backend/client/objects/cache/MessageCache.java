@@ -49,6 +49,10 @@ public class MessageCache extends Cache<Long, Message> {
     }
 
     public Message get(long messageId) throws CacheException, DataException {
+        return get(messageId, false);
+    }
+
+    public Message get(long messageId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             Message message = getFromCache(messageId);
@@ -57,7 +61,7 @@ public class MessageCache extends Cache<Long, Message> {
             }
             message = new Message(getBackendProcessor(), guildId, channelid, messageId);
             try{
-                message.get();
+                message.get(securityOverride);
             }catch (DataException e){
                 if(e.getCode() == 404){
                     return null;
@@ -77,13 +81,17 @@ public class MessageCache extends Cache<Long, Message> {
     }
 
     public Message create(long messageId, long creationTime, long userId, String messageContent) throws CacheException, DataException {
+        return create(messageId, creationTime, userId, messageContent, false);
+    }
+
+    public Message create(long messageId, long creationTime, long userId, String messageContent, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             if(contains(messageId)){
                 return getFromCache(messageId);
             }
             Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).lSetInitialData(userId, creationTime, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
-            message.createAsync(); // can be async as we process a lot of em
+            message.createAsync(securityOverride); // can be async as we process a lot of em
             addToCache(messageId, message);
             return message;
         }catch (CacheException | DataException e){
@@ -139,10 +147,14 @@ public class MessageCache extends Cache<Long, Message> {
     }
 
     public void delete(long messageId) throws CacheException, DataException {
+        delete(messageId, false);
+    }
+
+    public void delete(long messageId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(messageId).lock();
             Message message = getFromCache(messageId);
-            Objects.requireNonNullElseGet(message, ()->new Message(getBackendProcessor(), guildId, channelid, messageId)).delete();
+            Objects.requireNonNullElseGet(message, ()->new Message(getBackendProcessor(), guildId, channelid, messageId)).delete(securityOverride);
             removeFromCache(messageId);
         }catch (CacheException | DataException e){
             throw e;

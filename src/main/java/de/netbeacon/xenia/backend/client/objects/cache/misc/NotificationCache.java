@@ -47,13 +47,17 @@ public class NotificationCache extends Cache<Long, Notification> {
     }
 
     public Notification get(long notificationId) throws CacheException, DataException {
+        return get(notificationId, false);
+    }
+
+    public Notification get(long notificationId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(notificationId).lock();
             if(contains(notificationId)){
                 return getFromCache(notificationId);
             }
             Notification notification = new Notification(getBackendProcessor(), guildId, notificationId);
-            notification.get();
+            notification.get(securityOverride);
             addToCache(notificationId, notification);
             return notification;
         }catch (CacheException | DataException e){
@@ -96,13 +100,17 @@ public class NotificationCache extends Cache<Long, Notification> {
     private final ReentrantLock creationLock = new ReentrantLock();
 
     public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage) throws CacheException, DataException{
+        return createNew(channelId, userId, notificationTarget, notificationMessage, false);
+    }
+
+    public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage, boolean securityOverride) throws CacheException, DataException{
         try{
             creationLock.lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_NOTIFICATIONS_C()){
                 throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
             }
             Notification notification = new Notification(getBackendProcessor(), guildId, -1).lSetInitialData(channelId, userId, notificationTarget, notificationMessage);
-            notification.create();
+            notification.create(securityOverride);
             addToCache(notification.getId(), notification);
             return notification;
         }catch (CacheException | DataException e){
@@ -119,10 +127,14 @@ public class NotificationCache extends Cache<Long, Notification> {
     }
 
     public void delete(long notificationId) throws CacheException, DataException{
+        delete(notificationId, false);
+    }
+
+    public void delete(long notificationId, boolean securityOverride) throws CacheException, DataException{
         try{
             idBasedLockHolder.getLock(notificationId).lock();
             Notification notification = getFromCache(notificationId);
-            Objects.requireNonNullElseGet(notification, ()->new Notification(getBackendProcessor(), guildId, notificationId)).delete();
+            Objects.requireNonNullElseGet(notification, ()->new Notification(getBackendProcessor(), guildId, notificationId)).delete(securityOverride);
             removeFromCache(notificationId);
         }catch (CacheException | DataException e){
             throw e;

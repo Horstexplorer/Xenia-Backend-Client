@@ -48,13 +48,17 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
     }
 
     public TwitchNotification get(long twitchNotificationId) throws CacheException, DataException {
+        return get(twitchNotificationId, true);
+    }
+
+    public TwitchNotification get(long twitchNotificationId, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(twitchNotificationId).lock();
             if(contains(twitchNotificationId)){
                 return getFromCache(twitchNotificationId);
             }
             TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId);
-            tnotific.get();
+            tnotific.get(securityOverride);
             addToCache(tnotific.getChannelId(), tnotific);
             return tnotific;
         }catch (CacheException | DataException e){
@@ -97,6 +101,10 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
     private final ReentrantLock creationLock = new ReentrantLock();
 
     public TwitchNotification createNew(long channelId, String twitchName, String customMessage) throws CacheException, DataException{
+        return createNew(channelId, twitchName, customMessage, false);
+    }
+
+    public TwitchNotification createNew(long channelId, String twitchName, String customMessage, boolean securityOverride) throws CacheException, DataException{
         try{
             creationLock.lock();
             if(getOrderedKeyMap().size()+1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TWITCHNOTIFICATIONS_C()){
@@ -110,7 +118,7 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
             if(customMessage != null){
                 tnotific.lSetNotificationMessage(customMessage);
             }
-            tnotific.create();
+            tnotific.create(securityOverride);
             addToCache(tnotific.getId(), tnotific);
             // send the funny secondary request to init or destroy this notification
             var secWSL = getBackendProcessor().getBackendClient().getSecondaryWebsocketListener().getWsProcessorCore();
@@ -137,10 +145,14 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification> {
     }
 
     public void delete(long twitchNotificationId) throws CacheException, DataException{
+        delete(twitchNotificationId, false);
+    }
+
+    public void delete(long twitchNotificationId, boolean securityOverride) throws CacheException, DataException{
         try{
             idBasedLockHolder.getLock(twitchNotificationId).lock();
             TwitchNotification tnotific = getFromCache(twitchNotificationId);
-            Objects.requireNonNullElseGet(tnotific, () -> new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId)).delete();
+            Objects.requireNonNullElseGet(tnotific, () -> new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId)).delete(securityOverride);
             removeFromCache(tnotific.getId());
         }catch (CacheException | DataException e){
             throw e;

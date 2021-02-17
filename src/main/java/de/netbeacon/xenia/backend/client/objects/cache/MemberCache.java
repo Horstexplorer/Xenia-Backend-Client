@@ -46,10 +46,14 @@ public class MemberCache extends Cache<Long, Member> {
     }
 
     public Member get(long userId) throws CacheException, DataException {
-        return get(userId, true);
+        return get(userId, true, false);
     }
 
     public Member get(long userId, boolean init) throws CacheException, DataException {
+        return get(userId, init, false);
+    }
+
+    public Member get(long userId, boolean init, boolean securityOverride) throws CacheException, DataException {
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);
@@ -58,10 +62,10 @@ public class MemberCache extends Cache<Long, Member> {
             }
             member = new Member(getBackendProcessor(), guildId, userId);
             try{
-                member.get();
+                member.get(securityOverride);
             }catch (DataException e){
                 if(e.getCode() == 404 && init){
-                    member.create();
+                    member.create(securityOverride);
                 }else{
                     throw e;
                 }
@@ -116,10 +120,14 @@ public class MemberCache extends Cache<Long, Member> {
     }
 
     public void delete(long userId) throws CacheException, DataException{
+        delete(userId, false);
+    }
+
+    public void delete(long userId, boolean securityOverride) throws CacheException, DataException{
         try{
             idBasedLockHolder.getLock(userId).lock();
             Member member = getFromCache(userId);
-            Objects.requireNonNullElseGet(member, ()->new Member(getBackendProcessor(), guildId, userId)).delete();
+            Objects.requireNonNullElseGet(member, ()->new Member(getBackendProcessor(), guildId, userId)).delete(securityOverride);
             removeFromCache(userId);
         }catch (CacheException | DataException e){
             throw e;
