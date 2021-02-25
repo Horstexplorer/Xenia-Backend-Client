@@ -240,6 +240,8 @@ public class Guild extends APIDataObject {
         }
 
         public enum Settings implements IntBit{
+
+            COMMAND_AUTO_CORRECT(2),
             ENFORCE_LANGUAGE(1),
             VPERM_ENABLE(0);
 
