@@ -16,7 +16,6 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
 
-import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.external.system.Ping;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
@@ -36,14 +35,12 @@ import java.util.concurrent.TimeUnit;
 
 public class ShutdownInterruptProcessor extends WSProcessor {
 
-    private final XeniaBackendClient xeniaBackendClient;
     private final Logger logger = LoggerFactory.getLogger(ShutdownInterruptProcessor.class);
     private Future<?> future;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
 
-    public ShutdownInterruptProcessor(XeniaBackendClient xeniaBackendClient) {
+    public ShutdownInterruptProcessor() {
         super("shutdownirq");
-        this.xeniaBackendClient = xeniaBackendClient;
     }
 
     @Override
@@ -51,7 +48,7 @@ public class ShutdownInterruptProcessor extends WSProcessor {
         // get payload
         JSONObject payload = wsRequest.getPayload();
         // test shardmanager
-        ShardManager shardManager = xeniaBackendClient.getShardManagerSupplier().get();
+        ShardManager shardManager = getWsProcessorCore().getXeniaBackendClient().getShardManagerSupplier().get();
         if(shardManager == null){
             logger.error("Received Interrupt Request While ShardManager Is Null");
             return null;
@@ -80,16 +77,16 @@ public class ShutdownInterruptProcessor extends WSProcessor {
         // initialize backend client shutdown
         scheduledExecutorService.schedule(()->{
             try{
-                xeniaBackendClient.suspendExecution(true);
+                getWsProcessorCore().getXeniaBackendClient().suspendExecution(true);
                 future = scheduledExecutorService.scheduleAtFixedRate(()->{
                     try{
-                        Ping p = new Ping(xeniaBackendClient.getBackendProcessor());
+                        Ping p = new Ping(getWsProcessorCore().getXeniaBackendClient().getBackendProcessor());
                         if(!p.ping()){
                             return;
                         }
                         future.cancel(false); // let it run but this is the last time
                         // reenable everything
-                        xeniaBackendClient.suspendExecution(false);
+                        getWsProcessorCore().getXeniaBackendClient().suspendExecution(false);
                         shardManager.getShards().stream().map(JDA::getEventManager).forEach(eventManager -> {
                             //if(eventManager instanceof MultiThreadedEventManager){
                             //    ((MultiThreadedEventManager) eventManager).halt(false);
@@ -100,7 +97,7 @@ public class ShutdownInterruptProcessor extends WSProcessor {
                     }catch (Exception e){
                         logger.warn(
                                 "! Failed To Restore From Shutdown Interrupt !\n" +
-                                "The Bot Needs To Get Restarted Manually"
+                                        "The Bot Needs To Get Restarted Manually"
                         );
                     }
                 }, 10, 10, TimeUnit.SECONDS);

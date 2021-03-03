@@ -16,7 +16,6 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
 
-import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.TwitchNotificationCache;
 import de.netbeacon.xenia.backend.client.objects.external.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
@@ -35,25 +34,23 @@ import java.awt.*;
 
 public class TwitchNotificationProcessor extends WSProcessor {
 
-    private final XeniaBackendClient xeniaBackendClient;
     private final Logger logger = LoggerFactory.getLogger(TwitchNotificationProcessor.class);
 
-    public TwitchNotificationProcessor(XeniaBackendClient xeniaBackendClient) {
+    public TwitchNotificationProcessor() {
         super("twitchnotify");
-        this.xeniaBackendClient = xeniaBackendClient;
     }
 
     @Override
     public WSResponse process(WSRequest wsRequest) {
         try{
             JSONObject data = wsRequest.getPayload();
-            if(xeniaBackendClient.getShardManagerSupplier().get() == null) return null;
+            if(getWsProcessorCore().getXeniaBackendClient().getShardManagerSupplier().get() == null) return null;
             // get the guild
-            ShardManager shardManager = xeniaBackendClient.getShardManagerSupplier().get() ;
+            ShardManager shardManager = getWsProcessorCore().getXeniaBackendClient().getShardManagerSupplier().get() ;
             Guild guild = shardManager.getGuildById(data.getLong("guildId"));
             if(guild == null){ return null; }
             // get the notification details
-            TwitchNotificationCache notificationCache = xeniaBackendClient.getGuildCache().get(data.getLong("guildId"), false).getMiscCaches().getTwitchNotificationCache();
+            TwitchNotificationCache notificationCache = getWsProcessorCore().getXeniaBackendClient().getGuildCache().get(data.getLong("guildId"), false).getMiscCaches().getTwitchNotificationCache();
             TwitchNotification twitchNotification = notificationCache.get(data.getLong("twitchNotificationId"));
             // get the channel
             TextChannel textChannel = guild.getTextChannelById(twitchNotification.getChannelId());

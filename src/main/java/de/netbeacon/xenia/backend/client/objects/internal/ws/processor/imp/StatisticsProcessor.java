@@ -16,7 +16,6 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
 
-import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.external.system.Info;
 import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
@@ -28,18 +27,15 @@ import java.lang.management.ManagementFactory;
 
 public class StatisticsProcessor extends WSProcessor {
 
-    private final XeniaBackendClient xeniaBackendClient;
-
-    public StatisticsProcessor(XeniaBackendClient xeniaBackendClient) {
+    public StatisticsProcessor() {
         super("statistics");
-        this.xeniaBackendClient = xeniaBackendClient;
     }
 
     @Override
     public WSResponse process(WSRequest wsRequest) {
         Runtime runtime = Runtime.getRuntime();
-        SetupData setupData = xeniaBackendClient.getSetupData();
-        Info info = xeniaBackendClient.getInfo(Info.Mode.Private);
+        SetupData setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
+        Info info = getWsProcessorCore().getXeniaBackendClient().getInfo(Info.Mode.Private);
         JSONObject jsonObject = new JSONObject()
                 .put("id", setupData.getClientId())
                 .put("name", setupData.getClientName())
@@ -51,8 +47,8 @@ public class StatisticsProcessor extends WSProcessor {
                         .put("uptime", ManagementFactory.getRuntimeMXBean().getUptime())
                         .put("threads", Thread.activeCount())
                         .put("ce", new JSONObject()
-                                .put("guilds", xeniaBackendClient.getGuildCache().getDataMap().size())
-                                .put("users", xeniaBackendClient.getUserCache().getDataMap().size())
+                                .put("guilds", getWsProcessorCore().getXeniaBackendClient().getGuildCache().getDataMap().size())
+                                .put("users", getWsProcessorCore().getXeniaBackendClient().getUserCache().getDataMap().size())
                         )
                         .put("ping", info.getPing())
                 );

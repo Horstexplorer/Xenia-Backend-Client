@@ -17,6 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor;
 
 import de.netbeacon.utils.shutdownhook.IShutdown;
+import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.SecondaryWebsocketListener;
 import kotlin.Pair;
 import org.json.JSONObject;
@@ -25,10 +26,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class WSProcessorCore implements IShutdown {
 
+    private final XeniaBackendClient xeniaBackendClient;
     private final ConcurrentHashMap<String, WSProcessor> wsProcessorRegister = new ConcurrentHashMap<>();
     private final BlockingQueue<WSRequest> outgoingRequestQueue = new LinkedBlockingQueue<>();
     private final BlockingQueue<WSRequest> incomingRequestQueue =new LinkedBlockingQueue<>();
@@ -37,7 +40,8 @@ public class WSProcessorCore implements IShutdown {
     private final Logger logger = LoggerFactory.getLogger(WSProcessorCore.class);
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    public WSProcessorCore(){
+    public WSProcessorCore(XeniaBackendClient xeniaBackendClient){
+        this.xeniaBackendClient = xeniaBackendClient;
         // incoming request processor
         executorService.execute(()->{
             try{
@@ -120,6 +124,14 @@ public class WSProcessorCore implements IShutdown {
             wsProcessorRegister.put(wsProcessor.getAction(), wsProcessor);
         }
         return this;
+    }
+
+    public Map<String, WSProcessor> getProcessorRegister(){
+        return wsProcessorRegister;
+    }
+
+    public XeniaBackendClient getXeniaBackendClient() {
+        return xeniaBackendClient;
     }
 
     public void setWSL(SecondaryWebsocketListener websocketListener){

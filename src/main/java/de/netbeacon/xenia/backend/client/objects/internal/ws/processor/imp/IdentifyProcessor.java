@@ -16,7 +16,6 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
 
-import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
@@ -25,16 +24,13 @@ import org.json.JSONObject;
 
 public class IdentifyProcessor extends WSProcessor {
 
-    private final XeniaBackendClient xeniaBackendClient;
-
-    public IdentifyProcessor(XeniaBackendClient xeniaBackendClient) {
+    public IdentifyProcessor() {
         super("identify");
-        this.xeniaBackendClient = xeniaBackendClient;
     }
 
     @Override
     public WSResponse process(WSRequest wsRequest) {
-        SetupData setupData = xeniaBackendClient.getSetupData();
+        SetupData setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
         return new WSResponse.Builder()
                 .requestId(wsRequest.getRequestId())
                 .recipient(wsRequest.getSender())
