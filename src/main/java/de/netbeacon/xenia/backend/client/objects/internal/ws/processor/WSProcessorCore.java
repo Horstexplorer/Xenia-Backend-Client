@@ -122,6 +122,7 @@ public class WSProcessorCore implements IShutdown {
                 logger.warn("WSProcessor With The Same Action ID Already Registered - Overwriting");
             }
             wsProcessorRegister.put(wsProcessor.getAction(), wsProcessor);
+            wsProcessor.register(this);
         }
         return this;
     }
