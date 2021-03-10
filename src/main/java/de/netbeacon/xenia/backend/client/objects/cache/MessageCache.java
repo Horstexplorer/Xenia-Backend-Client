@@ -182,7 +182,10 @@ public class MessageCache extends Cache<Long, Message> {
         super.addToCache(id, message);
         // remove entries which are too much
         while(getOrderedKeyMap().size() > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C()){
-            removeFromCache(getOrderedKeyMap().get(0));
+            var objTD = getOrderedKeyMap().get(0);
+            if(objTD != null){
+                removeFromCache(objTD);
+            }
         }
         return message;
     }
