@@ -105,6 +105,11 @@ public class Message extends APIDataObject {
     }
 
     public void setMessageContent(String content, String cryptKey){
+        lSetMessageContent(content, cryptKey);
+        update();
+    }
+
+    public void lSetMessageContent(String content, String cryptKey){
         secure();
         String tmpS = this.messageSalt;
         String tmpC = this.messageContent;
@@ -117,7 +122,6 @@ public class Message extends APIDataObject {
         }
         this.oldMessageSalt = tmpS;
         this.oldMessageContent = tmpC;
-        update();
     }
 
     // SECONDARY
