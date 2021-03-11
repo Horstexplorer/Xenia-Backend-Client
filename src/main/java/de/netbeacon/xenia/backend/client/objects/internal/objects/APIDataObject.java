@@ -65,10 +65,12 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
             BackendResult backendResult = backendProcessor.process(backendRequest);
-            if(backendResult.getStatusCode() != 200){
+            if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                 throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
-            fromJSON(backendResult.getPayloadAsJSON());
+            if(backendResult.getStatusCode() != 204){
+                fromJSON(backendResult.getPayloadAsJSON());
+            }
             lastRequestDuration = backendResult.getRequestDuration();
             onRetrieval();
         }catch (Exception e){
@@ -93,10 +95,12 @@ public abstract class APIDataObject implements IJSONSerializable {
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
             backendProcessor.processAsync(backendRequest, backendResult->{
                 try{
-                    if(backendResult.getStatusCode() != 200){
+                    if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                         throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To GET APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
                     }
-                    fromJSON(backendResult.getPayloadAsJSON());
+                    if(backendResult.getStatusCode() != 204){
+                        fromJSON(backendResult.getPayloadAsJSON());
+                    }
                     synchronized (this){lastRequestDuration = backendResult.getRequestDuration();}
                     onRetrieval();
                 }catch (Exception e){
@@ -128,10 +132,12 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
             BackendResult backendResult = backendProcessor.process(backendRequest);
-            if(backendResult.getStatusCode() != 202){
+            if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                 throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
-            fromJSON(backendResult.getPayloadAsJSON());
+            if(backendResult.getStatusCode() != 204){
+                fromJSON(backendResult.getPayloadAsJSON());
+            }
             lastRequestDuration = backendResult.getRequestDuration();
             onCreation();
         }catch (Exception e){
@@ -156,10 +162,12 @@ public abstract class APIDataObject implements IJSONSerializable {
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
             backendProcessor.processAsync(backendRequest, backendResult->{
                 try{
-                    if(backendResult.getStatusCode() != 202){
+                    if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                         throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To CREATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
                     }
-                    fromJSON(backendResult.getPayloadAsJSON());
+                    if(backendResult.getStatusCode() != 204){
+                        fromJSON(backendResult.getPayloadAsJSON());
+                    }
                     synchronized (this){lastRequestDuration = backendResult.getRequestDuration();}
                     onCreation();
                 }catch (Exception e){
@@ -191,10 +199,12 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
             BackendResult backendResult = backendProcessor.process(backendRequest);
-            if(backendResult.getStatusCode() != 200){
+            if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                 throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
-            fromJSON(backendResult.getPayloadAsJSON());
+            if(backendResult.getStatusCode() != 204){
+                fromJSON(backendResult.getPayloadAsJSON());
+            }
             lastRequestDuration = backendResult.getRequestDuration();
             onUpdate();
         }catch (Exception e){
@@ -219,10 +229,12 @@ public abstract class APIDataObject implements IJSONSerializable {
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), asJSON());
             backendProcessor.processAsync(backendRequest, backendResult->{
                 try{
-                    if(backendResult.getStatusCode() != 200){
+                    if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                         throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
                     }
-                    fromJSON(backendResult.getPayloadAsJSON());
+                    if(backendResult.getStatusCode() != 204){
+                        fromJSON(backendResult.getPayloadAsJSON());
+                    }
                     synchronized (this){lastRequestDuration = backendResult.getRequestDuration();}
                     onUpdate();
                 }catch (Exception e){
@@ -254,7 +266,7 @@ public abstract class APIDataObject implements IJSONSerializable {
             }
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
             BackendResult backendResult = backendProcessor.process(backendRequest);
-            if(backendResult.getStatusCode() != 200){
+            if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                 throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
             }
             lastRequestDuration = backendResult.getRequestDuration();
@@ -281,7 +293,7 @@ public abstract class APIDataObject implements IJSONSerializable {
             BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.DELETE, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
             backendProcessor.processAsync(backendRequest, backendResult->{
                 try{
-                    if(backendResult.getStatusCode() != 200){
+                    if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
                         throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To DELETE APIDataObject With Path "+Arrays.toString(getBackendPath().toArray()));
                     }
                     synchronized (this){lastRequestDuration = backendResult.getRequestDuration();}
