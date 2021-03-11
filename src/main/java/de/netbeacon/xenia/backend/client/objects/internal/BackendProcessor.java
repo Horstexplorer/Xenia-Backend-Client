@@ -72,7 +72,7 @@ public class BackendProcessor implements IShutdown {
                 // renew this token
                 BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, Arrays.asList("auth", "token", "renew"), new HashMap<>(), null);
                 BackendResult backendResult = process(backendRequest);
-                if(backendResult.getStatusCode() == 200){
+                if(backendResult.getStatusCode() < 300 || backendResult.getStatusCode() > 199){
                     logger.debug("Renewed Token Successfully");
                 }else{
                     // renewing failed - remove token and call again to request new one
