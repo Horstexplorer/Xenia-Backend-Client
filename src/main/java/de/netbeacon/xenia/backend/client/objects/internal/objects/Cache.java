@@ -72,7 +72,7 @@ public abstract class Cache<K, T extends APIDataObject> {
             }
             inverseDataMap.remove(t);
             orderedKeyMap.remove(id);
-            onRemoval(id);
+            onRemoval(id, t);
         }finally {
             cacheModifyLock.unlock();
         }
@@ -90,7 +90,7 @@ public abstract class Cache<K, T extends APIDataObject> {
             }
             dataMap.remove(id);
             orderedKeyMap.remove(id);
-            onRemoval(id);
+            onRemoval(id, t);
         }finally {
             cacheModifyLock.unlock();
         }
@@ -142,10 +142,10 @@ public abstract class Cache<K, T extends APIDataObject> {
         }
     }
 
-    private void onRemoval(K oldKey){
+    private void onRemoval(K oldKey, T oldObject){
         for(var listener : new ArrayList<>(cacheListeners)){
             try{
-                listener.onRemoval(oldKey);
+                listener.onRemoval(oldKey, oldObject);
             }catch (Exception e){
                 logger.error("Uncaught exception on Cache onRemoval listener "+e);
             }

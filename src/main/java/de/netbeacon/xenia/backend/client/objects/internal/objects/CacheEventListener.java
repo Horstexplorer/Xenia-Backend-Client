@@ -20,6 +20,6 @@ public interface CacheEventListener<K, T extends APIDataObject> {
 
     public default void onInsertion(K newKey, T newObject){}
 
-    public default void onRemoval(K oldKey){}
+    public default void onRemoval(K oldKey, T oldObject){}
 
 }
