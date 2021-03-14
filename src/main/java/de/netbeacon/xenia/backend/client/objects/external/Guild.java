@@ -41,6 +41,7 @@ public class Guild extends APIDataObject {
     private long creationTimestamp;
     private String preferredLanguage;
     private GuildSettings settings = new GuildSettings(0);
+    private D43Z1Mode d43Z1Mode = new D43Z1Mode(0);
     private String prefix;
     // meta data - initialize with values
     private String metaGuildName = "unknown_name";
@@ -86,6 +87,7 @@ public class Guild extends APIDataObject {
     public GuildSettings getSettings(){
         return settings;
     }
+
     public void setGuildSettings(GuildSettings settings){
         lSetGuildSettings(settings);
         update();
@@ -94,6 +96,20 @@ public class Guild extends APIDataObject {
     public void lSetGuildSettings(GuildSettings settings){
         secure();
         this.settings = settings;
+    }
+
+    public D43Z1Mode getD43Z1Mode() {
+        return d43Z1Mode;
+    }
+
+    public void setD43Z1Mode(D43Z1Mode d43Z1Mode){
+        lSetD43Z1Mode(d43Z1Mode);
+        update();
+    }
+
+    public void lSetD43Z1Mode(D43Z1Mode d43Z1Mode){
+        secure();
+        this.d43Z1Mode = d43Z1Mode;
     }
 
     public String getPrefix() {
@@ -176,6 +192,7 @@ public class Guild extends APIDataObject {
                 .put("preferredLanguage", preferredLanguage)
                 .put("prefix", prefix)
                 .put("settings", settings.getValue())
+                .put("d43z1Mode", d43Z1Mode.getValue())
                 .put("meta", new JSONObject()
                         .put("name", metaGuildName)
                         .put("iconUrl", metaIconUrl != null ? metaIconUrl : JSONObject.NULL)
@@ -189,7 +206,7 @@ public class Guild extends APIDataObject {
         this.preferredLanguage = jsonObject.getString("preferredLanguage");
         this.prefix = jsonObject.getString("prefix");
         this.settings = new GuildSettings(jsonObject.getInt("settings"));
-
+        this.d43Z1Mode = new D43Z1Mode(jsonObject.getInt("d43z1Mode"));
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaGuildName = meta.getString("name");
         this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
@@ -260,6 +277,36 @@ public class Guild extends APIDataObject {
         @Override
         public <T extends IntBit> List<T> getBits() {
             return (List<T>) Arrays.stream(Guild.GuildSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
+        }
+    }
+
+    public static class D43Z1Mode extends IntegerBitFlags{
+
+        public D43Z1Mode(int value){
+            super(value);
+        }
+
+        public enum Modes implements IntBit{
+
+            SELF_LEARNING_ONLY(2),
+            MIX(1),
+            MASTER_ONLY(0);
+
+            private final int pos;
+
+            private Modes(int pos){
+                this.pos = pos;
+            }
+
+            @Override
+            public int getPos() {
+                return pos;
+            }
+        }
+
+        @Override
+        public <T extends IntBit> List<T> getBits() {
+            return (List<T>) Arrays.stream(Guild.D43Z1Mode.Modes.values()).filter(this::has).collect(Collectors.toList());
         }
     }
 }
