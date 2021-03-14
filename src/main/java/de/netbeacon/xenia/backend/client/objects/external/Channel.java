@@ -34,13 +34,13 @@ public class Channel extends APIDataObject {
     private long channelId;
 
     private long creationTimestamp;
-    private AccessMode accessMode;
-    private ChannelFlags channelFlags;
-    private ChannelSettings channelSettings;
+    private AccessMode accessMode = new AccessMode(1);
+    private ChannelFlags channelFlags =  new ChannelFlags(0);
+    private ChannelSettings channelSettings = new ChannelSettings(0);
     private boolean tmpLoggingActive;
     private long tmpLoggingChannelId;
 
-    private D43Z1Settings d43z1Settings;
+    private D43Z1Settings d43z1Settings = new D43Z1Settings(0);
 
     private String metaChannelName;
     private String metaChannelTopic;
@@ -52,10 +52,6 @@ public class Channel extends APIDataObject {
         this.guildId = guildId;
         this.channelId = channelId;
         this.messageCache = new MessageCache(backendProcessor, guildId, channelId);
-        this.accessMode = new AccessMode(1);
-        this.channelFlags = new ChannelFlags(0);
-        this.channelSettings = new ChannelSettings(0);
-        this.d43z1Settings = new D43Z1Settings(0);
         setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId);
     }
 
@@ -144,6 +140,7 @@ public class Channel extends APIDataObject {
     }
 
     public D43Z1Settings getD43Z1Settings(){
+        System.err.println(d43z1Settings.getValue());
         return d43z1Settings;
     }
 
