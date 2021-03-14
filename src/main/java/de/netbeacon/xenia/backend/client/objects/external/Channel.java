@@ -25,7 +25,6 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,6 @@ public class Channel extends APIDataObject {
     private long tmpLoggingChannelId;
 
     private D43Z1Settings d43z1Settings;
-    private UUID d43z1CustomContextPoolUUID;
 
     private String metaChannelName;
     private String metaChannelTopic;
@@ -58,7 +56,6 @@ public class Channel extends APIDataObject {
         this.channelFlags = new ChannelFlags(0);
         this.channelSettings = new ChannelSettings(0);
         this.d43z1Settings = new D43Z1Settings(0);
-        this.d43z1CustomContextPoolUUID = new UUID(0,0);
         setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId);
     }
 
@@ -160,20 +157,6 @@ public class Channel extends APIDataObject {
         this.d43z1Settings = d43Z1Settings;
     }
 
-    public UUID getD43Z1CustomContextPoolUUID(){
-        return d43z1CustomContextPoolUUID;
-    }
-
-    public void setD43Z1CustomContextPoolUUID(UUID uuid){
-        lSetD43Z1CustomContextPoolUUID(uuid);
-        update();
-    }
-
-    public void lSetD43Z1CustomContextPoolUUID(UUID uuid){
-        secure();
-        this.d43z1CustomContextPoolUUID = uuid;
-    }
-
     public MessageCache getMessageCache(){
         return messageCache;
     }
@@ -215,7 +198,6 @@ public class Channel extends APIDataObject {
                 .put("tmpLoggingActive", tmpLoggingActive)
                 .put("tmpLoggingChannelId", tmpLoggingChannelId)
                 .put("d43z1Settings", d43z1Settings.getValue())
-                .put("d43z1CustomContextPoolUUID", d43z1CustomContextPoolUUID.toString())
                 .put("meta", new JSONObject()
                         .put("name", metaChannelName)
                         .put("topic", metaChannelTopic)
@@ -233,7 +215,6 @@ public class Channel extends APIDataObject {
         this.tmpLoggingActive = jsonObject.getBoolean("tmpLoggingActive");
         this.tmpLoggingChannelId = jsonObject.getLong("tmpLoggingChannelId");
         this.d43z1Settings = new D43Z1Settings(jsonObject.getInt("d43z1Settings"));
-        this.d43z1CustomContextPoolUUID = UUID.fromString(jsonObject.getString("d43z1CustomContextPoolUUID"));
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaChannelName = meta.getString("name");
         this.metaChannelTopic = meta.getString("topic");
