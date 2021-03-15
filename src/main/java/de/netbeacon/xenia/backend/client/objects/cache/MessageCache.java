@@ -17,6 +17,7 @@
 package de.netbeacon.xenia.backend.client.objects.cache;
 
 import de.netbeacon.utils.locks.IdBasedLockHolder;
+import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.external.Message;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
@@ -181,7 +182,10 @@ public class MessageCache extends Cache<Long, Message> {
     public Message addToCache(Long id, Message message) {
         super.addToCache(id, message);
         // remove entries which are too much
-        while(getOrderedKeyMap().size() > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C()){
+        int defaultLimit = getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C();
+        int limit = (message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ACTIVE) && message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ACTIVATE_SELF_LEARNING))
+                ? defaultLimit * 2: defaultLimit;
+        while(getOrderedKeyMap().size() > limit){
             var objTD = getOrderedKeyMap().get(0);
             if(objTD != null){
                 removeFromCache(objTD);
