@@ -140,7 +140,6 @@ public class Channel extends APIDataObject {
     }
 
     public D43Z1Settings getD43Z1Settings(){
-        System.err.println(d43z1Settings.getValue());
         return d43z1Settings;
     }
 
