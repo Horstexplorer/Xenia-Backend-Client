@@ -288,6 +288,7 @@ public class Guild extends APIDataObject {
 
         public enum Modes implements IntBit{
 
+            DISABLE_COMMAND_AUTO_CORRECT_MESSAGE(3),
             SELF_LEARNING_ONLY(2),
             MIX(1),
             MASTER_ONLY(0);
