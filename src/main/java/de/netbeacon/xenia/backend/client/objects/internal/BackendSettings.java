@@ -16,67 +16,68 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal;
 
-public class BackendSettings {
+public class BackendSettings{
 
-    private final String scheme;
-    private final String host;
-    private final int port;
+	private final String scheme;
+	private final String host;
+	private final int port;
 
-    private final long clientId;
-    private final String password;
-    private String token;
+	private final long clientId;
+	private final String password;
+	private String token;
 
-    private String messageCryptKey;
+	private String messageCryptKey;
 
-    public BackendSettings(String scheme, String host, int port, long clientId, String password, String messageCryptKey){
-        this.scheme = scheme;
-        this.host = host;
-        this.port = port;
-        this.clientId = clientId;
-        this.password = password;
-        this.messageCryptKey = messageCryptKey;
-    }
+	public BackendSettings(String scheme, String host, int port, long clientId, String password, String messageCryptKey){
+		this.scheme = scheme;
+		this.host = host;
+		this.port = port;
+		this.clientId = clientId;
+		this.password = password;
+		this.messageCryptKey = messageCryptKey;
+	}
 
-    // backend identification
+	// backend identification
 
-    public String getScheme() {
-        return scheme;
-    }
+	public String getScheme(){
+		return scheme;
+	}
 
-    public String getHost() {
-        return host;
-    }
+	public String getHost(){
+		return host;
+	}
 
-    public int getPort() {
-        return port;
-    }
+	public int getPort(){
+		return port;
+	}
 
-    // client credentials
+	// client credentials
 
-    public long getClientId() {
-        return clientId;
-    }
+	public long getClientId(){
+		return clientId;
+	}
 
-    public String getClientIdAsString() {
-        return String.valueOf(clientId);
-    }
+	public String getClientIdAsString(){
+		return String.valueOf(clientId);
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public String getPassword(){
+		return password;
+	}
 
-    public String getToken() {
-        return token;
-    }
+	public String getToken(){
+		return token;
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public void setToken(String token){
+		this.token = token;
+	}
 
-    // msg crypt
+	// msg crypt
 
 
-    public String getMessageCryptKey() {
-        return messageCryptKey;
-    }
+	public String getMessageCryptKey(){
+		return messageCryptKey;
+	}
+
 }

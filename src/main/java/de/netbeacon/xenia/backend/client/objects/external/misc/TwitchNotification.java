@@ -25,98 +25,99 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class TwitchNotification extends APIDataObject {
+public class TwitchNotification extends APIDataObject{
 
-    private long twitchNotificationId;
-    private long guildId;
-    private long channelId;
-    private long creationTimestamp;
-    private Long twitchChannelId;
-    private String twitchChannelName;
-    private String notificationMessage = "$username$ is now live on twitch playing $game$";
+	private long twitchNotificationId;
+	private long guildId;
+	private long channelId;
+	private long creationTimestamp;
+	private Long twitchChannelId;
+	private String twitchChannelName;
+	private String notificationMessage = "$username$ is now live on twitch playing $game$";
 
-    public TwitchNotification(BackendProcessor backendProcessor, long guildId, long twitchNotificationId) {
-        super(backendProcessor);
-        this.guildId = guildId;
-        this.twitchNotificationId = twitchNotificationId;
-        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "twitchnotifications", (Supplier<Long>) this::getId);
-    }
+	public TwitchNotification(BackendProcessor backendProcessor, long guildId, long twitchNotificationId){
+		super(backendProcessor);
+		this.guildId = guildId;
+		this.twitchNotificationId = twitchNotificationId;
+		setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "twitchnotifications", (Supplier<Long>) this::getId);
+	}
 
-    public TwitchNotification lSetInitialData(String channelName, long channelId){
-        this.twitchChannelName = channelName;
-        this.channelId = channelId;
-        return this;
-    }
+	public TwitchNotification lSetInitialData(String channelName, long channelId){
+		this.twitchChannelName = channelName;
+		this.channelId = channelId;
+		return this;
+	}
 
-    public long getId(){
-        return twitchNotificationId;
-    }
+	public long getId(){
+		return twitchNotificationId;
+	}
 
-    public long getGuildId() {
-        return guildId;
-    }
+	public long getGuildId(){
+		return guildId;
+	}
 
-    public long getChannelId() {
-        return channelId;
-    }
+	public long getChannelId(){
+		return channelId;
+	}
 
-    public long getCreationTimestamp() {
-        return creationTimestamp;
-    }
+	public long getCreationTimestamp(){
+		return creationTimestamp;
+	}
 
-    public long getTwitchChannelId() {
-        return twitchChannelId;
-    }
+	public long getTwitchChannelId(){
+		return twitchChannelId;
+	}
 
-    public String getTwitchChannelName(){
-        return twitchChannelName;
-    }
+	public String getTwitchChannelName(){
+		return twitchChannelName;
+	}
 
-    public String getNotificationMessage(){
-        return notificationMessage;
-    }
+	public String getNotificationMessage(){
+		return notificationMessage;
+	}
 
-    public void setNotificationMessage(String message){
-        lSetNotificationMessage(message);
-        update();
-    }
+	public void setNotificationMessage(String message){
+		lSetNotificationMessage(message);
+		update();
+	}
 
-    public void lSetNotificationMessage(String message){
-        secure();
-        this.notificationMessage = message;
-    }
+	public void lSetNotificationMessage(String message){
+		secure();
+		this.notificationMessage = message;
+	}
 
-    // SECONDARY
+	// SECONDARY
 
-    public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
-    }
+	public Guild getGuild(){
+		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+	}
 
-    public Channel getChannel(){
-        return getGuild().getChannelCache().get(channelId, false);
-    }
+	public Channel getChannel(){
+		return getGuild().getChannelCache().get(channelId, false);
+	}
 
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException {
-        return new JSONObject()
-                .put("twitchNotificationId", twitchNotificationId)
-                .put("creationTimestamp", creationTimestamp)
-                .put("guildId", guildId)
-                .put("channelId", channelId)
-                .put("twitchChannelId", twitchChannelId)
-                .put("twitchChannelName", twitchChannelName)
-                .put("notificationMessage", notificationMessage);
-    }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{
+		return new JSONObject()
+			.put("twitchNotificationId", twitchNotificationId)
+			.put("creationTimestamp", creationTimestamp)
+			.put("guildId", guildId)
+			.put("channelId", channelId)
+			.put("twitchChannelId", twitchChannelId)
+			.put("twitchChannelName", twitchChannelName)
+			.put("notificationMessage", notificationMessage);
+	}
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        twitchNotificationId = jsonObject.getLong("twitchNotificationId");
-        creationTimestamp = jsonObject.getLong("creationTimestamp");
-        guildId = jsonObject.getLong("guildId");
-        channelId = jsonObject.getLong("channelId");
-        twitchChannelId = jsonObject.get("twitchChannelId") != JSONObject.NULL ? jsonObject.getLong("twitchChannelId") : null;
-        twitchChannelName = jsonObject.getString("twitchChannelName");
-        notificationMessage = jsonObject.getString("notificationMessage");
-    }
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
+		twitchNotificationId = jsonObject.getLong("twitchNotificationId");
+		creationTimestamp = jsonObject.getLong("creationTimestamp");
+		guildId = jsonObject.getLong("guildId");
+		channelId = jsonObject.getLong("channelId");
+		twitchChannelId = jsonObject.get("twitchChannelId") != JSONObject.NULL ? jsonObject.getLong("twitchChannelId") : null;
+		twitchChannelName = jsonObject.getString("twitchChannelName");
+		notificationMessage = jsonObject.getString("notificationMessage");
+	}
+
 }

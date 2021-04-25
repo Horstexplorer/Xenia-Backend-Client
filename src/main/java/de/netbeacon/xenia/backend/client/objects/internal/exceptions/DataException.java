@@ -18,42 +18,43 @@ package de.netbeacon.xenia.backend.client.objects.internal.exceptions;
 
 public class DataException extends RuntimeException{
 
-    public enum Type{
-        UNKNOWN,
-        UNSTABLE,
-        HTTP,
-        TIMEOUT
-    }
+	public enum Type{
+		UNKNOWN,
+		UNSTABLE,
+		HTTP,
+		TIMEOUT
+	}
 
-    private int code;
-    private final Type type;
+	private int code;
+	private final Type type;
 
-    public DataException(Type type){
-        super(type.name());
-        this.type = type;
-    }
+	public DataException(Type type){
+		super(type.name());
+		this.type = type;
+	}
 
-    public DataException(Type type, String message){
-        super(message);
-        this.type = type;
-    }
+	public DataException(Type type, String message){
+		super(message);
+		this.type = type;
+	}
 
-    public DataException(Type type, int code, String message){
-        super(message);
-        this.type = type;
-        this.code = code;
-    }
+	public DataException(Type type, int code, String message){
+		super(message);
+		this.type = type;
+		this.code = code;
+	}
 
-    public Type getType() {
-        return type;
-    }
+	public Type getType(){
+		return type;
+	}
 
-    public int getCode() {
-        return code;
-    }
+	public int getCode(){
+		return code;
+	}
 
-    @Override
-    public String getMessage() {
-        return type.name()+" "+code+" "+super.getMessage();
-    }
+	@Override
+	public String getMessage(){
+		return type.name() + " " + code + " " + super.getMessage();
+	}
+
 }

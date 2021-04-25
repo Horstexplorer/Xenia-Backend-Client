@@ -28,83 +28,84 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-public class Tag extends APIDataObject {
+public class Tag extends APIDataObject{
 
-    private long guildId;
-    private String tagName;
-    private long creationTimestamp;
-    private long userId;
-    private String tagContent;
+	private long guildId;
+	private String tagName;
+	private long creationTimestamp;
+	private long userId;
+	private String tagContent;
 
-    public Tag(BackendProcessor backendProcessor, long guildId, String tagName) {
-        super(backendProcessor);
-        this.guildId = guildId;
-        this.tagName = tagName;
-        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "tags", (Supplier<String>) () -> URLEncoder.encode(getId(), StandardCharsets.UTF_8));
-    }
+	public Tag(BackendProcessor backendProcessor, long guildId, String tagName){
+		super(backendProcessor);
+		this.guildId = guildId;
+		this.tagName = tagName;
+		setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "tags", (Supplier<String>) () -> URLEncoder.encode(getId(), StandardCharsets.UTF_8));
+	}
 
-    public Tag lSetInitialData(long userId, String tagContent){
-        this.userId = userId;
-        this.tagContent = tagContent;
-        return this;
-    }
+	public Tag lSetInitialData(long userId, String tagContent){
+		this.userId = userId;
+		this.tagContent = tagContent;
+		return this;
+	}
 
-    public String getId(){
-        return tagName;
-    }
+	public String getId(){
+		return tagName;
+	}
 
-    public long getGuildId() {
-        return guildId;
-    }
+	public long getGuildId(){
+		return guildId;
+	}
 
-    public long getUserId() {
-        return userId;
-    }
+	public long getUserId(){
+		return userId;
+	}
 
-    public long getCreationTimestamp() {
-        return creationTimestamp;
-    }
+	public long getCreationTimestamp(){
+		return creationTimestamp;
+	}
 
-    public String getTagContent() {
-        return tagContent;
-    }
+	public String getTagContent(){
+		return tagContent;
+	}
 
-    public void setTagContent(String tagContent) throws BackendException {
-        lSetTagContent(tagContent);
-        update();
-    }
+	public void setTagContent(String tagContent) throws BackendException{
+		lSetTagContent(tagContent);
+		update();
+	}
 
-    public void lSetTagContent(String tagContent) throws BackendException {
-        secure();
-        this.tagContent = tagContent;
-    }
+	public void lSetTagContent(String tagContent) throws BackendException{
+		secure();
+		this.tagContent = tagContent;
+	}
 
-    // SECONDARY
+	// SECONDARY
 
-    public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
-    }
+	public Guild getGuild(){
+		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+	}
 
-    public Member getMember(){
-        return getGuild().getMemberCache().get(userId, false);
-    }
+	public Member getMember(){
+		return getGuild().getMemberCache().get(userId, false);
+	}
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException {
-        return new JSONObject()
-                .put("tagName", tagName)
-                .put("creationTimestamp", creationTimestamp)
-                .put("guildId", guildId)
-                .put("userId", userId)
-                .put("tagContent", tagContent);
-    }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{
+		return new JSONObject()
+			.put("tagName", tagName)
+			.put("creationTimestamp", creationTimestamp)
+			.put("guildId", guildId)
+			.put("userId", userId)
+			.put("tagContent", tagContent);
+	}
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        this.tagName = jsonObject.getString("tagName");
-        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        this.guildId = jsonObject.getLong("guildId");
-        this.userId = jsonObject.getLong("userId");
-        this.tagContent = jsonObject.getString("tagContent");
-    }
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
+		this.tagName = jsonObject.getString("tagName");
+		this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+		this.guildId = jsonObject.getLong("guildId");
+		this.userId = jsonObject.getLong("userId");
+		this.tagContent = jsonObject.getString("tagContent");
+	}
+
 }

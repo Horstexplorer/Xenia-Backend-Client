@@ -32,69 +32,70 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class WebsocketListener extends okhttp3.WebSocketListener implements IShutdown {
+public abstract class WebsocketListener extends okhttp3.WebSocketListener implements IShutdown{
 
-    protected final XeniaBackendClient xeniaBackendClient;
-    protected ScalingExecutor scalingExecutor;
-    protected WebSocket webSocket;
-    protected AtomicBoolean shutdown = new AtomicBoolean(true);
-    private final String wsPath;
+	protected final XeniaBackendClient xeniaBackendClient;
+	protected ScalingExecutor scalingExecutor;
+	protected WebSocket webSocket;
+	protected AtomicBoolean shutdown = new AtomicBoolean(true);
+	private final String wsPath;
 
-    public WebsocketListener(XeniaBackendClient xeniaBackendClient, String wsPath){
-        this.xeniaBackendClient = xeniaBackendClient;
-        this.wsPath = wsPath;
-    }
+	public WebsocketListener(XeniaBackendClient xeniaBackendClient, String wsPath){
+		this.xeniaBackendClient = xeniaBackendClient;
+		this.wsPath = wsPath;
+	}
 
-    public void start(){
-        if(scalingExecutor != null){
-            scalingExecutor.shutdown();
-        }
-        if(webSocket != null){
-            webSocket.close(1000, "Reconnecting Soon");
-        }
-        scalingExecutor = new ScalingExecutor(2, 14, 12000, 30, TimeUnit.SECONDS);
-        BackendSettings backendSettings = xeniaBackendClient.getBackendProcessor().getBackendSettings();
-        String host = backendSettings.getHost();
-        int port = backendSettings.getPort();
-        String token = backendSettings.getToken();
-        // build request
-        Request request = new Request.Builder().url("wss://"+host+":"+port+"/"+wsPath+"?token="+ URLEncoder.encode(token, StandardCharsets.UTF_8)).build();
-        webSocket = xeniaBackendClient.getOkHttpClient().newWebSocket(request, this);
-        shutdown.set(false);
-    }
+	public void start(){
+		if(scalingExecutor != null){
+			scalingExecutor.shutdown();
+		}
+		if(webSocket != null){
+			webSocket.close(1000, "Reconnecting Soon");
+		}
+		scalingExecutor = new ScalingExecutor(2, 14, 12000, 30, TimeUnit.SECONDS);
+		BackendSettings backendSettings = xeniaBackendClient.getBackendProcessor().getBackendSettings();
+		String host = backendSettings.getHost();
+		int port = backendSettings.getPort();
+		String token = backendSettings.getToken();
+		// build request
+		Request request = new Request.Builder().url("wss://" + host + ":" + port + "/" + wsPath + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8)).build();
+		webSocket = xeniaBackendClient.getOkHttpClient().newWebSocket(request, this);
+		shutdown.set(false);
+	}
 
-    public void stop(){
-        shutdown.set(true);
-        scalingExecutor.shutdown();
-        scalingExecutor = null;
-        webSocket.close(1000, "Closed Connection");
-        webSocket = null;
-    }
+	public void stop(){
+		shutdown.set(true);
+		scalingExecutor.shutdown();
+		scalingExecutor = null;
+		webSocket.close(1000, "Closed Connection");
+		webSocket = null;
+	}
 
-    public void send(String message){
-        webSocket.send(message);
-    }
+	public void send(String message){
+		webSocket.send(message);
+	}
 
-    @Override
-    public abstract void onOpen(@NotNull WebSocket webSocket, @NotNull Response response);
+	@Override
+	public abstract void onOpen(@NotNull WebSocket webSocket, @NotNull Response response);
 
-    @Override
-    public abstract void onMessage(@NotNull WebSocket webSocket, @NotNull String text);
+	@Override
+	public abstract void onMessage(@NotNull WebSocket webSocket, @NotNull String text);
 
-    @Override
-    public abstract void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes);
+	@Override
+	public abstract void onMessage(@NotNull WebSocket webSocket, @NotNull ByteString bytes);
 
-    @Override
-    public abstract void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason);
+	@Override
+	public abstract void onClosing(@NotNull WebSocket webSocket, int code, @NotNull String reason);
 
-    @Override
-    public abstract void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason);
+	@Override
+	public abstract void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason);
 
-    @Override
-    public abstract void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response);
+	@Override
+	public abstract void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response);
 
-    @Override
-    public void onShutdown() throws Exception {
-        stop();
-    }
+	@Override
+	public void onShutdown() throws Exception{
+		stop();
+	}
+
 }

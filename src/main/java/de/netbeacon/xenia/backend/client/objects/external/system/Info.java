@@ -25,117 +25,120 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Info extends APIDataObject {
+public class Info extends APIDataObject{
 
-    public enum Mode {
-        Public,
-        Private,
-    }
+	public enum Mode{
+		Public,
+		Private,
+	}
 
-    private final Mode mode;
+	private final Mode mode;
 
-    private String version;
-    private int guildCount;
-    private int userCount;
-    private int memberCount;
-    private int channelCount;
-    private int forbiddenChannels;
-    private int messageCount;
+	private String version;
+	private int guildCount;
+	private int userCount;
+	private int memberCount;
+	private int channelCount;
+	private int forbiddenChannels;
+	private int messageCount;
 
-    private final Logger logger = LoggerFactory.getLogger(Info.class);
+	private final Logger logger = LoggerFactory.getLogger(Info.class);
 
-    public Info(BackendProcessor backendProcessor, Mode mode) {
-        super(backendProcessor);
-        this.mode = mode;
-        setBackendPath("info", mode.toString().toLowerCase());
-    }
+	public Info(BackendProcessor backendProcessor, Mode mode){
+		super(backendProcessor);
+		this.mode = mode;
+		setBackendPath("info", mode.toString().toLowerCase());
+	}
 
-    @Override
-    public void create() throws BackendException {}
+	@Override
+	public void create() throws BackendException{}
 
-    @Override
-    public void createAsync() {}
+	@Override
+	public void createAsync(){}
 
-    @Override
-    public void update() throws BackendException {}
+	@Override
+	public void update() throws BackendException{}
 
-    @Override
-    public void updateAsync() {}
+	@Override
+	public void updateAsync(){}
 
-    @Override
-    public void delete() throws BackendException {}
+	@Override
+	public void delete() throws BackendException{}
 
-    @Override
-    public void deleteAsync() {}
+	@Override
+	public void deleteAsync(){}
 
-    public String getVersion(){
-        return version;
-    }
+	public String getVersion(){
+		return version;
+	}
 
-    public int getGuildCount() {
-        return guildCount;
-    }
+	public int getGuildCount(){
+		return guildCount;
+	}
 
-    public int getUserCount() {
-        return userCount;
-    }
+	public int getUserCount(){
+		return userCount;
+	}
 
-    public int getMemberCount() {
-        return memberCount;
-    }
+	public int getMemberCount(){
+		return memberCount;
+	}
 
-    public int getChannelCount() {
-        return channelCount;
-    }
+	public int getChannelCount(){
+		return channelCount;
+	}
 
-    public int getForbiddenChannels() {
-        return forbiddenChannels;
-    }
+	public int getForbiddenChannels(){
+		return forbiddenChannels;
+	}
 
-    public int getMessageCount() {
-        return messageCount;
-    }
+	public int getMessageCount(){
+		return messageCount;
+	}
 
-    public long getPing() {
-        return getLastRequestDuration();
-    }
+	public long getPing(){
+		return getLastRequestDuration();
+	}
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException {
-        if(mode == Mode.Public){
-            return new JSONObject()
-                    .put("version", AppInfo.get("buildVersion")+"_"+ AppInfo.get("buildNumber"))
-                    .put("guilds", guildCount)
-                    .put("users", userCount)
-                    .put("members", memberCount);
-        }else{
-            return new JSONObject()
-                    .put("version", AppInfo.get("buildVersion")+"_"+ AppInfo.get("buildNumber"))
-                    .put("guilds", guildCount)
-                    .put("users", userCount)
-                    .put("members", memberCount)
-                    .put("channels", new JSONObject()
-                            .put("total", channelCount)
-                            .put("forbidden", forbiddenChannels))
-                    .put("messages", messageCount);
-        }
-    }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{
+		if(mode == Mode.Public){
+			return new JSONObject()
+				.put("version", AppInfo.get("buildVersion") + "_" + AppInfo.get("buildNumber"))
+				.put("guilds", guildCount)
+				.put("users", userCount)
+				.put("members", memberCount);
+		}
+		else{
+			return new JSONObject()
+				.put("version", AppInfo.get("buildVersion") + "_" + AppInfo.get("buildNumber"))
+				.put("guilds", guildCount)
+				.put("users", userCount)
+				.put("members", memberCount)
+				.put("channels", new JSONObject()
+					.put("total", channelCount)
+					.put("forbidden", forbiddenChannels))
+				.put("messages", messageCount);
+		}
+	}
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        if(mode == Mode.Public){
-            this.version = jsonObject.getString("version");
-            this.guildCount = jsonObject.getInt("guilds");
-            this.userCount = jsonObject.getInt("users");
-            this.memberCount = jsonObject.getInt("members");
-        }else{
-            this.version = jsonObject.getString("version");
-            this.guildCount = jsonObject.getInt("guilds");
-            this.userCount = jsonObject.getInt("users");
-            this.memberCount = jsonObject.getInt("members");
-            this.channelCount = jsonObject.getJSONObject("channels").getInt("total");
-            this.forbiddenChannels = jsonObject.getJSONObject("channels").getInt("forbidden");
-            this.messageCount = jsonObject.getInt("messages");
-        }
-    }
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
+		if(mode == Mode.Public){
+			this.version = jsonObject.getString("version");
+			this.guildCount = jsonObject.getInt("guilds");
+			this.userCount = jsonObject.getInt("users");
+			this.memberCount = jsonObject.getInt("members");
+		}
+		else{
+			this.version = jsonObject.getString("version");
+			this.guildCount = jsonObject.getInt("guilds");
+			this.userCount = jsonObject.getInt("users");
+			this.memberCount = jsonObject.getInt("members");
+			this.channelCount = jsonObject.getJSONObject("channels").getInt("total");
+			this.forbiddenChannels = jsonObject.getJSONObject("channels").getInt("forbidden");
+			this.messageCount = jsonObject.getInt("messages");
+		}
+	}
+
 }

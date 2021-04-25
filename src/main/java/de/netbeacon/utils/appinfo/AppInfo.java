@@ -18,20 +18,22 @@ package de.netbeacon.utils.appinfo;
 
 import java.util.Properties;
 
-public class AppInfo {
+public class AppInfo{
 
-    private final static Properties properties = new Properties();
+	private final static Properties properties = new Properties();
 
-    static {
-        try{
-            properties.load(AppInfo.class.getClassLoader().getResourceAsStream("app.properties"));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+	static{
+		try{
+			properties.load(AppInfo.class.getClassLoader().getResourceAsStream("app.properties"));
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 
-    public static String get(String property){
-        String prop = properties.getProperty(property);
-        return (prop != null)?prop:"";
-    }
+	public static String get(String property){
+		String prop = properties.getProperty(property);
+		return (prop != null) ? prop : "";
+	}
+
 }

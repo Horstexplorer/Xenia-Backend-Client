@@ -23,39 +23,43 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheExcept
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
-public class LicenseCache extends Cache<Long, License> {
+public class LicenseCache extends Cache<Long, License>{
 
-    private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
+	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 
-    public LicenseCache(BackendProcessor backendProcessor) {
-        super(backendProcessor);
-    }
+	public LicenseCache(BackendProcessor backendProcessor){
+		super(backendProcessor);
+	}
 
-    public License get(long guildId) throws CacheException, DataException {
-        return get(guildId, false);
-    }
+	public License get(long guildId) throws CacheException, DataException{
+		return get(guildId, false);
+	}
 
-    public License get(long guildId, boolean securityOverride) throws CacheException, DataException {
-        try{
-            idBasedLockHolder.getLock(guildId).lock();
-            License license = getFromCache(guildId);
-            if(license != null){
-                return license;
-            }
-            license = new License(getBackendProcessor(), guildId);
-            license.get(securityOverride);
-            addToCache(guildId, license);
-            return license;
-        }catch (CacheException | DataException e){
-            throw e;
-        }catch (Exception e){
-            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get License", e);
-        }finally {
-            idBasedLockHolder.getLock(guildId).unlock();
-        }
-    }
+	public License get(long guildId, boolean securityOverride) throws CacheException, DataException{
+		try{
+			idBasedLockHolder.getLock(guildId).lock();
+			License license = getFromCache(guildId);
+			if(license != null){
+				return license;
+			}
+			license = new License(getBackendProcessor(), guildId);
+			license.get(securityOverride);
+			addToCache(guildId, license);
+			return license;
+		}
+		catch(CacheException | DataException e){
+			throw e;
+		}
+		catch(Exception e){
+			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get License", e);
+		}
+		finally{
+			idBasedLockHolder.getLock(guildId).unlock();
+		}
+	}
 
-    public void remove(long guildId){
-        removeFromCache(guildId);
-    }
+	public void remove(long guildId){
+		removeFromCache(guildId);
+	}
+
 }

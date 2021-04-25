@@ -16,38 +16,39 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.exceptions;
 
-public class CacheException extends RuntimeException {
+public class CacheException extends RuntimeException{
 
-    public enum Type{
-        UNKNOWN,
-        NOT_FOUND,
-        ALREADY_EXISTS,
-        IS_FULL
-    }
+	public enum Type{
+		UNKNOWN,
+		NOT_FOUND,
+		ALREADY_EXISTS,
+		IS_FULL
+	}
 
-    private final Type type;
-    private Exception exception;
+	private final Type type;
+	private Exception exception;
 
-    public CacheException(Type type, String message){
-        super(message);
-        this.type = type;
-    }
+	public CacheException(Type type, String message){
+		super(message);
+		this.type = type;
+	}
 
-    public CacheException(Type type, String message, Exception exception){
-        super(message, exception);
-        this.type = type;
-    }
+	public CacheException(Type type, String message, Exception exception){
+		super(message, exception);
+		this.type = type;
+	}
 
-    @Override
-    public String getMessage() {
-        return "Type: "+type+" Message: "+super.getMessage();
-    }
+	@Override
+	public String getMessage(){
+		return "Type: " + type + " Message: " + super.getMessage();
+	}
 
-    public Type getType() {
-        return type;
-    }
+	public Type getType(){
+		return type;
+	}
 
-    public Exception getSubException() {
-        return exception;
-    }
+	public Exception getSubException(){
+		return exception;
+	}
+
 }

@@ -34,113 +34,125 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class ChannelCache extends Cache<Long, Channel> {
+public class ChannelCache extends Cache<Long, Channel>{
 
-    private final long guildId;
-    private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
-    private final Logger logger = LoggerFactory.getLogger(ChannelCache.class);
+	private final long guildId;
+	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
+	private final Logger logger = LoggerFactory.getLogger(ChannelCache.class);
 
-    public ChannelCache(BackendProcessor backendProcessor, long guildId) {
-        super(backendProcessor);
-        this.guildId = guildId;
-    }
+	public ChannelCache(BackendProcessor backendProcessor, long guildId){
+		super(backendProcessor);
+		this.guildId = guildId;
+	}
 
-    public Channel get(long channelId) throws CacheException, DataException {
-        return get(channelId, true, false);
-    }
+	public Channel get(long channelId) throws CacheException, DataException{
+		return get(channelId, true, false);
+	}
 
-    public Channel get(long channelId, boolean init) throws CacheException, DataException {
-        return get(channelId, init, false);
-    }
+	public Channel get(long channelId, boolean init) throws CacheException, DataException{
+		return get(channelId, init, false);
+	}
 
-    public Channel get(long channelId, boolean init, boolean securityOverride) throws CacheException, DataException {
-        try{
-            idBasedLockHolder.getLock(channelId).lock();
-            Channel channel = getFromCache(channelId);
-            if(channel != null){
-                return channel;
-            }
-            channel = new Channel(getBackendProcessor(), guildId, channelId);
-            try{
-                channel.get(securityOverride);
-            }catch (DataException e){
-                if(e.getCode() == 404 && init){
-                    channel.create(securityOverride);
-                }else{
-                    throw e;
-                }
-            }
-            addToCache(channelId, channel);
-            return channel;
-        }catch (CacheException | DataException e){
-            throw e;
-        }catch (Exception e){
-            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Channel", e);
-        }finally {
-            idBasedLockHolder.getLock(channelId).unlock();
-        }
-    }
+	public Channel get(long channelId, boolean init, boolean securityOverride) throws CacheException, DataException{
+		try{
+			idBasedLockHolder.getLock(channelId).lock();
+			Channel channel = getFromCache(channelId);
+			if(channel != null){
+				return channel;
+			}
+			channel = new Channel(getBackendProcessor(), guildId, channelId);
+			try{
+				channel.get(securityOverride);
+			}
+			catch(DataException e){
+				if(e.getCode() == 404 && init){
+					channel.create(securityOverride);
+				}
+				else{
+					throw e;
+				}
+			}
+			addToCache(channelId, channel);
+			return channel;
+		}
+		catch(CacheException | DataException e){
+			throw e;
+		}
+		catch(Exception e){
+			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Channel", e);
+		}
+		finally{
+			idBasedLockHolder.getLock(channelId).unlock();
+		}
+	}
 
-    public List<Channel> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException {
-        try{
-            if(cacheInsert){
-                idBasedLockHolder.getLock().writeLock().lock();
-            }
-            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels"),new HashMap<>(), null);
-            BackendResult backendResult = getBackendProcessor().process(backendRequest);
-            if(backendResult.getStatusCode() != 200){
-                logger.warn("Failed To Get All Roles From The Backend");
-                return null;
-            }
-            JSONArray channels = backendResult.getPayloadAsJSON().getJSONArray("channels");
-            List<Channel> channelList = new ArrayList<>();
-            for(int i = 0; i < channels.length(); i++){
-                JSONObject jsonObject = channels.getJSONObject(i);
-                Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channelId"));
-                channel.fromJSON(jsonObject); // manually insert the data
-                if(cacheInsert){
-                    addToCache(channel.getId(), channel); // this will overwrite already existing ones
-                }
-                channelList.add(channel);
-            }
-            return channelList;
-        }catch (CacheException | DataException e){
-            throw e;
-        }catch (Exception e){
-            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Channels", e);
-        }finally {
-            if(cacheInsert){
-                idBasedLockHolder.getLock().writeLock().unlock();
-            }
-        }
-    }
+	public List<Channel> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException{
+		try{
+			if(cacheInsert){
+				idBasedLockHolder.getLock().writeLock().lock();
+			}
+			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels"), new HashMap<>(), null);
+			BackendResult backendResult = getBackendProcessor().process(backendRequest);
+			if(backendResult.getStatusCode() != 200){
+				logger.warn("Failed To Get All Roles From The Backend");
+				return null;
+			}
+			JSONArray channels = backendResult.getPayloadAsJSON().getJSONArray("channels");
+			List<Channel> channelList = new ArrayList<>();
+			for(int i = 0; i < channels.length(); i++){
+				JSONObject jsonObject = channels.getJSONObject(i);
+				Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channelId"));
+				channel.fromJSON(jsonObject); // manually insert the data
+				if(cacheInsert){
+					addToCache(channel.getId(), channel); // this will overwrite already existing ones
+				}
+				channelList.add(channel);
+			}
+			return channelList;
+		}
+		catch(CacheException | DataException e){
+			throw e;
+		}
+		catch(Exception e){
+			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Channels", e);
+		}
+		finally{
+			if(cacheInsert){
+				idBasedLockHolder.getLock().writeLock().unlock();
+			}
+		}
+	}
 
-    public void remove(long channelId){
-        removeFromCache(channelId);
-    }
+	public void remove(long channelId){
+		removeFromCache(channelId);
+	}
 
-    public void delete(long channelId) throws CacheException, DataException {
-        delete(channelId, false);
-    }
+	public void delete(long channelId) throws CacheException, DataException{
+		delete(channelId, false);
+	}
 
-    public void delete(long channelId, boolean securityOverride) throws CacheException, DataException {
-        try{
-            idBasedLockHolder.getLock(channelId).lock();
-            Channel channel = getFromCache(channelId);
-            Objects.requireNonNullElseGet(channel, ()-> new Channel(getBackendProcessor(), guildId, channelId)).delete(securityOverride);
-            removeFromCache(channelId);
-        }catch (CacheException | DataException e){
-            throw e;
-        }catch (Exception e){
-            throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Channel", e);
-        }finally {
-            idBasedLockHolder.getLock(channelId).unlock();
-        }
-    }
+	public void delete(long channelId, boolean securityOverride) throws CacheException, DataException{
+		try{
+			idBasedLockHolder.getLock(channelId).lock();
+			Channel channel = getFromCache(channelId);
+			Objects.requireNonNullElseGet(channel, () -> new Channel(getBackendProcessor(), guildId, channelId)).delete(securityOverride);
+			removeFromCache(channelId);
+		}
+		catch(CacheException | DataException e){
+			throw e;
+		}
+		catch(Exception e){
+			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Channel", e);
+		}
+		finally{
+			idBasedLockHolder.getLock(channelId).unlock();
+		}
+	}
 
-    @Override
-    public void clear(boolean deletion) {
-        getDataMap().forEach((k,v)->v.clear(deletion));
-        super.clear(deletion);
-    }
+	@Override
+	public void clear(boolean deletion){
+		getDataMap().forEach((k, v) -> v.clear(deletion));
+		super.clear(deletion);
+	}
+
 }

@@ -21,25 +21,28 @@ package de.netbeacon.utils.crypt;
  *
  * @author horstexplorer
  */
-public class Base64 {
+public class Base64{
 
-    /**
-     * Used to encode bytes as base64
-     *
-     * @param bytes input
-     * @return base64 encoded output
-     */
-    public static byte[] encode(byte[] bytes){
-        return java.util.Base64.getEncoder().encode(bytes);
-    }
+	/**
+	 * Used to encode bytes as base64
+	 *
+	 * @param bytes input
+	 *
+	 * @return base64 encoded output
+	 */
+	public static byte[] encode(byte[] bytes){
+		return java.util.Base64.getEncoder().encode(bytes);
+	}
 
-    /**
-     * Used to decode base64 encoded bytes
-     *
-     * @param bytes base64 encoded input
-     * @return decoded output
-     */
-    public static byte[] decode(byte[] bytes){
-        return java.util.Base64.getDecoder().decode(bytes);
-    }
+	/**
+	 * Used to decode base64 encoded bytes
+	 *
+	 * @param bytes base64 encoded input
+	 *
+	 * @return decoded output
+	 */
+	public static byte[] decode(byte[] bytes){
+		return java.util.Base64.getDecoder().decode(bytes);
+	}
+
 }

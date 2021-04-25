@@ -27,136 +27,142 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-public abstract class Cache<K, T extends APIDataObject> {
+public abstract class Cache<K, T extends APIDataObject>{
 
-    private final BackendProcessor backendProcessor;
-    private final ConcurrentHashMap<K, T> dataMap = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<T, K> inverseDataMap = new ConcurrentHashMap<>();
-    private final ArrayList<K> orderedKeyMap = new ArrayList<>();
-    private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
-    private final Logger logger = LoggerFactory.getLogger(Cache.class);
-    private final ReentrantLock cacheModifyLock = new ReentrantLock();
+	private final BackendProcessor backendProcessor;
+	private final ConcurrentHashMap<K, T> dataMap = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<T, K> inverseDataMap = new ConcurrentHashMap<>();
+	private final ArrayList<K> orderedKeyMap = new ArrayList<>();
+	private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
+	private final Logger logger = LoggerFactory.getLogger(Cache.class);
+	private final ReentrantLock cacheModifyLock = new ReentrantLock();
 
-    public Cache(BackendProcessor backendProcessor){
-        this.backendProcessor = backendProcessor;
-    }
+	public Cache(BackendProcessor backendProcessor){
+		this.backendProcessor = backendProcessor;
+	}
 
-    // data
+	// data
 
-    public T getFromCache(K id){
-        return dataMap.get(id);
-    }
+	public T getFromCache(K id){
+		return dataMap.get(id);
+	}
 
-    public T addToCache(K id, T t){
-        try{
-            cacheModifyLock.lock();
-            dataMap.put(id, t);
-            inverseDataMap.put(t, id);
-            orderedKeyMap.add(id);
-            onInsertion(id, t);
-            return t;
-        }finally {
-            cacheModifyLock.unlock();
-        }
-    }
+	public T addToCache(K id, T t){
+		try{
+			cacheModifyLock.lock();
+			dataMap.put(id, t);
+			inverseDataMap.put(t, id);
+			orderedKeyMap.add(id);
+			onInsertion(id, t);
+			return t;
+		}
+		finally{
+			cacheModifyLock.unlock();
+		}
+	}
 
-    public void removeFromCache(K id){
-        try{
-            cacheModifyLock.lock();
-            if(id== null){
-                return;
-            }
-            var t = dataMap.remove(id);
-            if(t == null){
-                return;
-            }
-            inverseDataMap.remove(t);
-            orderedKeyMap.remove(id);
-            onRemoval(id, t);
-        }finally {
-            cacheModifyLock.unlock();
-        }
-    }
+	public void removeFromCache(K id){
+		try{
+			cacheModifyLock.lock();
+			if(id == null){
+				return;
+			}
+			var t = dataMap.remove(id);
+			if(t == null){
+				return;
+			}
+			inverseDataMap.remove(t);
+			orderedKeyMap.remove(id);
+			onRemoval(id, t);
+		}
+		finally{
+			cacheModifyLock.unlock();
+		}
+	}
 
-    public void removeFromCache(T t){
-        try{
-            cacheModifyLock.lock();
-            if(t == null){
-                return;
-            }
-            var id = inverseDataMap.remove(t);
-            if(id == null){
-                return;
-            }
-            dataMap.remove(id);
-            orderedKeyMap.remove(id);
-            onRemoval(id, t);
-        }finally {
-            cacheModifyLock.unlock();
-        }
-    }
+	public void removeFromCache(T t){
+		try{
+			cacheModifyLock.lock();
+			if(t == null){
+				return;
+			}
+			var id = inverseDataMap.remove(t);
+			if(id == null){
+				return;
+			}
+			dataMap.remove(id);
+			orderedKeyMap.remove(id);
+			onRemoval(id, t);
+		}
+		finally{
+			cacheModifyLock.unlock();
+		}
+	}
 
-    // qol
+	// qol
 
-    public BackendProcessor getBackendProcessor() {
-        return backendProcessor;
-    }
+	public BackendProcessor getBackendProcessor(){
+		return backendProcessor;
+	}
 
-    public boolean contains(K id){
-        return dataMap.containsKey(id);
-    }
+	public boolean contains(K id){
+		return dataMap.containsKey(id);
+	}
 
-    public List<T> getAllAsList(){
-        return new ArrayList<>(dataMap.values());
-    }
+	public List<T> getAllAsList(){
+		return new ArrayList<>(dataMap.values());
+	}
 
-    public HashMap<K, T> getAllAsMap(){
-        return new HashMap<>(dataMap);
-    }
+	public HashMap<K, T> getAllAsMap(){
+		return new HashMap<>(dataMap);
+	}
 
-    public ConcurrentHashMap<K, T> getDataMap(){
-        return dataMap;
-    }
+	public ConcurrentHashMap<K, T> getDataMap(){
+		return dataMap;
+	}
 
-    public ArrayList<K> getOrderedKeyMap() {
-        return orderedKeyMap;
-    }
+	public ArrayList<K> getOrderedKeyMap(){
+		return orderedKeyMap;
+	}
 
-    public void clear(boolean deletion){
-        dataMap.values().forEach(this::removeFromCache); // remove all objects, triggering the remove event for the cache
-        dataMap.forEach((k,v)-> {
-            if(deletion){
-                v.onDeletion(); // trigger deletion event for when this cache gets removed with the deletion as cause
-            }
-            v.removeEventListeners();
-        }); // remove event listeners of objects
-    }
+	public void clear(boolean deletion){
+		dataMap.values().forEach(this::removeFromCache); // remove all objects, triggering the remove event for the cache
+		dataMap.forEach((k, v) -> {
+			if(deletion){
+				v.onDeletion(); // trigger deletion event for when this cache gets removed with the deletion as cause
+			}
+			v.removeEventListeners();
+		}); // remove event listeners of objects
+	}
 
-    private void onInsertion(K newKey, T newObject){
-        for(var listener : new ArrayList<>(cacheListeners)){
-            try{
-                listener.onInsertion(newKey, newObject);
-            }catch (Exception e){
-                logger.error("Uncaught exception on Cache onInsertion listener "+e);
-            }
-        }
-    }
+	private void onInsertion(K newKey, T newObject){
+		for(var listener : new ArrayList<>(cacheListeners)){
+			try{
+				listener.onInsertion(newKey, newObject);
+			}
+			catch(Exception e){
+				logger.error("Uncaught exception on Cache onInsertion listener " + e);
+			}
+		}
+	}
 
-    private void onRemoval(K oldKey, T oldObject){
-        for(var listener : new ArrayList<>(cacheListeners)){
-            try{
-                listener.onRemoval(oldKey, oldObject);
-            }catch (Exception e){
-                logger.error("Uncaught exception on Cache onRemoval listener "+e);
-            }
-        }
-    }
+	private void onRemoval(K oldKey, T oldObject){
+		for(var listener : new ArrayList<>(cacheListeners)){
+			try{
+				listener.onRemoval(oldKey, oldObject);
+			}
+			catch(Exception e){
+				logger.error("Uncaught exception on Cache onRemoval listener " + e);
+			}
+		}
+	}
 
-    public void addEventListeners(CacheEventListener<K, T>...listeners){
-        cacheListeners.addAll(Arrays.asList(listeners));
-    }
+	public void addEventListeners(CacheEventListener<K, T>... listeners){
+		cacheListeners.addAll(Arrays.asList(listeners));
+	}
 
-    public void removeEventListeners(){
-        cacheListeners.clear();
-    }
+	public void removeEventListeners(){
+		cacheListeners.clear();
+	}
+
 }

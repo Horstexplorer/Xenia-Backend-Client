@@ -22,47 +22,52 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Can be used to simplify id based locking
+ *
  * @param <T>
  */
-public class IdBasedLockHolder<T> {
+public class IdBasedLockHolder<T>{
 
-    private final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock();
-    private final ConcurrentHashMap<T, ReentrantLock> lockMap = new ConcurrentHashMap<>();
+	private final ReentrantReadWriteLock globalLock = new ReentrantReadWriteLock();
+	private final ConcurrentHashMap<T, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
-    public IdBasedLockHolder(){}
+	public IdBasedLockHolder(){}
 
-    /**
-     * Returns the ReentrantLock matching the whole object
-     *
-     * @return ReentrantReadWriteLock
-     */
-    public ReentrantReadWriteLock getLock(){
-        return globalLock;
-    }
+	/**
+	 * Returns the ReentrantLock matching the whole object
+	 *
+	 * @return ReentrantReadWriteLock
+	 */
+	public ReentrantReadWriteLock getLock(){
+		return globalLock;
+	}
 
-    /**
-     * Returns the ReentrantLock matching to a given id
-     *
-     * @param t id object
-     * @return ReentrantLock
-     */
-    public synchronized ReentrantLock getLock(T t){
-        try{
-            globalLock.readLock().lock(); // used to see if the object isnt locked globally
-            if(!lockMap.containsKey(t)){
-                lockMap.put(t, new ReentrantLock());
-            }
-            return lockMap.get(t);
-        }finally {
-            globalLock.readLock().unlock();
-        }
-    }
+	/**
+	 * Returns the ReentrantLock matching to a given id
+	 *
+	 * @param t id object
+	 *
+	 * @return ReentrantLock
+	 */
+	public synchronized ReentrantLock getLock(T t){
+		try{
+			globalLock.readLock().lock(); // used to see if the object isnt locked globally
+			if(!lockMap.containsKey(t)){
+				lockMap.put(t, new ReentrantLock());
+			}
+			return lockMap.get(t);
+		}
+		finally{
+			globalLock.readLock().unlock();
+		}
+	}
 
-    /**
-     * Removes a lock from the pool
-     * @param t id object
-     */
-    public void removeLock(T t){
-        lockMap.remove(t);
-    }
+	/**
+	 * Removes a lock from the pool
+	 *
+	 * @param t id object
+	 */
+	public void removeLock(T t){
+		lockMap.remove(t);
+	}
+
 }

@@ -19,37 +19,40 @@ package de.netbeacon.utils.bitflags;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class IntegerBitFlags {
+public abstract class IntegerBitFlags{
 
-    private int value;
+	private int value;
 
-    public IntegerBitFlags(int value){
-        this.value = value;
-    }
+	public IntegerBitFlags(int value){
+		this.value = value;
+	}
 
-    public interface IntBit {
-        int getPos();
-    }
+	public interface IntBit{
 
-    public int getValue() {
-        return value;
-    }
+		int getPos();
 
-    public synchronized void set(IntBit...bits){
-        for(IntBit b : bits){
-            value |= 1 << b.getPos();
-        }
-    }
+	}
 
-    public synchronized void unset(IntBit...bits){
-        for(IntBit b : bits){
-            value &= ~(1 << b.getPos());
-        }
-    }
+	public int getValue(){
+		return value;
+	}
 
-    public boolean has(IntBit bit){
-        return ((value >> bit.getPos()) & 1) == 1;
-    }
+	public synchronized void set(IntBit... bits){
+		for(IntBit b : bits){
+			value |= 1 << b.getPos();
+		}
+	}
 
-    public <T extends IntBit> List<T> getBits(){ return new ArrayList<>(); }
+	public synchronized void unset(IntBit... bits){
+		for(IntBit b : bits){
+			value &= ~(1 << b.getPos());
+		}
+	}
+
+	public boolean has(IntBit bit){
+		return ((value >> bit.getPos()) & 1) == 1;
+	}
+
+	public <T extends IntBit> List<T> getBits(){ return new ArrayList<>(); }
+
 }

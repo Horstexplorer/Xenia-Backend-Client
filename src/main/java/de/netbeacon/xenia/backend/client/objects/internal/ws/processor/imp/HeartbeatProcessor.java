@@ -23,43 +23,46 @@ import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRespons
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HeartbeatProcessor extends WSProcessor {
+public class HeartbeatProcessor extends WSProcessor{
 
-    private long lastHeartBeat = System.currentTimeMillis();
-    private final Logger logger = LoggerFactory.getLogger(HeartbeatProcessor.class);
+	private long lastHeartBeat = System.currentTimeMillis();
+	private final Logger logger = LoggerFactory.getLogger(HeartbeatProcessor.class);
 
-    private long ten = 0;
-    private long fifty = 0;
-    private long oneHundred = 0;
+	private long ten = 0;
+	private long fifty = 0;
+	private long oneHundred = 0;
 
-    public HeartbeatProcessor() {
-        super("heartbeat");
-    }
+	public HeartbeatProcessor(){
+		super("heartbeat");
+	}
 
-    @Override
-    public WSResponse process(WSRequest wsRequest) {
-        // this does nothing except some logging
-        long newHeartBeat = System.currentTimeMillis();
-        long delay = (newHeartBeat-lastHeartBeat);
-        updateStatistics(delay);
-        if(delay > 30000*2){
-            logger.warn("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+") Missed At Least "+(delay/30000)+" Heartbeat(s). The Network Might Be Faulty!");
-        }else if(delay > 30000*1.5){
-            logger.info("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+") The Service Might Be Slow.");
-        }else{
-            logger.debug("Received Heartbeat After "+delay+"ms (Delay To Target "+(delay-30000)+")");
-        }
-        lastHeartBeat = newHeartBeat;
-        return null;
-    }
+	@Override
+	public WSResponse process(WSRequest wsRequest){
+		// this does nothing except some logging
+		long newHeartBeat = System.currentTimeMillis();
+		long delay = (newHeartBeat - lastHeartBeat);
+		updateStatistics(delay);
+		if(delay > 30000 * 2){
+			logger.warn("Received Heartbeat After " + delay + "ms (Delay To Target " + (delay - 30000) + ") Missed At Least " + (delay / 30000) + " Heartbeat(s). The Network Might Be Faulty!");
+		}
+		else if(delay > 30000 * 1.5){
+			logger.info("Received Heartbeat After " + delay + "ms (Delay To Target " + (delay - 30000) + ") The Service Might Be Slow.");
+		}
+		else{
+			logger.debug("Received Heartbeat After " + delay + "ms (Delay To Target " + (delay - 30000) + ")");
+		}
+		lastHeartBeat = newHeartBeat;
+		return null;
+	}
 
-    private void updateStatistics(long delay){
-        ten = ((ten*10)+delay)/10;
-        fifty = ((fifty*50)+delay)/50;
-        oneHundred = ((oneHundred*100)+delay)/100;
-    }
+	private void updateStatistics(long delay){
+		ten = ((ten * 10) + delay) / 10;
+		fifty = ((fifty * 50) + delay) / 50;
+		oneHundred = ((oneHundred * 100) + delay) / 100;
+	}
 
-    public Triplet<Long, Long, Long> getStatistics(){
-        return new Triplet<>(ten, fifty, oneHundred);
-    }
+	public Triplet<Long, Long, Long> getStatistics(){
+		return new Triplet<>(ten, fifty, oneHundred);
+	}
+
 }

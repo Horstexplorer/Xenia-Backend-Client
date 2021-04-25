@@ -22,97 +22,98 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-public class SetupData extends APIDataObject {
+public class SetupData extends APIDataObject{
 
-    private long clientId;
-    private String clientName;
-    private String clientDescription;
-    private String discordToken;
-    private int totalShards;
-    private int[] shardIds;
-    private String messageCryptHash;
-    private String clientLocation;
+	private long clientId;
+	private String clientName;
+	private String clientDescription;
+	private String discordToken;
+	private int totalShards;
+	private int[] shardIds;
+	private String messageCryptHash;
+	private String clientLocation;
 
-    public SetupData(BackendProcessor backendProcessor) {
-        super(backendProcessor);
-        setBackendPath("setup", "bot");
-    }
+	public SetupData(BackendProcessor backendProcessor){
+		super(backendProcessor);
+		setBackendPath("setup", "bot");
+	}
 
-    public long getClientId() {
-        return clientId;
-    }
+	public long getClientId(){
+		return clientId;
+	}
 
-    public String getClientName() {
-        return clientName;
-    }
+	public String getClientName(){
+		return clientName;
+	}
 
-    public String getClientDescription() {
-        return clientDescription;
-    }
+	public String getClientDescription(){
+		return clientDescription;
+	}
 
-    public String getDiscordToken(){
-        return discordToken;
-    }
+	public String getDiscordToken(){
+		return discordToken;
+	}
 
-    public int getTotalShards(){
-        return totalShards;
-    }
+	public int getTotalShards(){
+		return totalShards;
+	}
 
-    public int[] getShards(){
-        return shardIds;
-    }
+	public int[] getShards(){
+		return shardIds;
+	}
 
-    public String getMessageCryptHash() {
-        return messageCryptHash;
-    }
+	public String getMessageCryptHash(){
+		return messageCryptHash;
+	}
 
-    public String getClientLocation() { return clientLocation; }
+	public String getClientLocation(){ return clientLocation; }
 
-    @Override
-    public void create() throws BackendException {}
+	@Override
+	public void create() throws BackendException{}
 
-    @Override
-    public void createAsync() {}
+	@Override
+	public void createAsync(){}
 
-    @Override
-    public void update() throws BackendException {}
+	@Override
+	public void update() throws BackendException{}
 
-    @Override
-    public void updateAsync() {}
+	@Override
+	public void updateAsync(){}
 
-    @Override
-    public void delete() throws BackendException {}
+	@Override
+	public void delete() throws BackendException{}
 
-    @Override
-    public void deleteAsync() {}
+	@Override
+	public void deleteAsync(){}
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException {
-        return new JSONObject()
-                .put("clientId", clientId)
-                .put("clientName", clientName)
-                .put("clientDescription", clientDescription)
-                .put("discordToken", discordToken)
-                .put("cryptHash", messageCryptHash)
-                .put("shards", new JSONObject()
-                        .put("total", totalShards)
-                        .put("use", shardIds))
-                .put("clientLocation", clientLocation);
-    }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{
+		return new JSONObject()
+			.put("clientId", clientId)
+			.put("clientName", clientName)
+			.put("clientDescription", clientDescription)
+			.put("discordToken", discordToken)
+			.put("cryptHash", messageCryptHash)
+			.put("shards", new JSONObject()
+				.put("total", totalShards)
+				.put("use", shardIds))
+			.put("clientLocation", clientLocation);
+	}
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        this.clientId = jsonObject.getLong("clientId");
-        this.clientName = jsonObject.getString("clientName");
-        this.clientDescription = jsonObject.getString("clientDescription");
-        this.discordToken = jsonObject.getString("discordToken");
-        this.messageCryptHash = jsonObject.getString("cryptHash");
-        this.totalShards = jsonObject.getJSONObject("shards").getInt("total");
-        int[] shardIdsI = new int[jsonObject.getJSONObject("shards").getJSONArray("use").length()];
-        for(int i = 0; i < jsonObject.getJSONObject("shards").getJSONArray("use").length(); i++){
-            shardIdsI[i] = jsonObject.getJSONObject("shards").getJSONArray("use").getInt(i);
-        }
-        this.shardIds = shardIdsI;
-        this.clientLocation = jsonObject.getString("clientLocation");
-    }
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
+		this.clientId = jsonObject.getLong("clientId");
+		this.clientName = jsonObject.getString("clientName");
+		this.clientDescription = jsonObject.getString("clientDescription");
+		this.discordToken = jsonObject.getString("discordToken");
+		this.messageCryptHash = jsonObject.getString("cryptHash");
+		this.totalShards = jsonObject.getJSONObject("shards").getInt("total");
+		int[] shardIdsI = new int[jsonObject.getJSONObject("shards").getJSONArray("use").length()];
+		for(int i = 0; i < jsonObject.getJSONObject("shards").getJSONArray("use").length(); i++){
+			shardIdsI[i] = jsonObject.getJSONObject("shards").getJSONArray("use").getInt(i);
+		}
+		this.shardIds = shardIdsI;
+		this.clientLocation = jsonObject.getString("clientLocation");
+	}
+
 }

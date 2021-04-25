@@ -22,20 +22,21 @@ import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;
 import org.json.JSONObject;
 
-public class IdentifyProcessor extends WSProcessor {
+public class IdentifyProcessor extends WSProcessor{
 
-    public IdentifyProcessor() {
-        super("identify");
-    }
+	public IdentifyProcessor(){
+		super("identify");
+	}
 
-    @Override
-    public WSResponse process(WSRequest wsRequest) {
-        SetupData setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
-        return new WSResponse.Builder()
-                .requestId(wsRequest.getRequestId())
-                .recipient(wsRequest.getSender())
-                .action(getAction())
-                .payload(new JSONObject().put("id", setupData.getClientId()).put("name", setupData.getClientName()).put("description", setupData.getClientDescription()))
-                .build();
-    }
+	@Override
+	public WSResponse process(WSRequest wsRequest){
+		SetupData setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
+		return new WSResponse.Builder()
+			.requestId(wsRequest.getRequestId())
+			.recipient(wsRequest.getSender())
+			.action(getAction())
+			.payload(new JSONObject().put("id", setupData.getClientId()).put("name", setupData.getClientName()).put("description", setupData.getClientDescription()))
+			.build();
+	}
+
 }

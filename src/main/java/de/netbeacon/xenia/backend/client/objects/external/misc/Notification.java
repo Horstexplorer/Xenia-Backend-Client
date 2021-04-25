@@ -26,112 +26,114 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class Notification extends APIDataObject {
+public class Notification extends APIDataObject{
 
-    private long notificationId;
-    private long creationTimestamp;
-    private long guildId;
-    private long channelId;
-    private long userId;
-    private long notificationTarget;
-    private String notificationMessage;
+	private long notificationId;
+	private long creationTimestamp;
+	private long guildId;
+	private long channelId;
+	private long userId;
+	private long notificationTarget;
+	private String notificationMessage;
 
-    public Notification(BackendProcessor backendProcessor, long guildId, long notificationId) {
-        super(backendProcessor);
-        this.guildId = guildId;
-        this.notificationId = notificationId;
-        setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "notifications", (Supplier<Long>) this::getId);
-    }
+	public Notification(BackendProcessor backendProcessor, long guildId, long notificationId){
+		super(backendProcessor);
+		this.guildId = guildId;
+		this.notificationId = notificationId;
+		setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "misc", "notifications", (Supplier<Long>) this::getId);
+	}
 
-    public Notification lSetInitialData(long channelId, long userId, long notificationTarget, String notificationMessage){
-        this.channelId = channelId;
-        this.userId = userId;
-        this.notificationTarget = notificationTarget;
-        this.notificationMessage = notificationMessage;
-        return this;
-    }
+	public Notification lSetInitialData(long channelId, long userId, long notificationTarget, String notificationMessage){
+		this.channelId = channelId;
+		this.userId = userId;
+		this.notificationTarget = notificationTarget;
+		this.notificationMessage = notificationMessage;
+		return this;
+	}
 
-    public long getId(){
-        return notificationId;
-    }
+	public long getId(){
+		return notificationId;
+	}
 
-    public long getCreationTimestamp() {
-        return creationTimestamp;
-    }
+	public long getCreationTimestamp(){
+		return creationTimestamp;
+	}
 
-    public long getGuildId() {
-        return guildId;
-    }
+	public long getGuildId(){
+		return guildId;
+	}
 
-    public long getChannelId() {
-        return channelId;
-    }
+	public long getChannelId(){
+		return channelId;
+	}
 
-    public long getUserId() {
-        return userId;
-    }
+	public long getUserId(){
+		return userId;
+	}
 
-    public long getNotificationTarget() {
-        return notificationTarget;
-    }
+	public long getNotificationTarget(){
+		return notificationTarget;
+	}
 
-    public String getNotificationMessage() {
-        return notificationMessage;
-    }
+	public String getNotificationMessage(){
+		return notificationMessage;
+	}
 
-    public void setNotificationTarget(long notificationTarget) {
-        lSetNotificationTarget(notificationTarget);
-        update();
-    }
-    public void lSetNotificationTarget(long notificationTarget) {
-        secure();
-        this.notificationTarget = notificationTarget;
-    }
+	public void setNotificationTarget(long notificationTarget){
+		lSetNotificationTarget(notificationTarget);
+		update();
+	}
 
-    public void setNotificationMessage(String notificationMessage) {
-        lSetNotificationMessage(notificationMessage);
-        update();
-    }
+	public void lSetNotificationTarget(long notificationTarget){
+		secure();
+		this.notificationTarget = notificationTarget;
+	}
 
-    public void lSetNotificationMessage(String notificationMessage) {
-        secure();
-        this.notificationMessage = notificationMessage;
-    }
+	public void setNotificationMessage(String notificationMessage){
+		lSetNotificationMessage(notificationMessage);
+		update();
+	}
 
-    // SECONDARY
+	public void lSetNotificationMessage(String notificationMessage){
+		secure();
+		this.notificationMessage = notificationMessage;
+	}
 
-    public Guild getGuild(){
-        return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
-    }
+	// SECONDARY
 
-    public Channel getChannel(){
-        return getGuild().getChannelCache().get(channelId, false);
-    }
+	public Guild getGuild(){
+		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+	}
 
-    public Member getMember(){
-        return getGuild().getMemberCache().get(userId, false);
-    }
+	public Channel getChannel(){
+		return getGuild().getChannelCache().get(channelId, false);
+	}
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException {
-        return new JSONObject()
-                .put("notificationId", notificationId)
-                .put("creationTimestamp", creationTimestamp)
-                .put("guildId", guildId)
-                .put("channelId", channelId)
-                .put("userId", userId)
-                .put("notificationTarget", notificationTarget)
-                .put("notificationMessage", notificationMessage);
-    }
+	public Member getMember(){
+		return getGuild().getMemberCache().get(userId, false);
+	}
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        this.notificationId = jsonObject.getLong("notificationId");
-        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        this.guildId = jsonObject.getLong("guildId");
-        this.channelId = jsonObject.getLong("channelId");
-        this.userId = jsonObject.getLong("userId");
-        this.notificationTarget = jsonObject.getLong("notificationTarget");
-        this.notificationMessage = jsonObject.getString("notificationMessage");
-    }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{
+		return new JSONObject()
+			.put("notificationId", notificationId)
+			.put("creationTimestamp", creationTimestamp)
+			.put("guildId", guildId)
+			.put("channelId", channelId)
+			.put("userId", userId)
+			.put("notificationTarget", notificationTarget)
+			.put("notificationMessage", notificationMessage);
+	}
+
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
+		this.notificationId = jsonObject.getLong("notificationId");
+		this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+		this.guildId = jsonObject.getLong("guildId");
+		this.channelId = jsonObject.getLong("channelId");
+		this.userId = jsonObject.getLong("userId");
+		this.notificationTarget = jsonObject.getLong("notificationTarget");
+		this.notificationMessage = jsonObject.getString("notificationMessage");
+	}
+
 }

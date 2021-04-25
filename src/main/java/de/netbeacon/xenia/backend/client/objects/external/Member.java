@@ -43,7 +43,7 @@ public class Member extends APIDataObject {
         setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "members", (Supplier<Long>) this::getId);
     }
 
-    public long getId(){
+    public long getId() {
         return userId;
     }
 
@@ -59,14 +59,14 @@ public class Member extends APIDataObject {
         return roleIDs;
     }
 
-    public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner){
+    public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner) {
         secure();
         this.metaNickname = nickname;
         this.metaIsOwner = isOwner;
         this.metaIsAdministrator = isAdministrator;
     }
 
-    public void setMetaData(String nickname, boolean isAdministrator, boolean isOwner){
+    public void setMetaData(String nickname, boolean isAdministrator, boolean isOwner) {
         lSetMetaData(nickname, isAdministrator, isOwner);
         update();
     }
@@ -83,37 +83,47 @@ public class Member extends APIDataObject {
         return metaIsOwner;
     }
 
-    public void setRoleIds(Set<Long> roles){
+    public void setRoleIds(Set<Long> roles) {
         lSetRoleIds(roles);
         update();
     }
 
-    public void lSetRoleIds(Set<Long> roles){
+    public void lSetRoleIds(Set<Long> roles) {
         secure();
         this.roleIDs = roles;
     }
 
     // SECONDARY
 
-    public Guild getGuild(){
+    public Guild getGuild() {
         return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
     }
 
-    public User getUser(){
+    public User getUser() {
         return getBackendProcessor().getBackendClient().getUserCache().get(userId);
     }
 
-    public Set<Role> getRoles(){
+    public Set<Role> getRoles() {
         Guild g = getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
         Set<Role> roles = new HashSet<>();
-        for(Long l : new HashSet<>(roleIDs)){
-            try{
+        for (Long l : new HashSet<>(roleIDs)) {
+            try {
                 roles.add(g.getRoleCache().get(l));
-            }catch (Exception e) {
+            } catch (Exception e) {
                 roleIDs.remove(l);
             }
         }
         return roles;
+    }
+
+    public boolean hasPermission(Role.Permissions.Bit... bits) {
+        boolean hasAll = false;
+        for (Role role : getRoles()) {
+            if (role.getPermissions().hasAllPermission(bits)) {
+                hasAll = true;
+            }
+        }
+        return hasAll;
     }
 
     @Override
@@ -135,7 +145,7 @@ public class Member extends APIDataObject {
         this.guildId = jsonObject.getLong("guildId");
         this.userId = jsonObject.getLong("userId");
         this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        for(int i = 0; i < jsonObject.getJSONArray("roles").length(); i++){
+        for (int i = 0; i < jsonObject.getJSONArray("roles").length(); i++) {
             this.roleIDs.add(jsonObject.getJSONArray("roles").getLong(i));
         }
         JSONObject meta = jsonObject.getJSONObject("meta");
@@ -143,4 +153,5 @@ public class Member extends APIDataObject {
         this.metaIsAdministrator = meta.getBoolean("isAdministrator");
         this.metaIsOwner = meta.getBoolean("isOwner");
     }
+
 }

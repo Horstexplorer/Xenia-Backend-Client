@@ -26,46 +26,47 @@ import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MetricsProcessor extends WSProcessor {
+public class MetricsProcessor extends WSProcessor{
 
-    public MetricsProcessor() {
-        super("metrics");
-    }
+	public MetricsProcessor(){
+		super("metrics");
+	}
 
-    @Override
-    public WSResponse process(WSRequest wsRequest) {
-        var shardManager = getWsProcessorCore().getXeniaBackendClient().getShardManagerSupplier().get();
-        var register = getWsProcessorCore().getProcessorRegister();
-        var setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
-        Triplet<Long, Long, Long> heartbeatStats = register.containsKey("heartbeat") ? ((HeartbeatProcessor) register.get("heartbeat")).getStatistics() : new Triplet<>(-1L, -1L , -1L);
-        JSONArray shardsTotal = new JSONArray();
-        Arrays.stream(setupData.getShards()).forEach(shardsTotal::put);
-        JSONArray shardsOnline = new JSONArray();
-        AtomicInteger guildCount = new AtomicInteger();
-        if(shardManager != null){
-            shardManager.getShards().forEach(s -> {
-                shardsOnline.put(s.getShardInfo().getShardId());
-                guildCount.addAndGet(s.getGuilds().size());
-            });
-        }
-        JSONObject jsonObject = new JSONObject()
-                .put("clientId", setupData.getClientId())
-                .put("heartbeatDelay", new JSONObject()
-                        .put("ten", heartbeatStats.getValue1())
-                        .put("fifty", heartbeatStats.getValue2())
-                        .put("oneHundred", heartbeatStats.getValue3()))
-                .put("jda", new JSONObject()
-                        .put("shards", new JSONObject()
-                                .put("online", shardsOnline)
-                                .put("total", shardsTotal)
-                        )
-                        .put("guildCount", guildCount.get())
-                );
-        return new WSResponse.Builder()
-                .requestId(wsRequest.getRequestId())
-                .recipient(wsRequest.getSender())
-                .action(getAction())
-                .payload(jsonObject)
-                .build();
-    }
+	@Override
+	public WSResponse process(WSRequest wsRequest){
+		var shardManager = getWsProcessorCore().getXeniaBackendClient().getShardManagerSupplier().get();
+		var register = getWsProcessorCore().getProcessorRegister();
+		var setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
+		Triplet<Long, Long, Long> heartbeatStats = register.containsKey("heartbeat") ? ((HeartbeatProcessor) register.get("heartbeat")).getStatistics() : new Triplet<>(-1L, -1L, -1L);
+		JSONArray shardsTotal = new JSONArray();
+		Arrays.stream(setupData.getShards()).forEach(shardsTotal::put);
+		JSONArray shardsOnline = new JSONArray();
+		AtomicInteger guildCount = new AtomicInteger();
+		if(shardManager != null){
+			shardManager.getShards().forEach(s -> {
+				shardsOnline.put(s.getShardInfo().getShardId());
+				guildCount.addAndGet(s.getGuilds().size());
+			});
+		}
+		JSONObject jsonObject = new JSONObject()
+			.put("clientId", setupData.getClientId())
+			.put("heartbeatDelay", new JSONObject()
+				.put("ten", heartbeatStats.getValue1())
+				.put("fifty", heartbeatStats.getValue2())
+				.put("oneHundred", heartbeatStats.getValue3()))
+			.put("jda", new JSONObject()
+				.put("shards", new JSONObject()
+					.put("online", shardsOnline)
+					.put("total", shardsTotal)
+				)
+				.put("guildCount", guildCount.get())
+			);
+		return new WSResponse.Builder()
+			.requestId(wsRequest.getRequestId())
+			.recipient(wsRequest.getSender())
+			.action(getAction())
+			.payload(jsonObject)
+			.build();
+	}
+
 }

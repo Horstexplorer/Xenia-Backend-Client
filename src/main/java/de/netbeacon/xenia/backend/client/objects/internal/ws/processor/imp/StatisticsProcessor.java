@@ -25,38 +25,39 @@ import org.json.JSONObject;
 
 import java.lang.management.ManagementFactory;
 
-public class StatisticsProcessor extends WSProcessor {
+public class StatisticsProcessor extends WSProcessor{
 
-    public StatisticsProcessor() {
-        super("statistics");
-    }
+	public StatisticsProcessor(){
+		super("statistics");
+	}
 
-    @Override
-    public WSResponse process(WSRequest wsRequest) {
-        Runtime runtime = Runtime.getRuntime();
-        SetupData setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
-        Info info = getWsProcessorCore().getXeniaBackendClient().getInfo(Info.Mode.Private);
-        JSONObject jsonObject = new JSONObject()
-                .put("id", setupData.getClientId())
-                .put("name", setupData.getClientName())
-                .put("statistics", new JSONObject()
-                        .put("memory", new JSONObject()
-                                .put("used", (runtime.totalMemory()-runtime.freeMemory())/1048576)
-                                .put("total", runtime.totalMemory()/1048576)
-                        )
-                        .put("uptime", ManagementFactory.getRuntimeMXBean().getUptime())
-                        .put("threads", Thread.activeCount())
-                        .put("ce", new JSONObject()
-                                .put("guilds", getWsProcessorCore().getXeniaBackendClient().getGuildCache().getDataMap().size())
-                                .put("users", getWsProcessorCore().getXeniaBackendClient().getUserCache().getDataMap().size())
-                        )
-                        .put("ping", info.getPing())
-                );
-        return new WSResponse.Builder()
-                .requestId(wsRequest.getRequestId())
-                .recipient(wsRequest.getSender())
-                .action(getAction())
-                .payload(jsonObject)
-                .build();
-    }
+	@Override
+	public WSResponse process(WSRequest wsRequest){
+		Runtime runtime = Runtime.getRuntime();
+		SetupData setupData = getWsProcessorCore().getXeniaBackendClient().getSetupData();
+		Info info = getWsProcessorCore().getXeniaBackendClient().getInfo(Info.Mode.Private);
+		JSONObject jsonObject = new JSONObject()
+			.put("id", setupData.getClientId())
+			.put("name", setupData.getClientName())
+			.put("statistics", new JSONObject()
+				.put("memory", new JSONObject()
+					.put("used", (runtime.totalMemory() - runtime.freeMemory()) / 1048576)
+					.put("total", runtime.totalMemory() / 1048576)
+				)
+				.put("uptime", ManagementFactory.getRuntimeMXBean().getUptime())
+				.put("threads", Thread.activeCount())
+				.put("ce", new JSONObject()
+					.put("guilds", getWsProcessorCore().getXeniaBackendClient().getGuildCache().getDataMap().size())
+					.put("users", getWsProcessorCore().getXeniaBackendClient().getUserCache().getDataMap().size())
+				)
+				.put("ping", info.getPing())
+			);
+		return new WSResponse.Builder()
+			.requestId(wsRequest.getRequestId())
+			.recipient(wsRequest.getSender())
+			.action(getAction())
+			.payload(jsonObject)
+			.build();
+	}
+
 }

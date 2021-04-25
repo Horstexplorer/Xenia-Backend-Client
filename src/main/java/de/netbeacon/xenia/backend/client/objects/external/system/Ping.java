@@ -26,51 +26,53 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-public class Ping extends APIDataObject {
+public class Ping extends APIDataObject{
 
-    public Ping(BackendProcessor backendProcessor) {
-        super(backendProcessor);
-        setBackendPath("info", "ping");
-    }
+	public Ping(BackendProcessor backendProcessor){
+		super(backendProcessor);
+		setBackendPath("info", "ping");
+	}
 
-    public boolean ping(){
-        // this might send invalid auth tokens to the backend - but this is just supposed to be an isOnline check so should we care? y/n?
-        try{
-            BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
-            BackendResult backendResult = getBackendProcessor().process(backendRequest);
-            return backendResult.getStatusCode() == 200;
-        }catch (Exception e){
-            return false;
-        }
-    }
+	public boolean ping(){
+		// this might send invalid auth tokens to the backend - but this is just supposed to be an isOnline check so should we care? y/n?
+		try{
+			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(), null);
+			BackendResult backendResult = getBackendProcessor().process(backendRequest);
+			return backendResult.getStatusCode() == 200;
+		}
+		catch(Exception e){
+			return false;
+		}
+	}
 
-    @Override
-    public void get() throws BackendException {}
+	@Override
+	public void get() throws BackendException{}
 
-    @Override
-    public void getAsync() {}
+	@Override
+	public void getAsync(){}
 
-    @Override
-    public void create() throws BackendException {}
+	@Override
+	public void create() throws BackendException{}
 
-    @Override
-    public void createAsync() {}
+	@Override
+	public void createAsync(){}
 
-    @Override
-    public void update() throws BackendException {}
+	@Override
+	public void update() throws BackendException{}
 
-    @Override
-    public void updateAsync() {}
+	@Override
+	public void updateAsync(){}
 
-    @Override
-    public void delete() throws BackendException {}
+	@Override
+	public void delete() throws BackendException{}
 
-    @Override
-    public void deleteAsync() {}
+	@Override
+	public void deleteAsync(){}
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException { return null; }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{ return null; }
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {}
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{}
+
 }

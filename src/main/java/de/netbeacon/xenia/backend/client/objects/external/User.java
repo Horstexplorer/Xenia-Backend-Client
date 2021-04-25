@@ -23,99 +23,100 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class User extends APIDataObject {
+public class User extends APIDataObject{
 
-    private long userId;
+	private long userId;
 
-    private long creationTimestamp;
-    private String internalRole;
-    private String preferredLanguage;
-    // meta data - initialize with values
-    private String metaUsername = "unknown_username";
-    private String metaIconUrl = null;
+	private long creationTimestamp;
+	private String internalRole;
+	private String preferredLanguage;
+	// meta data - initialize with values
+	private String metaUsername = "unknown_username";
+	private String metaIconUrl = null;
 
-    public User(BackendProcessor backendProcessor, long userId) {
-        super(backendProcessor);
-        this.userId = userId;
-        setBackendPath("data", "users", (Supplier<Long>) this::getId);
-    }
+	public User(BackendProcessor backendProcessor, long userId){
+		super(backendProcessor);
+		this.userId = userId;
+		setBackendPath("data", "users", (Supplier<Long>) this::getId);
+	}
 
-    public long getId(){
-        return userId;
-    }
+	public long getId(){
+		return userId;
+	}
 
-    public long getCreationTimestamp() {
-        return creationTimestamp;
-    }
+	public long getCreationTimestamp(){
+		return creationTimestamp;
+	}
 
-    public String getInternalRole() {
-        return internalRole;
-    }
+	public String getInternalRole(){
+		return internalRole;
+	}
 
-    public String getPreferredLanguage() {
-        return preferredLanguage;
-    }
+	public String getPreferredLanguage(){
+		return preferredLanguage;
+	}
 
-    public void lSetMetaData(String username, String iconUrl){
-        secure();
-        this.metaUsername = username;
-        this.metaIconUrl = iconUrl;
-    }
+	public void lSetMetaData(String username, String iconUrl){
+		secure();
+		this.metaUsername = username;
+		this.metaIconUrl = iconUrl;
+	}
 
-    public void setMetaData(String username, String iconUrl){
-        lSetMetaData(username, iconUrl);
-        update();
-    }
+	public void setMetaData(String username, String iconUrl){
+		lSetMetaData(username, iconUrl);
+		update();
+	}
 
-    public String getMetaUsername() {
-        return metaUsername;
-    }
+	public String getMetaUsername(){
+		return metaUsername;
+	}
 
-    public String getMetaIconUrl(){
-        return metaIconUrl;
-    }
+	public String getMetaIconUrl(){
+		return metaIconUrl;
+	}
 
-    public void setInternalRole(String internalRole){
-        lSetInternalRole(internalRole);
-        update();
-    }
+	public void setInternalRole(String internalRole){
+		lSetInternalRole(internalRole);
+		update();
+	}
 
-    public void lSetInternalRole(String internalRole){
-        secure();
-        this.internalRole = internalRole;
-    }
+	public void lSetInternalRole(String internalRole){
+		secure();
+		this.internalRole = internalRole;
+	}
 
-    public void setPreferredLanguage(String language){
-        lSetPreferredLanguage(language);
-        update();
-    }
+	public void setPreferredLanguage(String language){
+		lSetPreferredLanguage(language);
+		update();
+	}
 
-    public void lSetPreferredLanguage(String language){
-        secure();
-        this.preferredLanguage = language;
-    }
+	public void lSetPreferredLanguage(String language){
+		secure();
+		this.preferredLanguage = language;
+	}
 
-    @Override
-    public JSONObject asJSON() throws JSONSerializationException {
-        return new JSONObject()
-                .put("userId", userId)
-                .put("creationTimestamp", creationTimestamp)
-                .put("internalRole", internalRole)
-                .put("preferredLanguage", preferredLanguage)
-                .put("meta", new JSONObject()
-                        .put("username", metaUsername)
-                        .put("iconUrl", (metaIconUrl != null)? metaIconUrl : JSONObject.NULL)
-                );
-    }
+	@Override
+	public JSONObject asJSON() throws JSONSerializationException{
+		return new JSONObject()
+			.put("userId", userId)
+			.put("creationTimestamp", creationTimestamp)
+			.put("internalRole", internalRole)
+			.put("preferredLanguage", preferredLanguage)
+			.put("meta", new JSONObject()
+				.put("username", metaUsername)
+				.put("iconUrl", (metaIconUrl != null) ? metaIconUrl : JSONObject.NULL)
+			);
+	}
 
-    @Override
-    public void fromJSON(JSONObject jsonObject) throws JSONSerializationException {
-        this.userId = jsonObject.getLong("userId");
-        this.creationTimestamp = jsonObject.getLong("creationTimestamp");
-        this.internalRole = jsonObject.getString("internalRole");
-        this.preferredLanguage = jsonObject.getString("preferredLanguage");
-        JSONObject meta = jsonObject.getJSONObject("meta");
-        this.metaUsername = meta.getString("username");
-        this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
-    }
+	@Override
+	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
+		this.userId = jsonObject.getLong("userId");
+		this.creationTimestamp = jsonObject.getLong("creationTimestamp");
+		this.internalRole = jsonObject.getString("internalRole");
+		this.preferredLanguage = jsonObject.getString("preferredLanguage");
+		JSONObject meta = jsonObject.getJSONObject("meta");
+		this.metaUsername = meta.getString("username");
+		this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
+	}
+
 }

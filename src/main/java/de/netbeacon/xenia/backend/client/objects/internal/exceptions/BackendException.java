@@ -18,19 +18,20 @@ package de.netbeacon.xenia.backend.client.objects.internal.exceptions;
 
 public class BackendException extends RuntimeException{
 
-    private final int id;
+	private final int id;
 
-    public BackendException(int id, String string){
-        super(string);
-        this.id = id;
-    }
+	public BackendException(int id, String string){
+		super(string);
+		this.id = id;
+	}
 
-    public BackendException(int id, Exception exception){
-        super(exception);
-        this.id = id;
-    }
+	public BackendException(int id, Exception exception){
+		super(exception);
+		this.id = id;
+	}
 
-    public int getId() {
-        return id;
-    }
+	public int getId(){
+		return id;
+	}
+
 }

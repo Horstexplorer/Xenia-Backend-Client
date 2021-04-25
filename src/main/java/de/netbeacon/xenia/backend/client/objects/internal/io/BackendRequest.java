@@ -21,51 +21,57 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.List;
 
-public class BackendRequest {
+public class BackendRequest{
 
-    public enum Method {
-        GET, PUT, POST, DELETE;
-    }
+	public enum Method{
+		GET,
+		PUT,
+		POST,
+		DELETE;
+	}
 
-    public enum AuthType {
-        BASIC, BEARER
-    }
+	public enum AuthType{
+		BASIC,
+		BEARER
+	}
 
-    private final Method method;
-    private final AuthType authType;
-    private final List<String> path;
-    private final HashMap<String, String> queryParams;
-    private final byte[] payload;
+	private final Method method;
+	private final AuthType authType;
+	private final List<String> path;
+	private final HashMap<String, String> queryParams;
+	private final byte[] payload;
 
-    public BackendRequest(Method method, AuthType authType, List<String> path, HashMap<String, String> queryParams, JSONObject payload){
-        this.method = method;
-        this.authType = authType;
-        this.path = path;
-        this.queryParams = queryParams;
-        if(payload != null){
-            this.payload = payload.toString().getBytes();
-        }else{
-            this.payload = new byte[0];
-        }
-    }
+	public BackendRequest(Method method, AuthType authType, List<String> path, HashMap<String, String> queryParams, JSONObject payload){
+		this.method = method;
+		this.authType = authType;
+		this.path = path;
+		this.queryParams = queryParams;
+		if(payload != null){
+			this.payload = payload.toString().getBytes();
+		}
+		else{
+			this.payload = new byte[0];
+		}
+	}
 
-    public Method getMethod() {
-        return method;
-    }
+	public Method getMethod(){
+		return method;
+	}
 
-    public AuthType getAuthType() {
-        return authType;
-    }
+	public AuthType getAuthType(){
+		return authType;
+	}
 
-    public List<String> getPath() {
-        return path;
-    }
+	public List<String> getPath(){
+		return path;
+	}
 
-    public HashMap<String, String> getQueryParams() {
-        return queryParams;
-    }
+	public HashMap<String, String> getQueryParams(){
+		return queryParams;
+	}
 
-    public byte[] getPayload() {
-        return payload;
-    }
+	public byte[] getPayload(){
+		return payload;
+	}
+
 }

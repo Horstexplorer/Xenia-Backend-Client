@@ -42,158 +42,169 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-public class XeniaBackendClient implements IShutdown {
+public class XeniaBackendClient implements IShutdown{
 
-    private final BackendSettings backendSettings;
+	private final BackendSettings backendSettings;
 
-    private final OkHttpClient okHttpClient;
-    private final BackendProcessor backendProcessor;
-    private final PrimaryWebsocketListener primaryWebSocketListener;
-    private final SecondaryWebsocketListener secondaryWebsocketListener;
+	private final OkHttpClient okHttpClient;
+	private final BackendProcessor backendProcessor;
+	private final PrimaryWebsocketListener primaryWebSocketListener;
+	private final SecondaryWebsocketListener secondaryWebsocketListener;
 
-    private final UserCache userCache;
-    private final GuildCache guildCache;
-    private final LicenseCache licenseCache;
+	private final UserCache userCache;
+	private final GuildCache guildCache;
+	private final LicenseCache licenseCache;
 
-    private SetupData setupDataCache = null;
+	private SetupData setupDataCache = null;
 
-    private final Supplier<ShardManager> shardManagerSupplier;
+	private final Supplier<ShardManager> shardManagerSupplier;
 
-    private final ScheduledExecutorService keyUpdateTaskExecutor = Executors.newSingleThreadScheduledExecutor();
-    private ScheduledFuture<?> keyUpdateTask;
+	private final ScheduledExecutorService keyUpdateTaskExecutor = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledFuture<?> keyUpdateTask;
 
-    private final AtomicBoolean suspended = new AtomicBoolean(true);
-    private final ReentrantLock suspensionLock = new ReentrantLock();
+	private final AtomicBoolean suspended = new AtomicBoolean(true);
+	private final ReentrantLock suspensionLock = new ReentrantLock();
 
-    public XeniaBackendClient(BackendSettings backendSettings, Supplier<ShardManager> shardManagerSupplier){
-        this.backendSettings = backendSettings;
-        this.shardManagerSupplier = shardManagerSupplier;
-        // create okhttp client
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.setMaxRequests(128);
-        dispatcher.setMaxRequestsPerHost(128);
-        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .dispatcher(dispatcher)
-                .addInterceptor(new BackendProcessor.Interceptor(this));
-        this.okHttpClient = okHttpClientBuilder.build();
-        // create processor
-        backendProcessor = new BackendProcessor(this);
-        // check login
-        backendProcessor.activateToken();
-        // create update task
-        keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(()->{
-            try{backendProcessor.activateToken();}catch (Exception ignore){}
-        }, 2, 2, TimeUnit.MINUTES);
-        // activate websocket
-        primaryWebSocketListener = new PrimaryWebsocketListener(this);
-        primaryWebSocketListener.start();
+	public XeniaBackendClient(BackendSettings backendSettings, Supplier<ShardManager> shardManagerSupplier){
+		this.backendSettings = backendSettings;
+		this.shardManagerSupplier = shardManagerSupplier;
+		// create okhttp client
+		Dispatcher dispatcher = new Dispatcher();
+		dispatcher.setMaxRequests(128);
+		dispatcher.setMaxRequestsPerHost(128);
+		OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder()
+			.connectTimeout(15, TimeUnit.SECONDS)
+			.readTimeout(30, TimeUnit.SECONDS)
+			.dispatcher(dispatcher)
+			.addInterceptor(new BackendProcessor.Interceptor(this));
+		this.okHttpClient = okHttpClientBuilder.build();
+		// create processor
+		backendProcessor = new BackendProcessor(this);
+		// check login
+		backendProcessor.activateToken();
+		// create update task
+		keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(() -> {
+			try{
+				backendProcessor.activateToken();
+			}
+			catch(Exception ignore){
+			}
+		}, 2, 2, TimeUnit.MINUTES);
+		// activate websocket
+		primaryWebSocketListener = new PrimaryWebsocketListener(this);
+		primaryWebSocketListener.start();
 
-        WSProcessorCore wsProcessorCore = new WSProcessorCore(this).registerProcessors(
-                new HeartbeatProcessor(),
-                new IdentifyProcessor(),
-                new StatisticsProcessor(),
-                new TwitchNotificationProcessor(),
-                new ShutdownInterruptProcessor(),
-                new MetricsProcessor()
-        );
-        secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
-        secondaryWebsocketListener.start();
-        // create main caches
-        this.userCache = new UserCache(backendProcessor);
-        this.guildCache = new GuildCache(backendProcessor);
-        this.licenseCache = new LicenseCache(backendProcessor);
+		WSProcessorCore wsProcessorCore = new WSProcessorCore(this).registerProcessors(
+			new HeartbeatProcessor(),
+			new IdentifyProcessor(),
+			new StatisticsProcessor(),
+			new TwitchNotificationProcessor(),
+			new ShutdownInterruptProcessor(),
+			new MetricsProcessor()
+		);
+		secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
+		secondaryWebsocketListener.start();
+		// create main caches
+		this.userCache = new UserCache(backendProcessor);
+		this.guildCache = new GuildCache(backendProcessor);
+		this.licenseCache = new LicenseCache(backendProcessor);
 
-    }
+	}
 
-    public BackendSettings getBackendSettings() {
-        return backendSettings;
-    }
+	public BackendSettings getBackendSettings(){
+		return backendSettings;
+	}
 
-    public OkHttpClient getOkHttpClient() {
-        return okHttpClient;
-    }
+	public OkHttpClient getOkHttpClient(){
+		return okHttpClient;
+	}
 
-    public BackendProcessor getBackendProcessor(){
-        return backendProcessor;
-    }
+	public BackendProcessor getBackendProcessor(){
+		return backendProcessor;
+	}
 
-    public SetupData getSetupData() {
-        if(setupDataCache != null){
-            return setupDataCache;
-        }
-        SetupData setupData = new SetupData(backendProcessor);
-        setupData.get();
-        this.setupDataCache = setupData;
-        // check if the setup data matches the given key
-        if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
-            throw new BackendException(-1, "Invalid Message Crypt Hash Specified");
-        }
-        return setupData;
-    }
+	public SetupData getSetupData(){
+		if(setupDataCache != null){
+			return setupDataCache;
+		}
+		SetupData setupData = new SetupData(backendProcessor);
+		setupData.get();
+		this.setupDataCache = setupData;
+		// check if the setup data matches the given key
+		if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
+			throw new BackendException(-1, "Invalid Message Crypt Hash Specified");
+		}
+		return setupData;
+	}
 
-    public Info getInfo(Info.Mode mode){
-        Info info = new Info(backendProcessor, mode);
-        info.get();
-        return info;
-    }
+	public Info getInfo(Info.Mode mode){
+		Info info = new Info(backendProcessor, mode);
+		info.get();
+		return info;
+	}
 
-    public UserCache getUserCache() {
-        return userCache;
-    }
+	public UserCache getUserCache(){
+		return userCache;
+	}
 
-    public GuildCache getGuildCache() {
-        return guildCache;
-    }
+	public GuildCache getGuildCache(){
+		return guildCache;
+	}
 
-    public LicenseCache getLicenseCache() {
-        return licenseCache;
-    }
+	public LicenseCache getLicenseCache(){
+		return licenseCache;
+	}
 
-    public PrimaryWebsocketListener getPrimaryWebSocketListener() {
-        return primaryWebSocketListener;
-    }
+	public PrimaryWebsocketListener getPrimaryWebSocketListener(){
+		return primaryWebSocketListener;
+	}
 
-    public SecondaryWebsocketListener getSecondaryWebsocketListener() {
-        return secondaryWebsocketListener;
-    }
+	public SecondaryWebsocketListener getSecondaryWebsocketListener(){
+		return secondaryWebsocketListener;
+	}
 
-    public Supplier<ShardManager> getShardManagerSupplier() {
-        return shardManagerSupplier;
-    }
+	public Supplier<ShardManager> getShardManagerSupplier(){
+		return shardManagerSupplier;
+	}
 
-    public boolean isSuspended(){
-        return suspended.get();
-    }
+	public boolean isSuspended(){
+		return suspended.get();
+	}
 
-    public void suspendExecution(boolean value){
-        try{
-            suspensionLock.lock();
-            if(value && !suspended.get()){
-                suspended.set(true);
-                secondaryWebsocketListener.stop();
-                primaryWebSocketListener.stop();
-                keyUpdateTask.cancel(true);
-            }else if(!value && suspended.get()){
-                suspended.set(false);
-                backendProcessor.activateToken();
-                keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(()->{
-                    try{backendProcessor.activateToken();}catch (Exception ignore){}
-                }, 2, 2, TimeUnit.MINUTES);
-                primaryWebSocketListener.start();
-                secondaryWebsocketListener.start();
-            }
-        }finally {
-            suspensionLock.unlock();
-        }
-    }
+	public void suspendExecution(boolean value){
+		try{
+			suspensionLock.lock();
+			if(value && !suspended.get()){
+				suspended.set(true);
+				secondaryWebsocketListener.stop();
+				primaryWebSocketListener.stop();
+				keyUpdateTask.cancel(true);
+			}
+			else if(!value && suspended.get()){
+				suspended.set(false);
+				backendProcessor.activateToken();
+				keyUpdateTask = keyUpdateTaskExecutor.scheduleAtFixedRate(() -> {
+					try{
+						backendProcessor.activateToken();
+					}
+					catch(Exception ignore){
+					}
+				}, 2, 2, TimeUnit.MINUTES);
+				primaryWebSocketListener.start();
+				secondaryWebsocketListener.start();
+			}
+		}
+		finally{
+			suspensionLock.unlock();
+		}
+	}
 
-    @Override
-    public void onShutdown() throws Exception {
-        keyUpdateTaskExecutor.shutdownNow();
-        primaryWebSocketListener.onShutdown();
-        secondaryWebsocketListener.onShutdown();
-        backendProcessor.onShutdown();
-    }
+	@Override
+	public void onShutdown() throws Exception{
+		keyUpdateTaskExecutor.shutdownNow();
+		primaryWebSocketListener.onShutdown();
+		secondaryWebsocketListener.onShutdown();
+		backendProcessor.onShutdown();
+	}
+
 }

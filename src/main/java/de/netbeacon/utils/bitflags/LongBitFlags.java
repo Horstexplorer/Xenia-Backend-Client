@@ -19,37 +19,40 @@ package de.netbeacon.utils.bitflags;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class LongBitFlags {
+public abstract class LongBitFlags{
 
-    private long value;
+	private long value;
 
-    public LongBitFlags(long value){
-        this.value = value;
-    }
+	public LongBitFlags(long value){
+		this.value = value;
+	}
 
-    public interface LongBit{
-        int getPos();
-    }
+	public interface LongBit{
 
-    public long getValue() {
-        return value;
-    }
+		int getPos();
 
-    public synchronized void set(LongBit...bits){
-        for(LongBit b : bits){
-            value |= 1L << b.getPos();
-        }
-    }
+	}
 
-    public synchronized void unset(LongBit...bits){
-        for(LongBit b : bits){
-            value &= ~(1L << b.getPos());
-        }
-    }
+	public long getValue(){
+		return value;
+	}
 
-    public boolean has(LongBit bit){
-        return ((value >> bit.getPos()) & 1) == 1;
-    }
+	public synchronized void set(LongBit... bits){
+		for(LongBit b : bits){
+			value |= 1L << b.getPos();
+		}
+	}
 
-    public <T extends LongBit> List<T> getBits(){ return new ArrayList<>(); }
+	public synchronized void unset(LongBit... bits){
+		for(LongBit b : bits){
+			value &= ~(1L << b.getPos());
+		}
+	}
+
+	public boolean has(LongBit bit){
+		return ((value >> bit.getPos()) & 1) == 1;
+	}
+
+	public <T extends LongBit> List<T> getBits(){ return new ArrayList<>(); }
+
 }

@@ -55,8 +55,8 @@ public class License extends APIDataObject {
         map.put("licenseKey", licenseKey);
         BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), map, asJSON());
         BackendResult backendResult = getBackendProcessor().process(backendRequest);
-        if(backendResult.getStatusCode() != 200){
-            throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path "+ Arrays.toString(getBackendPath().toArray()));
+        if (backendResult.getStatusCode() != 200) {
+            throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
         }
         fromJSON(backendResult.getPayloadAsJSON());
     }
@@ -65,11 +65,11 @@ public class License extends APIDataObject {
         return guildId;
     }
 
-    public String getLicenseName(){
+    public String getLicenseName() {
         return licenseName;
     }
 
-    public String getLicenseDescription(){
+    public String getLicenseDescription() {
         return licenseDescription;
     }
 
@@ -107,27 +107,33 @@ public class License extends APIDataObject {
 
     // SECONDARY
 
-    public Guild getGuild(){
+    public Guild getGuild() {
         return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
     }
 
     @Override
-    public void create() throws BackendException {}
+    public void create() throws BackendException {
+    }
 
     @Override
-    public void createAsync() {}
+    public void createAsync() {
+    }
 
     @Override
-    public void update() throws BackendException {}
+    public void update() throws BackendException {
+    }
 
     @Override
-    public void updateAsync() {}
+    public void updateAsync() {
+    }
 
     @Override
-    public void delete() throws BackendException {}
+    public void delete() throws BackendException {
+    }
 
     @Override
-    public void deleteAsync() {}
+    public void deleteAsync() {
+    }
 
     @Override
     public JSONObject asJSON() throws JSONSerializationException {

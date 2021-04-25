@@ -41,7 +41,7 @@ public class Guild extends APIDataObject {
     private long creationTimestamp;
     private String preferredLanguage;
     private GuildSettings settings = new GuildSettings(0);
-    private D43Z1Mode d43Z1Mode = new D43Z1Mode(0);
+    private D43Z1Mode d43Z1Mode = new D43Z1Mode(1);
     private String prefix;
     // meta data - initialize with values
     private String metaGuildName = "unknown_name";
@@ -62,7 +62,7 @@ public class Guild extends APIDataObject {
         setBackendPath("data", "guilds", (Supplier<Long>) this::getId);
     }
 
-    public long getId(){
+    public long getId() {
         return guildId;
     }
 
@@ -74,26 +74,26 @@ public class Guild extends APIDataObject {
         return preferredLanguage;
     }
 
-    public void setPreferredLanguage(String preferredLanguage){
+    public void setPreferredLanguage(String preferredLanguage) {
         lSetPreferredLanguage(preferredLanguage);
         update();
     }
 
-    public void lSetPreferredLanguage(String preferredLanguage){
+    public void lSetPreferredLanguage(String preferredLanguage) {
         secure();
         this.preferredLanguage = preferredLanguage;
     }
 
-    public GuildSettings getSettings(){
+    public GuildSettings getSettings() {
         return settings;
     }
 
-    public void setGuildSettings(GuildSettings settings){
+    public void setGuildSettings(GuildSettings settings) {
         lSetGuildSettings(settings);
         update();
     }
 
-    public void lSetGuildSettings(GuildSettings settings){
+    public void lSetGuildSettings(GuildSettings settings) {
         secure();
         this.settings = settings;
     }
@@ -102,12 +102,12 @@ public class Guild extends APIDataObject {
         return d43Z1Mode;
     }
 
-    public void setD43Z1Mode(D43Z1Mode d43Z1Mode){
+    public void setD43Z1Mode(D43Z1Mode d43Z1Mode) {
         lSetD43Z1Mode(d43Z1Mode);
         update();
     }
 
-    public void lSetD43Z1Mode(D43Z1Mode d43Z1Mode){
+    public void lSetD43Z1Mode(D43Z1Mode d43Z1Mode) {
         secure();
         this.d43Z1Mode = d43Z1Mode;
     }
@@ -116,31 +116,31 @@ public class Guild extends APIDataObject {
         return prefix;
     }
 
-    public void setPrefix(String prefix){
+    public void setPrefix(String prefix) {
         lSetPrefix(prefix);
         update();
     }
 
-    public void lSetPrefix(String prefix){
+    public void lSetPrefix(String prefix) {
         secure();
         this.prefix = prefix;
     }
 
-    public String getMetaGuildName(){
+    public String getMetaGuildName() {
         return metaGuildName;
     }
 
-    public String getMetaIconUrl(){
+    public String getMetaIconUrl() {
         return metaIconUrl;
     }
 
-    public void lSetMetaData(String guildName, String iconUrl){
+    public void lSetMetaData(String guildName, String iconUrl) {
         secure();
         this.metaGuildName = guildName;
         this.metaIconUrl = iconUrl;
     }
 
-    public void setMetaData(String metaGuildName, String iconUrl){
+    public void setMetaData(String metaGuildName, String iconUrl) {
         lSetMetaData(metaGuildName, iconUrl);
         update();
     }
@@ -158,14 +158,16 @@ public class Guild extends APIDataObject {
         return roleCache;
     }
 
-    public MiscCaches getMiscCaches() { return miscCaches; }
+    public MiscCaches getMiscCaches() {
+        return miscCaches;
+    }
 
-    public void initSync(boolean preloadMembers){
+    public void initSync(boolean preloadMembers) {
         List<Channel> channelList = getChannelCache().retrieveAllFromBackend(true);
-        for(Channel channel : channelList){
+        for (Channel channel : channelList) {
             channel.getMessageCache().retrieveAllFromBackend(true, true);
         }
-        if(preloadMembers){
+        if (preloadMembers) {
             getMemberCache().retrieveAllFromBackend(true);
         }
         getRoleCache().retrieveAllFromBackend(true);
@@ -175,10 +177,10 @@ public class Guild extends APIDataObject {
         getMiscCaches().getTwitchNotificationCache().retrieveAllFromBackend();
     }
 
-    public void initAsync(boolean preloadMembers, Consumer<Guild> then){
-        getBackendProcessor().getScalingExecutor().execute(()->{
+    public void initAsync(boolean preloadMembers, Consumer<Guild> then) {
+        getBackendProcessor().getScalingExecutor().execute(() -> {
             this.initSync(preloadMembers);
-            if(then != null){
+            if (then != null) {
                 then.accept(this);
             }
         });
@@ -212,20 +214,20 @@ public class Guild extends APIDataObject {
         this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
     }
 
-    public void clear(boolean deletion){
+    public void clear(boolean deletion) {
         channelCache.clear(deletion);
         memberCache.clear(deletion);
         roleCache.clear(deletion);
         miscCaches.clear(deletion);
     }
 
-    public static class MiscCaches{
+    public static class MiscCaches {
 
         private final TagCache tagCache;
         private final NotificationCache notificationCache;
         private final TwitchNotificationCache twitchNotificationCache;
 
-        public MiscCaches(TagCache tagCache, NotificationCache notificationCache, TwitchNotificationCache twitchNotificationCache){
+        public MiscCaches(TagCache tagCache, NotificationCache notificationCache, TwitchNotificationCache twitchNotificationCache) {
             this.tagCache = tagCache;
             this.notificationCache = notificationCache;
             this.twitchNotificationCache = twitchNotificationCache;
@@ -243,28 +245,31 @@ public class Guild extends APIDataObject {
             return twitchNotificationCache;
         }
 
-        public void clear(boolean deletion){
+        public void clear(boolean deletion) {
             tagCache.clear(deletion);
             notificationCache.clear(deletion);
             twitchNotificationCache.clear(deletion);
         }
+
     }
 
-    public static class GuildSettings extends IntegerBitFlags{
+    public static class GuildSettings extends IntegerBitFlags {
 
         public GuildSettings(int value) {
             super(value);
         }
 
-        public enum Settings implements IntBit{
+        public enum Settings implements IntBit {
 
+            BOT_IGNORE_ADMIN_PERMS(4),
+            DISABLE_COMMAND_AUTO_CORRECT_MESSAGE(3),
             COMMAND_AUTO_CORRECT(2),
             ENFORCE_LANGUAGE(1),
             VPERM_ENABLE(0);
 
             private final int pos;
 
-            private Settings(int pos){
+            private Settings(int pos) {
                 this.pos = pos;
             }
 
@@ -278,24 +283,24 @@ public class Guild extends APIDataObject {
         public <T extends IntBit> List<T> getBits() {
             return (List<T>) Arrays.stream(Guild.GuildSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
         }
+
     }
 
-    public static class D43Z1Mode extends IntegerBitFlags{
+    public static class D43Z1Mode extends IntegerBitFlags {
 
-        public D43Z1Mode(int value){
+        public D43Z1Mode(int value) {
             super(value);
         }
 
-        public enum Modes implements IntBit{
+        public enum Modes implements IntBit {
 
-            DISABLE_COMMAND_AUTO_CORRECT_MESSAGE(3),
             SELF_LEARNING_ONLY(2),
             MIX(1),
             MASTER_ONLY(0);
 
             private final int pos;
 
-            private Modes(int pos){
+            private Modes(int pos) {
                 this.pos = pos;
             }
 
@@ -309,5 +314,7 @@ public class Guild extends APIDataObject {
         public <T extends IntBit> List<T> getBits() {
             return (List<T>) Arrays.stream(Guild.D43Z1Mode.Modes.values()).filter(this::has).collect(Collectors.toList());
         }
+
     }
+
 }
