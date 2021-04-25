@@ -318,6 +318,8 @@ public class Channel extends APIDataObject{
 
 		public enum Settings implements IntBit{
 
+			ACTIVATE_EXPERIMENTAL_FEATURES(3),
+			ACTIVATE_ADDITIONAL_FEATURES(2),
 			ACTIVATE_SELF_LEARNING(1),
 			ACTIVE(0);
 
