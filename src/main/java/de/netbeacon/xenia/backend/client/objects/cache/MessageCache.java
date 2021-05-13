@@ -86,17 +86,17 @@ public class MessageCache extends Cache<Long, Message>{
 		}
 	}
 
-	public Message create(long messageId, long creationTime, long userId, String messageContent) throws CacheException, DataException{
-		return create(messageId, creationTime, userId, messageContent, false);
+	public Message create(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls) throws CacheException, DataException{
+		return create(messageId, creationTime, userId, messageContent, attachmentUrls, false);
 	}
 
-	public Message create(long messageId, long creationTime, long userId, String messageContent, boolean securityOverride) throws CacheException, DataException{
+	public Message create(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls, boolean securityOverride) throws CacheException, DataException{
 		try{
 			idBasedLockHolder.getLock(messageId).lock();
 			if(contains(messageId)){
 				return getFromCache(messageId);
 			}
-			Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).lSetInitialData(userId, creationTime, messageContent, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
+			Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).lSetInitialData(userId, creationTime, messageContent, attachmentUrls, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
 			message.createAsync(securityOverride); // can be async as we process a lot of em
 			addToCache(messageId, message);
 			return message;
