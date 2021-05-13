@@ -1,43 +1,38 @@
 plugins {
     id 'java'
-    id 'application'
+    id'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
 group 'de.netbeacon'
-sourceCompatibility = 13
 
 repositories {
     mavenCentral()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
 }
 
 dependencies {
 
     // OKHTTP
 
-    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
 
     // JSON
 
-    compile group: 'org.json', name: 'json', version: '20200518' // https://mvnrepository.com/artifact/org.json/json
+    implementation group: 'org.json', name: 'json', version: '20200518' // https://mvnrepository.com/artifact/org.json/json
 
     // CRYPT
 
-    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.66' // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
-    compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.66' // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
-    compile group: 'org.mindrot', name: 'jbcrypt', version: '0.4' // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.66' // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.66' // https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on
+    implementation group: 'org.mindrot', name: 'jbcrypt', version: '0.4' // https://mvnrepository.com/artifact/org.mindrot/jbcrypt
 
     // LOGGING
 
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
 
-    compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.2.0_227' // https://mvnrepository.com/artifact/net.dv8tion/JDA
-
-
-}
-
-jar {
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+    compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.2.1_262' // https://mvnrepository.com/artifact/net.dv8tion/JDA
 }
