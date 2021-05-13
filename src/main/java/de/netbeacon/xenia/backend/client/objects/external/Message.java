@@ -24,6 +24,8 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class Message extends APIDataObject{
@@ -39,6 +41,7 @@ public class Message extends APIDataObject{
 	private String messageContent;
 	private String oldMessageSalt;
 	private String oldMessageContent;
+	private List<String> attachments = new ArrayList<>();
 
 	public Message(BackendProcessor backendProcessor, long guildId, long channelId, long messageId){
 		super(backendProcessor);
@@ -48,11 +51,12 @@ public class Message extends APIDataObject{
 		setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId, "messages", (Supplier<Long>) this::getId);
 	}
 
-	public Message lSetInitialData(long userId, long creationTimestamp, String messageContent, String cryptKey){
+	public Message lSetInitialData(long userId, long creationTimestamp, String messageContent, List<String> attachmentUrls, String cryptKey){
 		try{
 			byte[] salt = Crypt.genSalt();
 			this.messageSalt = new String(Base64.encode(salt));
 			this.messageContent = new String(Base64.encode(Crypt.encrypt(messageContent.getBytes(), cryptKey, salt)));
+			this.attachments.addAll(attachmentUrls);
 		}
 		catch(Exception e){
 			throw new BackendException(-5, "Failed To Encrypt Content");
@@ -128,6 +132,10 @@ public class Message extends APIDataObject{
 		this.oldMessageContent = tmpC;
 	}
 
+	public List<String> getAttachmentUrls() {
+		return attachments;
+	}
+
 	// SECONDARY
 
 	public Guild getGuild(){
@@ -151,6 +159,7 @@ public class Message extends APIDataObject{
 			.put("userId", userId)
 			.put("creationTimestamp", creationTimestamp)
 			.put("creationTimestampDiscord", creationTimestampDiscord)
+			.put("messageAttachments", attachments)
 			.put("messageSalt", messageSalt)
 			.put("messageContent", messageContent);
 	}
@@ -163,6 +172,10 @@ public class Message extends APIDataObject{
 		this.userId = jsonObject.getLong("userId");
 		this.creationTimestamp = jsonObject.getLong("creationTimestamp");
 		this.creationTimestampDiscord = jsonObject.getLong("creationTimestampDiscord");
+		this.attachments = new ArrayList<>();
+		for(int i = 0; i < jsonObject.getJSONArray("messageAttachments").length(); i++){
+			this.attachments.add(jsonObject.getJSONArray("messageAttachments").getString(i));
+		}
 		this.messageSalt = jsonObject.getString("messageSalt");
 		this.messageContent = jsonObject.getString("messageContent");
 	}

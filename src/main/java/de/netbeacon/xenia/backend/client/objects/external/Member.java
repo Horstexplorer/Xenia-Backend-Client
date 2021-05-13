@@ -31,6 +31,7 @@ public class Member extends APIDataObject {
     private long userId;
     private long creationTimestamp;
     private Set<Long> roleIDs = new HashSet<>();
+    private long levelPoints;
     // meta data - initialize with values
     private String metaNickname = "unknown_nickname";
     private boolean metaIsAdministrator = false;
@@ -58,6 +59,18 @@ public class Member extends APIDataObject {
     public Set<Long> getRoleIds() {
         return roleIDs;
     }
+
+    public long getLevelPoints() { return levelPoints; }
+
+	public void lSetLevelPoints(long levelPoints) {
+    	secure();
+    	this.levelPoints = levelPoints;
+	}
+
+	public void setLevelPoints(long levelPoints) {
+		lSetLevelPoints(levelPoints);
+		update();
+	}
 
     public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner) {
         secure();
@@ -133,6 +146,7 @@ public class Member extends APIDataObject {
                 .put("userId", userId)
                 .put("creationTimestamp", creationTimestamp)
                 .put("roles", roleIDs)
+	            .put("levelPoints", levelPoints)
                 .put("meta", new JSONObject()
                         .put("nickname", metaNickname)
                         .put("isAdministrator", metaIsAdministrator)
@@ -148,6 +162,7 @@ public class Member extends APIDataObject {
         for (int i = 0; i < jsonObject.getJSONArray("roles").length(); i++) {
             this.roleIDs.add(jsonObject.getJSONArray("roles").getLong(i));
         }
+	    this.levelPoints = jsonObject.getLong("levelPoints");
         JSONObject meta = jsonObject.getJSONObject("meta");
         this.metaNickname = meta.getString("nickname");
         this.metaIsAdministrator = meta.getBoolean("isAdministrator");
