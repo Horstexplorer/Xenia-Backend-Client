@@ -24,6 +24,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataExcepti
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class GuildCache extends Cache<Long, Guild>{
 
@@ -74,6 +75,25 @@ public class GuildCache extends Cache<Long, Guild>{
 		}
 	}
 
+	public void getAsync(long guildId, Consumer<Guild> whenReady, Consumer<Exception> onException){
+		getAsync(guildId, true, whenReady, onException);
+	}
+
+	public void getAsync(long guildId, boolean init, Consumer<Guild> whenReady, Consumer<Exception> onException){
+		getAsync(guildId, init, false, whenReady, onException);
+	}
+
+	public void getAsync(long guildId, boolean init, boolean securityOverride, Consumer<Guild> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(guildId, init, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public void remove(long guildId){
 		removeFromCache(guildId);
 	}
@@ -99,6 +119,21 @@ public class GuildCache extends Cache<Long, Guild>{
 		finally{
 			idBasedLockHolder.getLock(guildId).unlock();
 		}
+	}
+
+	public void deleteAsync(long guildId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(guildId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long guildId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(guildId, securityOverride);
+				if(whenReady != null) whenReady.accept(guildId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	@Override

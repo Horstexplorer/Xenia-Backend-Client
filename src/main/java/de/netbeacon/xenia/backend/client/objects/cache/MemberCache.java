@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class MemberCache extends Cache<Long, Member>{
 
@@ -86,6 +87,25 @@ public class MemberCache extends Cache<Long, Member>{
 		}
 	}
 
+	public void getAsync(long userId, Consumer<Member> whenReady, Consumer<Exception> onException){
+		getAsync(userId, true, whenReady, onException);
+	}
+
+	public void getAsync(long userId, boolean init, Consumer<Member> whenReady, Consumer<Exception> onException){
+		getAsync(userId, init, false, whenReady, onException);
+	}
+
+	public void getAsync(long userId, boolean init, boolean securityOverride, Consumer<Member> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(userId, init, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public List<Member> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException{
 		try{
 			if(cacheInsert){
@@ -123,6 +143,17 @@ public class MemberCache extends Cache<Long, Member>{
 		}
 	}
 
+	public void retrieveAllFromBackendAsync(boolean cacheInsert, Consumer<List<Member>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend(cacheInsert);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public void remove(long userId){
 		removeFromCache(userId);
 	}
@@ -147,6 +178,21 @@ public class MemberCache extends Cache<Long, Member>{
 		finally{
 			idBasedLockHolder.getLock(userId).unlock();
 		}
+	}
+
+	public void deleteAsync(long userId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(userId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long userId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(userId, securityOverride);
+				if(whenReady != null) whenReady.accept(userId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 }

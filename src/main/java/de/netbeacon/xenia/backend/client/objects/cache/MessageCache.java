@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class MessageCache extends Cache<Long, Message>{
 
@@ -86,6 +87,21 @@ public class MessageCache extends Cache<Long, Message>{
 		}
 	}
 
+	public void getAsync(long messageId, Consumer<Message> whenReady, Consumer<Exception> onException){
+		getAsync(messageId, false, whenReady, onException);
+	}
+
+	public void getAsync(long messageId, boolean securityOverride, Consumer<Message> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(messageId, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public Message create(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls) throws CacheException, DataException{
 		return create(messageId, creationTime, userId, messageContent, attachmentUrls, false);
 	}
@@ -110,6 +126,21 @@ public class MessageCache extends Cache<Long, Message>{
 		finally{
 			idBasedLockHolder.getLock(messageId).unlock();
 		}
+	}
+
+	public void createAsync(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls, Consumer<Message> whenReady, Consumer<Exception> onException){
+		createAsync(messageId, creationTime, userId, messageContent, attachmentUrls, false, whenReady, onException);
+	}
+
+	public void createAsync(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls, boolean securityOverride, Consumer<Message> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = create(messageId, creationTime, userId, messageContent, attachmentUrls, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	public List<Message> retrieveAllFromBackend(boolean enforceLimit, boolean cacheInsert) throws CacheException, DataException{
@@ -154,6 +185,17 @@ public class MessageCache extends Cache<Long, Message>{
 		}
 	}
 
+	public void retrieveAllFromBackendAsync(boolean enforceLimit, boolean cacheInsert, Consumer<List<Message>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend(enforceLimit, cacheInsert);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public void remove(long messageId){
 		removeFromCache(messageId);
 	}
@@ -178,6 +220,21 @@ public class MessageCache extends Cache<Long, Message>{
 		finally{
 			idBasedLockHolder.getLock(messageId).unlock();
 		}
+	}
+
+	public void deleteAsync(long messageId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(messageId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long messageId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(messageId, securityOverride);
+				if(whenReady != null) whenReady.accept(messageId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	public void setLast(String type, long messageId){

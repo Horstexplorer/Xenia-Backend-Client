@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 
@@ -73,6 +74,21 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		}
 	}
 
+	public void getAsync(long twitchNotificationId, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
+		getAsync(twitchNotificationId, false, whenReady, onException);
+	}
+
+	public void getAsync(long twitchNotificationId, boolean securityOverride, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(twitchNotificationId, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public List<TwitchNotification> retrieveAllFromBackend() throws CacheException, DataException{
 		try{
 			idBasedLockHolder.getLock().writeLock().lock();
@@ -102,6 +118,17 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		finally{
 			idBasedLockHolder.getLock().writeLock().unlock();
 		}
+	}
+
+	public void retrieveAllFromBackendAsync(Consumer<List<TwitchNotification>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend();
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	private final ReentrantLock creationLock = new ReentrantLock();
@@ -149,6 +176,21 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		}
 	}
 
+	public void createAsync(long channelId, String twitchName, String customMessage, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
+		createAsync(channelId, twitchName, customMessage, false, whenReady, onException);
+	}
+
+	public void createAsync(long channelId, String twitchName, String customMessage, boolean securityOverride, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = createNew(channelId, twitchName, customMessage, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public void remove(long twitchNotificationId){
 		removeFromCache(twitchNotificationId);
 	}
@@ -173,6 +215,21 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		finally{
 			idBasedLockHolder.getLock(twitchNotificationId).unlock();
 		}
+	}
+
+	public void deleteAsync(long twitchNotificationId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(twitchNotificationId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long twitchNotificationId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(twitchNotificationId, securityOverride);
+				if(whenReady != null) whenReady.accept(twitchNotificationId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 }

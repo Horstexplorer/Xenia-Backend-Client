@@ -24,6 +24,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataExcepti
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class UserCache extends Cache<Long, User>{
 
@@ -74,6 +75,25 @@ public class UserCache extends Cache<Long, User>{
 		}
 	}
 
+	public void getAsync(long userId, Consumer<User> whenReady, Consumer<Exception> onException){
+		getAsync(userId, true, whenReady, onException);
+	}
+
+	public void getAsync(long userId, boolean init, Consumer<User> whenReady, Consumer<Exception> onException){
+		getAsync(userId, init, false, whenReady, onException);
+	}
+
+	public void getAsync(long userId, boolean init, boolean securityOverride, Consumer<User> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(userId, init, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public void remove(long userId){
 		removeFromCache(userId);
 	}
@@ -98,6 +118,21 @@ public class UserCache extends Cache<Long, User>{
 		finally{
 			idBasedLockHolder.getLock(userId).unlock();
 		}
+	}
+
+	public void deleteAsync(long userId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(userId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long userId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(userId, securityOverride);
+				if(whenReady != null) whenReady.accept(userId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 }

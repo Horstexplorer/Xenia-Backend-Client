@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class ChannelCache extends Cache<Long, Channel>{
 
@@ -86,6 +87,25 @@ public class ChannelCache extends Cache<Long, Channel>{
 		}
 	}
 
+	public void getAsync(long channelId, Consumer<Channel> whenReady, Consumer<Exception> onException){
+		getAsync(channelId, whenReady, onException);
+	}
+
+	public void getAsync(long channelId, boolean init, Consumer<Channel> whenReady, Consumer<Exception> onException){
+		getAsync(channelId, init, whenReady, onException);
+	}
+
+	public void getAsync(long channelId, boolean init, boolean securityOverride, Consumer<Channel> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(channelId, init, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public List<Channel> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException{
 		try{
 			if(cacheInsert){
@@ -123,6 +143,17 @@ public class ChannelCache extends Cache<Long, Channel>{
 		}
 	}
 
+	public void retrieveAllFromBackendAsync(boolean cacheInsert, Consumer<List<Channel>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend(cacheInsert);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public void remove(long channelId){
 		removeFromCache(channelId);
 	}
@@ -147,6 +178,21 @@ public class ChannelCache extends Cache<Long, Channel>{
 		finally{
 			idBasedLockHolder.getLock(channelId).unlock();
 		}
+	}
+
+	public void deleteAsync(long channelId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(channelId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long channelId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(channelId, securityOverride);
+				if(whenReady != null) whenReady.accept(channelId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	@Override

@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 public class RoleCache extends Cache<Long, Role>{
 
@@ -73,6 +74,21 @@ public class RoleCache extends Cache<Long, Role>{
 		}
 	}
 
+	public void getAsync(long roleId, Consumer<Role> whenReady, Consumer<Exception> onException){
+		getAsync(roleId, false, whenReady, onException);
+	}
+
+	public void getAsync(long roleId, boolean securityOverride, Consumer<Role> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(roleId, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public List<Role> retrieveAllFromBackend(boolean cacheInsert) throws CacheException, DataException{
 		try{
 			if(cacheInsert){
@@ -110,13 +126,24 @@ public class RoleCache extends Cache<Long, Role>{
 		}
 	}
 
-	private final ReentrantLock creationLock = new ReentrantLock();
-
-	public Role createNew() throws CacheException, DataException{
-		return createNew(false);
+	public void retrieveAllFromBackendAsync(boolean cacheInsert, Consumer<List<Role>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend(cacheInsert);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
-	public Role createNew(boolean securityOverride) throws CacheException, DataException{
+	private final ReentrantLock creationLock = new ReentrantLock();
+
+	public Role create() throws CacheException, DataException{
+		return create(false);
+	}
+
+	public Role create(boolean securityOverride) throws CacheException, DataException{
 		try{
 			creationLock.lock();
 			if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_GUILD_ROLE_C()){
@@ -136,6 +163,21 @@ public class RoleCache extends Cache<Long, Role>{
 		finally{
 			creationLock.unlock();
 		}
+	}
+
+	public void createAsync(Consumer<Role> whenReady, Consumer<Exception> onException){
+		createAsync(false, whenReady, onException);
+	}
+
+	public void createAsync(boolean securityOverride, Consumer<Role> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = create(securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	public void remove(long roleId){
@@ -162,6 +204,21 @@ public class RoleCache extends Cache<Long, Role>{
 		finally{
 			idBasedLockHolder.getLock(roleId).unlock();
 		}
+	}
+
+	public void deleteAsync(long roleId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(roleId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long roleId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(roleId, securityOverride);
+				if(whenReady != null) whenReady.accept(roleId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 }

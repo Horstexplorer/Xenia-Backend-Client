@@ -23,6 +23,8 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheExcept
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
+import java.util.function.Consumer;
+
 public class LicenseCache extends Cache<Long, License>{
 
 	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
@@ -56,6 +58,21 @@ public class LicenseCache extends Cache<Long, License>{
 		finally{
 			idBasedLockHolder.getLock(guildId).unlock();
 		}
+	}
+
+	public void getAsync(long guildId, Consumer<License> whenReady, Consumer<Exception> onException){
+		getAsync(guildId, false, whenReady, onException);
+	}
+
+	public void getAsync(long guildId, boolean securityOverride, Consumer<License> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(guildId, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	public void remove(long guildId){

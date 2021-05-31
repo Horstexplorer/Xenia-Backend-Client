@@ -43,7 +43,7 @@ public class BackendProcessor implements IShutdown{
 	private final OkHttpClient okHttpClient;
 	private final BackendSettings backendSettings;
 	private final Logger logger = LoggerFactory.getLogger(BackendProcessor.class);
-	private final ScalingExecutor scalingExecutor = new ScalingExecutor(4, 128, 125000, 30, TimeUnit.SECONDS);
+	private final ScalingExecutor scalingExecutor = new ScalingExecutor(4, 128, -1, 30, TimeUnit.SECONDS);
 	private final ReentrantLock lock = new ReentrantLock();
 
 	public BackendProcessor(XeniaBackendClient xeniaBackendClient){
@@ -71,7 +71,7 @@ public class BackendProcessor implements IShutdown{
 				}
 			}
 			else{
-				// renew this token
+				// renew this token by telling the backend that it still is in use
 				BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, Arrays.asList("auth", "token", "renew"), new HashMap<>(), null);
 				BackendResult backendResult = process(backendRequest);
 				if(backendResult.getStatusCode() < 300 || backendResult.getStatusCode() > 199){

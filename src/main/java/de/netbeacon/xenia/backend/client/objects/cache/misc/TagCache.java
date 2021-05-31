@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TagCache extends Cache<String, Tag>{
 
@@ -70,6 +71,21 @@ public class TagCache extends Cache<String, Tag>{
 		}
 	}
 
+	public void getAsync(String tagName, Consumer<Tag> whenReady, Consumer<Exception> onException){
+		getAsync(tagName, false, whenReady, onException);
+	}
+
+	public void getAsync(String tagName, boolean securityOverride, Consumer<Tag> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(tagName, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public List<Tag> retrieveAllFromBackend() throws CacheException, DataException{
 		try{
 			idBasedLockHolder.getLock().writeLock().lock();
@@ -101,11 +117,22 @@ public class TagCache extends Cache<String, Tag>{
 		}
 	}
 
-	public Tag createNew(String tagName, long userId, String content) throws CacheException, DataException{
-		return createNew(tagName, userId, content, false);
+	public void retrieveAllFromBackendAsync(Consumer<List<Tag>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend();
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
-	public Tag createNew(String tagName, long userId, String content, boolean securityOverride) throws CacheException, DataException{
+	public Tag create(String tagName, long userId, String content) throws CacheException, DataException{
+		return create(tagName, userId, content, false);
+	}
+
+	public Tag create(String tagName, long userId, String content, boolean securityOverride) throws CacheException, DataException{
 		try{
 			idBasedLockHolder.getLock(tagName).lock();
 			if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TAGS_C()){
@@ -128,6 +155,21 @@ public class TagCache extends Cache<String, Tag>{
 		finally{
 			idBasedLockHolder.getLock(tagName).unlock();
 		}
+	}
+
+	public void createAsync(String tagName, long userId, String content, Consumer<Tag> whenReady, Consumer<Exception> onException){
+		createAsync(tagName, userId, content, false, whenReady, onException);
+	}
+
+	public void createAsync(String tagName, long userId, String content, boolean securityOverride, Consumer<Tag> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = create(tagName, userId, content, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	public void remove(String tagName){
@@ -156,6 +198,21 @@ public class TagCache extends Cache<String, Tag>{
 		finally{
 			idBasedLockHolder.getLock(tagName).unlock();
 		}
+	}
+
+	public void deleteAsync(String tagName, Consumer<String> whenReady, Consumer<Exception> onException){
+		deleteAsync(tagName, false, whenReady, onException);
+	}
+
+	public void deleteAsync(String tagName, boolean securityOverride, Consumer<String> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(tagName, securityOverride);
+				if(whenReady != null) whenReady.accept(tagName);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 }

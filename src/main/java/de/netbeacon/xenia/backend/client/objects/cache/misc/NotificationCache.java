@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 public class NotificationCache extends Cache<Long, Notification>{
 
@@ -72,6 +73,21 @@ public class NotificationCache extends Cache<Long, Notification>{
 		}
 	}
 
+	public void getAsync(long notificationId, Consumer<Notification> whenReady, Consumer<Exception> onException){
+		getAsync(notificationId, false, whenReady, onException);
+	}
+
+	public void getAsync(long notificationId, boolean securityOverride, Consumer<Notification> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = get(notificationId, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
+	}
+
 	public List<Notification> retrieveAllFromBackend() throws CacheException, DataException{
 		try{
 			idBasedLockHolder.getLock().writeLock().lock();
@@ -103,13 +119,24 @@ public class NotificationCache extends Cache<Long, Notification>{
 		}
 	}
 
-	private final ReentrantLock creationLock = new ReentrantLock();
-
-	public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage) throws CacheException, DataException{
-		return createNew(channelId, userId, notificationTarget, notificationMessage, false);
+	public void retrieveAllFromBackendAsync(Consumer<List<Notification>> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = retrieveAllFromBackend();
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
-	public Notification createNew(long channelId, long userId, long notificationTarget, String notificationMessage, boolean securityOverride) throws CacheException, DataException{
+	private final ReentrantLock creationLock = new ReentrantLock();
+
+	public Notification create(long channelId, long userId, long notificationTarget, String notificationMessage) throws CacheException, DataException{
+		return create(channelId, userId, notificationTarget, notificationMessage, false);
+	}
+
+	public Notification create(long channelId, long userId, long notificationTarget, String notificationMessage, boolean securityOverride) throws CacheException, DataException{
 		try{
 			creationLock.lock();
 			if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_NOTIFICATIONS_C()){
@@ -129,6 +156,21 @@ public class NotificationCache extends Cache<Long, Notification>{
 		finally{
 			creationLock.unlock();
 		}
+	}
+
+	public void createAsync(long channelId, long userId, long notificationTarget, String notificationMessage, Consumer<Notification> whenReady, Consumer<Exception> onException){
+		createAsync(channelId, userId, notificationTarget, notificationMessage, false, whenReady, onException);
+	}
+
+	public void createAsync(long channelId, long userId, long notificationTarget, String notificationMessage, boolean securityOverride, Consumer<Notification> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				var v = create(channelId, userId, notificationTarget, notificationMessage, securityOverride);
+				if(whenReady != null) whenReady.accept(v);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 	public void remove(long notificationId){
@@ -155,6 +197,21 @@ public class NotificationCache extends Cache<Long, Notification>{
 		finally{
 			idBasedLockHolder.getLock(notificationId).unlock();
 		}
+	}
+
+	public void deleteAsync(long notificationId, Consumer<Long> whenReady, Consumer<Exception> onException){
+		deleteAsync(notificationId, false, whenReady, onException);
+	}
+
+	public void deleteAsync(long notificationId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
+		getBackendProcessor().getScalingExecutor().execute(() -> {
+			try{
+				delete(notificationId, securityOverride);
+				if(whenReady != null) whenReady.accept(notificationId);
+			}catch(Exception e){
+				if(onException != null) onException.accept(e);
+			}
+		});
 	}
 
 }
