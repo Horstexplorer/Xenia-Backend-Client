@@ -89,7 +89,7 @@ public class XeniaBackendClient implements IShutdown{
 			}
 			catch(Exception ignore){
 			}
-		}, 2, 2, TimeUnit.MINUTES);
+		}, 15, 15, TimeUnit.SECONDS);
 		// activate websocket
 		primaryWebSocketListener = new PrimaryWebsocketListener(this);
 		primaryWebSocketListener.start();
