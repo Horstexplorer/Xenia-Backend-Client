@@ -27,12 +27,6 @@ public abstract class LongBitFlags{
 		this.value = value;
 	}
 
-	public interface LongBit{
-
-		int getPos();
-
-	}
-
 	public long getValue(){
 		return value;
 	}
@@ -54,5 +48,11 @@ public abstract class LongBitFlags{
 	}
 
 	public <T extends LongBit> List<T> getBits(){ return new ArrayList<>(); }
+
+	public interface LongBit{
+
+		int getPos();
+
+	}
 
 }

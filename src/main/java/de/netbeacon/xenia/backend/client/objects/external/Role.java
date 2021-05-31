@@ -93,6 +93,34 @@ public class Role extends APIDataObject{
 
 		private final Role role;
 
+		public Permissions(Role role, long permVal){
+			super(permVal);
+			this.role = role;
+		}
+
+		public synchronized void enable(Bit... bits){
+			set(bits);
+			role.update();
+		}
+
+		public synchronized void disable(Bit... bits){
+			unset(bits);
+			role.update();
+		}
+
+		public boolean hasPermission(Bit bit){
+			return has(bit);
+		}
+
+		public boolean hasAllPermission(Bit... bits){
+			for(Bit b : bits){
+				if(!has(b)){
+					return false;
+				}
+			}
+			return true;
+		}
+
 		public enum Bit implements LongBit{
 
 			UNUSED_PERMISSION_BIT_63(63),
@@ -182,34 +210,6 @@ public class Role extends APIDataObject{
 			public int getPos(){
 				return pos;
 			}
-		}
-
-		public Permissions(Role role, long permVal){
-			super(permVal);
-			this.role = role;
-		}
-
-		public synchronized void enable(Bit... bits){
-			set(bits);
-			role.update();
-		}
-
-		public synchronized void disable(Bit... bits){
-			unset(bits);
-			role.update();
-		}
-
-		public boolean hasPermission(Bit bit){
-			return has(bit);
-		}
-
-		public boolean hasAllPermission(Bit... bits){
-			for(Bit b : bits){
-				if(!has(b)){
-					return false;
-				}
-			}
-			return true;
 		}
 
 	}

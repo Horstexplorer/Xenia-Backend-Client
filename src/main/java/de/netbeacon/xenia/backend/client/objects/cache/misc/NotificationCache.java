@@ -41,6 +41,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 	private final long guildId;
 	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 	private final Logger logger = LoggerFactory.getLogger(NotificationCache.class);
+	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public NotificationCache(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
@@ -81,9 +82,14 @@ public class NotificationCache extends Cache<Long, Notification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(notificationId, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -123,14 +129,17 @@ public class NotificationCache extends Cache<Long, Notification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = retrieveAllFromBackend();
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
-
-	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public Notification create(long channelId, long userId, long notificationTarget, String notificationMessage) throws CacheException, DataException{
 		return create(channelId, userId, notificationTarget, notificationMessage, false);
@@ -166,9 +175,14 @@ public class NotificationCache extends Cache<Long, Notification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = create(channelId, userId, notificationTarget, notificationMessage, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -207,9 +221,14 @@ public class NotificationCache extends Cache<Long, Notification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(notificationId, securityOverride);
-				if(whenReady != null) whenReady.accept(notificationId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(notificationId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

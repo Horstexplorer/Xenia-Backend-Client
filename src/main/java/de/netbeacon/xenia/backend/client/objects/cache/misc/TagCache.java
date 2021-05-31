@@ -79,9 +79,14 @@ public class TagCache extends Cache<String, Tag>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(tagName, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -121,9 +126,14 @@ public class TagCache extends Cache<String, Tag>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = retrieveAllFromBackend();
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -165,9 +175,14 @@ public class TagCache extends Cache<String, Tag>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = create(tagName, userId, content, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -208,9 +223,14 @@ public class TagCache extends Cache<String, Tag>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(tagName, securityOverride);
-				if(whenReady != null) whenReady.accept(tagName);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(tagName);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

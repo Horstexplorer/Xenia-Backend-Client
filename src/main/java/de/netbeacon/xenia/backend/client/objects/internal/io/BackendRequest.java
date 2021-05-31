@@ -23,24 +23,11 @@ import java.util.List;
 
 public class BackendRequest{
 
-	public enum Method{
-		GET,
-		PUT,
-		POST,
-		DELETE;
-	}
-
-	public enum AuthType{
-		BASIC,
-		BEARER
-	}
-
 	private final Method method;
 	private final AuthType authType;
 	private final List<String> path;
 	private final HashMap<String, String> queryParams;
 	private final byte[] payload;
-
 	public BackendRequest(Method method, AuthType authType, List<String> path, HashMap<String, String> queryParams, JSONObject payload){
 		this.method = method;
 		this.authType = authType;
@@ -72,6 +59,18 @@ public class BackendRequest{
 
 	public byte[] getPayload(){
 		return payload;
+	}
+
+	public enum Method{
+		GET,
+		PUT,
+		POST,
+		DELETE
+	}
+
+	public enum AuthType{
+		BASIC,
+		BEARER
 	}
 
 }

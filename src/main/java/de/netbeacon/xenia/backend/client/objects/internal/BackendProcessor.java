@@ -222,15 +222,13 @@ public class BackendProcessor implements IShutdown{
 
 	public static class Interceptor implements okhttp3.Interceptor{
 
-		private final XeniaBackendClient client;
-
-		private final Lock lock = new ReentrantLock();
-		private long lastTokenUpdate;
 		private static final long forceUpdateDelay = 2500;
 		private static final int maxRetries = 4;
 		private static final long timeoutRetryDelay = 1000;
-
+		private final XeniaBackendClient client;
+		private final Lock lock = new ReentrantLock();
 		private final Logger logger = LoggerFactory.getLogger(BackendProcessor.Interceptor.class);
+		private long lastTokenUpdate;
 
 		public Interceptor(XeniaBackendClient client){
 			this.client = client;
@@ -339,16 +337,9 @@ public class BackendProcessor implements IShutdown{
 
 		public static class RecoverableException extends Exception{
 
-			public enum Type{
-				TIMEOUT,
-				UNAUTHORIZED,
-				TOO_MANY_REQUESTS
-			}
-
 			private final Type type;
 			private final Request request;
 			private final Response response;
-
 			public RecoverableException(Type type, Request request, Response response){
 				this.type = type;
 				this.request = request;
@@ -365,6 +356,12 @@ public class BackendProcessor implements IShutdown{
 
 			public Response getResponse(){
 				return response;
+			}
+
+			public enum Type{
+				TIMEOUT,
+				UNAUTHORIZED,
+				TOO_MANY_REQUESTS
 			}
 
 		}

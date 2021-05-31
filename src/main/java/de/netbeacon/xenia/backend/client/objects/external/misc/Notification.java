@@ -75,23 +75,23 @@ public class Notification extends APIDataObject{
 		return notificationTarget;
 	}
 
+	public void setNotificationTarget(long notificationTarget){
+		lSetNotificationTarget(notificationTarget);
+		update();
+	}
+
 	public String getNotificationMessage(){
 		return notificationMessage;
 	}
 
-	public void setNotificationTarget(long notificationTarget){
-		lSetNotificationTarget(notificationTarget);
+	public void setNotificationMessage(String notificationMessage){
+		lSetNotificationMessage(notificationMessage);
 		update();
 	}
 
 	public void lSetNotificationTarget(long notificationTarget){
 		secure();
 		this.notificationTarget = notificationTarget;
-	}
-
-	public void setNotificationMessage(String notificationMessage){
-		lSetNotificationMessage(notificationMessage);
-		update();
 	}
 
 	public void lSetNotificationMessage(String notificationMessage){

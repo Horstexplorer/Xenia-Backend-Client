@@ -99,9 +99,14 @@ public class ChannelCache extends Cache<Long, Channel>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(channelId, init, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -147,9 +152,14 @@ public class ChannelCache extends Cache<Long, Channel>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = retrieveAllFromBackend(cacheInsert);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -188,9 +198,14 @@ public class ChannelCache extends Cache<Long, Channel>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(channelId, securityOverride);
-				if(whenReady != null) whenReady.accept(channelId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(channelId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

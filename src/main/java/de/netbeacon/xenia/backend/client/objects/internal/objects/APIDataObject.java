@@ -38,20 +38,13 @@ public abstract class APIDataObject implements IJSONSerializable{
 	private final BackendProcessor backendProcessor;
 	private final List<BackendPathArg> backendPath = new ArrayList<>();
 	private final Logger logger = LoggerFactory.getLogger(APIDataObject.class);
-	private long lastRequestDuration;
 	private final ArrayList<APIDataEventListener> apiDataEventListeners = new ArrayList<>();
-
 	private final AtomicBoolean isStable = new AtomicBoolean(true);
+	private long lastRequestDuration;
 	private JSONObject shadowCopy;
 
 	public APIDataObject(BackendProcessor backendProcessor){
 		this.backendProcessor = backendProcessor;
-	}
-
-	protected void setBackendPath(Object... backendPath){
-		for(Object o : backendPath){
-			this.backendPath.add(new BackendPathArg(o));
-		}
 	}
 
 	public void get() throws DataException{
@@ -366,6 +359,12 @@ public abstract class APIDataObject implements IJSONSerializable{
 			list.add(String.valueOf(bpa.getObject()));
 		}
 		return list;
+	}
+
+	protected void setBackendPath(Object... backendPath){
+		for(Object o : backendPath){
+			this.backendPath.add(new BackendPathArg(o));
+		}
 	}
 
 	public long getLastRequestDuration(){

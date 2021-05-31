@@ -54,16 +54,12 @@ public class XeniaBackendClient implements IShutdown{
 	private final UserCache userCache;
 	private final GuildCache guildCache;
 	private final LicenseCache licenseCache;
-
-	private SetupData setupDataCache = null;
-
 	private final Supplier<ShardManager> shardManagerSupplier;
-
 	private final ScheduledExecutorService keyUpdateTaskExecutor = Executors.newSingleThreadScheduledExecutor();
-	private ScheduledFuture<?> keyUpdateTask;
-
 	private final AtomicBoolean suspended = new AtomicBoolean(true);
 	private final ReentrantLock suspensionLock = new ReentrantLock();
+	private SetupData setupDataCache = null;
+	private ScheduledFuture<?> keyUpdateTask;
 
 	public XeniaBackendClient(BackendSettings backendSettings, Supplier<ShardManager> shardManagerSupplier){
 		this.backendSettings = backendSettings;

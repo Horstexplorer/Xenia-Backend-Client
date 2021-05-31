@@ -52,8 +52,18 @@ public class User extends APIDataObject{
 		return internalRole;
 	}
 
+	public void setInternalRole(String internalRole){
+		lSetInternalRole(internalRole);
+		update();
+	}
+
 	public String getPreferredLanguage(){
 		return preferredLanguage;
+	}
+
+	public void setPreferredLanguage(String language){
+		lSetPreferredLanguage(language);
+		update();
 	}
 
 	public void lSetMetaData(String username, String iconUrl){
@@ -75,19 +85,9 @@ public class User extends APIDataObject{
 		return metaIconUrl;
 	}
 
-	public void setInternalRole(String internalRole){
-		lSetInternalRole(internalRole);
-		update();
-	}
-
 	public void lSetInternalRole(String internalRole){
 		secure();
 		this.internalRole = internalRole;
-	}
-
-	public void setPreferredLanguage(String language){
-		lSetPreferredLanguage(language);
-		update();
 	}
 
 	public void lSetPreferredLanguage(String language){

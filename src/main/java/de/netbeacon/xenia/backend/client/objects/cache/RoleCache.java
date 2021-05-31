@@ -41,6 +41,7 @@ public class RoleCache extends Cache<Long, Role>{
 	private final long guildId;
 	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 	private final Logger logger = LoggerFactory.getLogger(RoleCache.class);
+	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public RoleCache(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
@@ -82,9 +83,14 @@ public class RoleCache extends Cache<Long, Role>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(roleId, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -130,14 +136,17 @@ public class RoleCache extends Cache<Long, Role>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = retrieveAllFromBackend(cacheInsert);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
-
-	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public Role create() throws CacheException, DataException{
 		return create(false);
@@ -173,9 +182,14 @@ public class RoleCache extends Cache<Long, Role>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = create(securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -214,9 +228,14 @@ public class RoleCache extends Cache<Long, Role>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(roleId, securityOverride);
-				if(whenReady != null) whenReady.accept(roleId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(roleId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

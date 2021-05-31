@@ -87,9 +87,14 @@ public class GuildCache extends Cache<Long, Guild>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(guildId, init, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -129,9 +134,14 @@ public class GuildCache extends Cache<Long, Guild>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(guildId, securityOverride);
-				if(whenReady != null) whenReady.accept(guildId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(guildId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

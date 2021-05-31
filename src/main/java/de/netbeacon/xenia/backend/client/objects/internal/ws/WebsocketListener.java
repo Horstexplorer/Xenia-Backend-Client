@@ -35,10 +35,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class WebsocketListener extends okhttp3.WebSocketListener implements IShutdown{
 
 	protected final XeniaBackendClient xeniaBackendClient;
+	private final String wsPath;
 	protected ScalingExecutor scalingExecutor;
 	protected WebSocket webSocket;
 	protected AtomicBoolean shutdown = new AtomicBoolean(true);
-	private final String wsPath;
 
 	public WebsocketListener(XeniaBackendClient xeniaBackendClient, String wsPath){
 		this.xeniaBackendClient = xeniaBackendClient;

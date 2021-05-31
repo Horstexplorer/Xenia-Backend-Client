@@ -27,12 +27,6 @@ public abstract class IntegerBitFlags{
 		this.value = value;
 	}
 
-	public interface IntBit{
-
-		int getPos();
-
-	}
-
 	public int getValue(){
 		return value;
 	}
@@ -54,5 +48,11 @@ public abstract class IntegerBitFlags{
 	}
 
 	public <T extends IntBit> List<T> getBits(){ return new ArrayList<>(); }
+
+	public interface IntBit{
+
+		int getPos();
+
+	}
 
 }

@@ -42,6 +42,7 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 	private final long guildId;
 	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 	private final Logger logger = LoggerFactory.getLogger(TwitchNotificationCache.class);
+	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public TwitchNotificationCache(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
@@ -82,9 +83,14 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(twitchNotificationId, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -124,14 +130,17 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = retrieveAllFromBackend();
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
-
-	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public TwitchNotification createNew(long channelId, String twitchName, String customMessage) throws CacheException, DataException{
 		return createNew(channelId, twitchName, customMessage, false);
@@ -184,9 +193,14 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = createNew(channelId, twitchName, customMessage, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -225,9 +239,14 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(twitchNotificationId, securityOverride);
-				if(whenReady != null) whenReady.accept(twitchNotificationId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(twitchNotificationId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

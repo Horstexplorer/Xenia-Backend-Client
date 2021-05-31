@@ -132,7 +132,7 @@ public class Message extends APIDataObject{
 		this.oldMessageContent = tmpC;
 	}
 
-	public List<String> getAttachmentUrls() {
+	public List<String> getAttachmentUrls(){
 		return attachments;
 	}
 

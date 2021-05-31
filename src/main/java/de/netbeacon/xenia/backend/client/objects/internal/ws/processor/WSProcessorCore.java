@@ -36,9 +36,9 @@ public class WSProcessorCore implements IShutdown{
 	private final BlockingQueue<WSRequest> outgoingRequestQueue = new LinkedBlockingQueue<>();
 	private final BlockingQueue<WSRequest> incomingRequestQueue = new LinkedBlockingQueue<>();
 	private final ConcurrentHashMap<String, Pair<WSRequest, List<WSResponse>>> wsResponseCache = new ConcurrentHashMap<>();
-	private SecondaryWebsocketListener websocketListener;
 	private final Logger logger = LoggerFactory.getLogger(WSProcessorCore.class);
 	private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+	private SecondaryWebsocketListener websocketListener;
 
 	public WSProcessorCore(XeniaBackendClient xeniaBackendClient){
 		this.xeniaBackendClient = xeniaBackendClient;

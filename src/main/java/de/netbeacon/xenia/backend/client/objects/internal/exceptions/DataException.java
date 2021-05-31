@@ -18,16 +18,8 @@ package de.netbeacon.xenia.backend.client.objects.internal.exceptions;
 
 public class DataException extends RuntimeException{
 
-	public enum Type{
-		UNKNOWN,
-		UNSTABLE,
-		HTTP,
-		TIMEOUT
-	}
-
-	private int code;
 	private final Type type;
-
+	private int code;
 	public DataException(Type type){
 		super(type.name());
 		this.type = type;
@@ -55,6 +47,13 @@ public class DataException extends RuntimeException{
 	@Override
 	public String getMessage(){
 		return type.name() + " " + code + " " + super.getMessage();
+	}
+
+	public enum Type{
+		UNKNOWN,
+		UNSTABLE,
+		HTTP,
+		TIMEOUT
 	}
 
 }

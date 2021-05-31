@@ -25,9 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public class HeartbeatProcessor extends WSProcessor{
 
-	private long lastHeartBeat = System.currentTimeMillis();
 	private final Logger logger = LoggerFactory.getLogger(HeartbeatProcessor.class);
-
+	private long lastHeartBeat = System.currentTimeMillis();
 	private long ten = 0;
 	private long fifty = 0;
 	private long oneHundred = 0;

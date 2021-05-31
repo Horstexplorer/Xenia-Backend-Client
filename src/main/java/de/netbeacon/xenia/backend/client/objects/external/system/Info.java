@@ -27,13 +27,8 @@ import org.slf4j.LoggerFactory;
 
 public class Info extends APIDataObject{
 
-	public enum Mode{
-		Public,
-		Private,
-	}
-
 	private final Mode mode;
-
+	private final Logger logger = LoggerFactory.getLogger(Info.class);
 	private String version;
 	private int guildCount;
 	private int userCount;
@@ -41,8 +36,6 @@ public class Info extends APIDataObject{
 	private int channelCount;
 	private int forbiddenChannels;
 	private int messageCount;
-
-	private final Logger logger = LoggerFactory.getLogger(Info.class);
 
 	public Info(BackendProcessor backendProcessor, Mode mode){
 		super(backendProcessor);
@@ -139,6 +132,11 @@ public class Info extends APIDataObject{
 			this.forbiddenChannels = jsonObject.getJSONObject("channels").getInt("forbidden");
 			this.messageCount = jsonObject.getInt("messages");
 		}
+	}
+
+	public enum Mode{
+		Public,
+		Private,
 	}
 
 }

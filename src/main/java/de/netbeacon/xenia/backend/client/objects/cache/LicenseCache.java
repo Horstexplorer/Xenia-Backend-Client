@@ -68,9 +68,14 @@ public class LicenseCache extends Cache<Long, License>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(guildId, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

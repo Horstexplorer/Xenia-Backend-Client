@@ -36,8 +36,8 @@ import java.util.concurrent.TimeUnit;
 public class ShutdownInterruptProcessor extends WSProcessor{
 
 	private final Logger logger = LoggerFactory.getLogger(ShutdownInterruptProcessor.class);
-	private Future<?> future;
 	private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+	private Future<?> future;
 
 	public ShutdownInterruptProcessor(){
 		super("shutdownirq");

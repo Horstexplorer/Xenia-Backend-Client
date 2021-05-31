@@ -30,22 +30,18 @@ import java.util.stream.Collectors;
 
 public class Channel extends APIDataObject{
 
+	private final MessageCache messageCache;
 	private long guildId;
 	private long channelId;
-
 	private long creationTimestamp;
 	private AccessMode accessMode = new AccessMode(1);
 	private ChannelFlags channelFlags = new ChannelFlags(0);
 	private ChannelSettings channelSettings = new ChannelSettings(0);
 	private boolean tmpLoggingActive;
 	private long tmpLoggingChannelId;
-
 	private D43Z1Settings d43z1Settings = new D43Z1Settings(0);
-
 	private String metaChannelName;
 	private String metaChannelTopic;
-
-	private final MessageCache messageCache;
 
 	public Channel(BackendProcessor backendProcessor, long guildId, long channelId){
 		super(backendProcessor);
@@ -75,12 +71,27 @@ public class Channel extends APIDataObject{
 		return accessMode;
 	}
 
+	public void setAccessMode(AccessMode accessMode){
+		lSetAccessMode(accessMode);
+		update();
+	}
+
 	public ChannelFlags getChannelFlags(){
 		return channelFlags;
 	}
 
+	public void setChannelFlags(ChannelFlags channelFlags){
+		lSetChannelFlags(channelFlags);
+		update();
+	}
+
 	public ChannelSettings getChannelSettings(){
 		return channelSettings;
+	}
+
+	public void setChannelSettings(ChannelSettings channelSettings){
+		lSetChannelSettings(channelSettings);
+		update();
 	}
 
 	public boolean tmpLoggingIsActive(){
@@ -91,8 +102,8 @@ public class Channel extends APIDataObject{
 		return tmpLoggingChannelId;
 	}
 
-	public void setAccessMode(AccessMode accessMode){
-		lSetAccessMode(accessMode);
+	public void setTmpLoggingChannelId(long tmpLoggingChannelId){
+		lSetTmpLoggingChannelId(tmpLoggingChannelId);
 		update();
 	}
 
@@ -100,19 +111,9 @@ public class Channel extends APIDataObject{
 		this.accessMode = accessMode;
 	}
 
-	public void setChannelFlags(ChannelFlags channelFlags){
-		lSetChannelFlags(channelFlags);
-		update();
-	}
-
 	public void lSetChannelFlags(ChannelFlags channelFlags){
 		secure();
 		this.channelFlags = channelFlags;
-	}
-
-	public void setChannelSettings(ChannelSettings channelSettings){
-		lSetChannelSettings(channelSettings);
-		update();
 	}
 
 	public void lSetChannelSettings(ChannelSettings channelSettings){
@@ -127,11 +128,6 @@ public class Channel extends APIDataObject{
 	public void lSetTmpLoggingActive(boolean tmpLoggingActive){
 		secure();
 		this.tmpLoggingActive = tmpLoggingActive;
-	}
-
-	public void setTmpLoggingChannelId(long tmpLoggingChannelId){
-		lSetTmpLoggingChannelId(tmpLoggingChannelId);
-		update();
 	}
 
 	public void lSetTmpLoggingChannelId(long tmpLoggingChannelId){
@@ -226,6 +222,11 @@ public class Channel extends APIDataObject{
 			super(value);
 		}
 
+		@Override
+		public <T extends IntBit> List<T> getBits(){
+			return (List<T>) Arrays.stream(Mode.values()).filter(this::has).collect(Collectors.toList());
+		}
+
 		public enum Mode implements IntBit{
 
 			DISABLED(2),
@@ -234,7 +235,7 @@ public class Channel extends APIDataObject{
 
 			private final int pos;
 
-			private Mode(int pos){
+			Mode(int pos){
 				this.pos = pos;
 			}
 
@@ -242,11 +243,6 @@ public class Channel extends APIDataObject{
 			public int getPos(){
 				return pos;
 			}
-		}
-
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(Mode.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 	}
@@ -257,6 +253,11 @@ public class Channel extends APIDataObject{
 			super(value);
 		}
 
+		@Override
+		public <T extends IntBit> List<T> getBits(){
+			return (List<T>) Arrays.stream(AccessMode.Mode.values()).filter(this::has).collect(Collectors.toList());
+		}
+
 		public enum Flags implements IntBit{
 
 			NEWS(1),
@@ -264,7 +265,7 @@ public class Channel extends APIDataObject{
 
 			private final int pos;
 
-			private Flags(int pos){
+			Flags(int pos){
 				this.pos = pos;
 			}
 
@@ -272,11 +273,6 @@ public class Channel extends APIDataObject{
 			public int getPos(){
 				return pos;
 			}
-		}
-
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(AccessMode.Mode.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 	}
@@ -287,13 +283,18 @@ public class Channel extends APIDataObject{
 			super(value);
 		}
 
+		@Override
+		public <T extends IntBit> List<T> getBits(){
+			return (List<T>) Arrays.stream(ChannelSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
+		}
+
 		public enum Settings implements IntBit{
 
 			;
 
 			private final int pos;
 
-			private Settings(int pos){
+			Settings(int pos){
 				this.pos = pos;
 			}
 
@@ -301,11 +302,6 @@ public class Channel extends APIDataObject{
 			public int getPos(){
 				return pos;
 			}
-		}
-
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(ChannelSettings.Settings.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 	}
@@ -316,6 +312,11 @@ public class Channel extends APIDataObject{
 			super(value);
 		}
 
+		@Override
+		public <T extends IntBit> List<T> getBits(){
+			return (List<T>) Arrays.stream(D43Z1Settings.Settings.values()).filter(this::has).collect(Collectors.toList());
+		}
+
 		public enum Settings implements IntBit{
 
 			ACTIVATE_SELF_LEARNING(1),
@@ -323,7 +324,7 @@ public class Channel extends APIDataObject{
 
 			private final int pos;
 
-			private Settings(int pos){
+			Settings(int pos){
 				this.pos = pos;
 			}
 
@@ -331,11 +332,6 @@ public class Channel extends APIDataObject{
 			public int getPos(){
 				return pos;
 			}
-		}
-
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(D43Z1Settings.Settings.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 	}

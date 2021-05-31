@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 public class PrimaryWebsocketListener extends WebsocketListener{
 
 	private final Logger logger = LoggerFactory.getLogger(PrimaryWebsocketListener.class);
+	private long lastHeartBeat = System.currentTimeMillis();
 
 	public PrimaryWebsocketListener(XeniaBackendClient xeniaBackendClient){
 		super(xeniaBackendClient, "ws");
@@ -94,13 +95,11 @@ public class PrimaryWebsocketListener extends WebsocketListener{
 		}
 	}
 
-	private long lastHeartBeat = System.currentTimeMillis();
-
 	public void handle(JSONObject message){
 		try{
 			String type = message.getString("type");
 			String action = message.getString("action");
-			logger.debug("Received Message From WS: " + message.toString());
+			logger.debug("Received Message From WS: " + message);
 			switch(type.toLowerCase()){
 				case "status":
 					logger.debug("Received Status From WS: " + action);

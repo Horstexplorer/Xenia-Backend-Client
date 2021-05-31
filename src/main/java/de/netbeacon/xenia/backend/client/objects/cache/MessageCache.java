@@ -95,9 +95,14 @@ public class MessageCache extends Cache<Long, Message>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(messageId, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -136,9 +141,14 @@ public class MessageCache extends Cache<Long, Message>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = create(messageId, creationTime, userId, messageContent, attachmentUrls, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -189,9 +199,14 @@ public class MessageCache extends Cache<Long, Message>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = retrieveAllFromBackend(enforceLimit, cacheInsert);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -230,9 +245,14 @@ public class MessageCache extends Cache<Long, Message>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(messageId, securityOverride);
-				if(whenReady != null) whenReady.accept(messageId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(messageId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}

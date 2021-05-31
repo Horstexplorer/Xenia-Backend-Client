@@ -87,9 +87,14 @@ public class UserCache extends Cache<Long, User>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				var v = get(userId, init, securityOverride);
-				if(whenReady != null) whenReady.accept(v);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(v);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
@@ -128,9 +133,14 @@ public class UserCache extends Cache<Long, User>{
 		getBackendProcessor().getScalingExecutor().execute(() -> {
 			try{
 				delete(userId, securityOverride);
-				if(whenReady != null) whenReady.accept(userId);
-			}catch(Exception e){
-				if(onException != null) onException.accept(e);
+				if(whenReady != null){
+					whenReady.accept(userId);
+				}
+			}
+			catch(Exception e){
+				if(onException != null){
+					onException.accept(e);
+				}
 			}
 		});
 	}
