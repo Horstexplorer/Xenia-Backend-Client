@@ -1,9 +1,12 @@
 plugins {
     id 'java'
-    id'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
 group 'de.netbeacon'
+version '1.12.0'
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -35,4 +38,49 @@ dependencies {
     implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
 
     compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.2.1_262' // https://mvnrepository.com/artifact/net.dv8tion/JDA
+}
+
+shadowJar {
+    archiveClassifier.set("")
+}
+
+publishing {
+    repositories {
+        maven {
+            credentials {
+                username System.getenv('nexus_hypercdn_user')
+                password System.getenv('nexus_hypercdn_password')
+            }
+            url "https://nexus.hypercdn.de/repository/hypercdn-maven/"
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            artifact(tasks["shadowJar"])
+            pom {
+                name = 'Xenia Backend Client'
+                description = 'Client for the backend used by Xenia'
+                url = 'https://github.com/Horstexplorer/Xenia-Backend-Client'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'horstexplorer'
+                        name = 'horstexplorer'
+                        email = 'null@null.null'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:github.com/Horstexplorer/Xenia-Backend-Client'
+                    developerConnection = 'scm:git:ssh:git@github.com:Horstexplorer/Xenia-Backend-Client'
+                    url = 'https://github.com/Horstexplorer/Xenia-Backend-Client'
+                }
+            }
+        }
+    }
 }
