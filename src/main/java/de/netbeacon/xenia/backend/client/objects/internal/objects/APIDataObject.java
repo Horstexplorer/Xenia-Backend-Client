@@ -195,6 +195,80 @@ public abstract class APIDataObject implements IJSONSerializable{
 		}
 	}
 
+	public void getOrCreate(){
+		getOrCreate(false);
+	}
+
+	public void getOrCreate(boolean securityOverride){
+		try{
+			if(!isStable.compareAndSet(true, false) && !securityOverride){
+				throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To CREATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
+			}
+			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(){{ put("goc", "true"); }}, asJSON());
+			BackendResult backendResult = backendProcessor.process(backendRequest);
+			if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
+				throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To CREATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
+			}
+			if(backendResult.getStatusCode() != 204){
+				fromJSON(backendResult.getPayloadAsJSON());
+			}
+			lastRequestDuration = backendResult.getRequestDuration();
+			onCreation();
+		}
+		catch(Exception e){
+			this.restore();
+			throw e;
+		}
+		finally{
+			if(!securityOverride){
+				isStable.set(true);
+			}
+		}
+	}
+
+	public void getOrCreateAsync(){
+		getOrCreateAsync(false);
+	}
+
+	public void getOrCreateAsync(boolean securityOverride){
+		try{
+			if(!isStable.compareAndSet(true, false) && !securityOverride){
+				throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To CREATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
+			}
+			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.POST, BackendRequest.AuthType.BEARER, getBackendPath(), new HashMap<>(){{ put("goc", "true"); }}, asJSON());
+			backendProcessor.processAsync(backendRequest, backendResult -> {
+				try{
+					if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
+						throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To CREATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
+					}
+					if(backendResult.getStatusCode() != 204){
+						fromJSON(backendResult.getPayloadAsJSON());
+					}
+					synchronized(this){
+						lastRequestDuration = backendResult.getRequestDuration();
+					}
+					onCreation();
+				}
+				catch(Exception e){
+					this.restore();
+					throw e;
+				}
+				finally{
+					if(!securityOverride){
+						isStable.set(true);
+					}
+				}
+			});
+		}
+		catch(Exception e){
+			this.restore();
+			if(!securityOverride){
+				isStable.set(true);
+			}
+			throw e;
+		}
+	}
+
 	public void update(){
 		update(false);
 	}
