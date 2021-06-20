@@ -62,16 +62,10 @@ public class ChannelCache extends Cache<Long, Channel>{
 				return channel;
 			}
 			channel = new Channel(getBackendProcessor(), guildId, channelId);
-			try{
+			if(init){
+				channel.getOrCreate(securityOverride);
+			}else{
 				channel.get(securityOverride);
-			}
-			catch(DataException e){
-				if(e.getCode() == 404 && init){
-					channel.create(securityOverride);
-				}
-				else{
-					throw e;
-				}
 			}
 			addToCache(channelId, channel);
 			return channel;

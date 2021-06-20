@@ -62,16 +62,10 @@ public class MemberCache extends Cache<Long, Member>{
 				return member;
 			}
 			member = new Member(getBackendProcessor(), guildId, userId);
-			try{
+			if(init){
+				member.getOrCreate(securityOverride);
+			}else{
 				member.get(securityOverride);
-			}
-			catch(DataException e){
-				if(e.getCode() == 404 && init){
-					member.create(securityOverride);
-				}
-				else{
-					throw e;
-				}
 			}
 			addToCache(userId, member);
 			return member;

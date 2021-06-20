@@ -50,16 +50,10 @@ public class GuildCache extends Cache<Long, Guild>{
 				return guild;
 			}
 			guild = new Guild(getBackendProcessor(), guildId);
-			try{
+			if(init){
+				guild.getOrCreate(securityOverride);
+			}else{
 				guild.get(securityOverride);
-			}
-			catch(DataException e){
-				if(e.getCode() == 404 && init){
-					guild.create(securityOverride);
-				}
-				else{
-					throw e;
-				}
 			}
 			addToCache(guildId, guild);
 			return guild;

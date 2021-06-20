@@ -50,16 +50,10 @@ public class UserCache extends Cache<Long, User>{
 				return user;
 			}
 			user = new User(getBackendProcessor(), userId);
-			try{
+			if(init){
+				user.getOrCreate(securityOverride);
+			}else{
 				user.get(securityOverride);
-			}
-			catch(DataException e){
-				if(e.getCode() == 404 && init){
-					user.create(securityOverride);
-				}
-				else{
-					throw e;
-				}
 			}
 			addToCache(userId, user);
 			return user;

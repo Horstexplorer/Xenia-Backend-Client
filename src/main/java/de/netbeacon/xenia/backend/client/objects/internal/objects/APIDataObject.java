@@ -63,6 +63,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 		processAsync(securityOverride, BackendRequest.Method.GET, null, null);
 	}
 
+
 	public void create(){
 		create(false);
 	}
@@ -79,21 +80,23 @@ public abstract class APIDataObject implements IJSONSerializable{
 		processAsync(securityOverride, BackendRequest.Method.POST, null, asJSON());
 	}
 
-	public void createOrGet(){
-		createOrGet(false);
+
+	public void getOrCreate(){
+		getOrCreate(false);
 	}
 
-	public void createOrGet(boolean securityOverride){
+	public void getOrCreate(boolean securityOverride){
 		process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
 	}
 
-	public void createOrGetAsync(){
-		createOrGetAsync(false);
+	public void getOrCreateAsync(){
+		getOrCreateAsync(false);
 	}
 
-	public void createOrGetAsync(boolean securityOverride){
+	public void getOrCreateAsync(boolean securityOverride){
 		processAsync(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
 	}
+
 
 	public void update(){
 		update(false);
@@ -110,6 +113,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 	public void updateAsync(boolean securityOverride) throws DataException{
 		processAsync(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
+
 
 	public void delete(){
 		delete(false);
