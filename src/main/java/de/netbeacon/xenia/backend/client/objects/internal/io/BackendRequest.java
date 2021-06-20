@@ -29,11 +29,17 @@ public class BackendRequest{
 	private final HashMap<String, String> queryParams;
 	private final byte[] payload;
 
+	private static final HashMap<String, String> EMPTY_MAP = new HashMap<>();
+
 	public BackendRequest(Method method, AuthType authType, List<String> path, HashMap<String, String> queryParams, JSONObject payload){
 		this.method = method;
 		this.authType = authType;
 		this.path = path;
-		this.queryParams = queryParams;
+		if(queryParams == null){
+			this.queryParams = EMPTY_MAP;
+		}else{
+			this.queryParams = queryParams;
+		}
 		if(payload != null){
 			this.payload = payload.toString().getBytes();
 		}

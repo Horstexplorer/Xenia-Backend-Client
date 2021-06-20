@@ -20,7 +20,6 @@ public class CacheException extends RuntimeException{
 
 	private final Type type;
 	private Exception exception;
-
 	public CacheException(Type type, String message){
 		super(message);
 		this.type = type;

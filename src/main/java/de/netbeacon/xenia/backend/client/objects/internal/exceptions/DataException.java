@@ -20,7 +20,6 @@ public class DataException extends RuntimeException{
 
 	private final Type type;
 	private int code;
-
 	public DataException(Type type){
 		super(type.name());
 		this.type = type;
