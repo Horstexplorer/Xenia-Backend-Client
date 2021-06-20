@@ -340,6 +340,7 @@ public class BackendProcessor implements IShutdown{
 			private final Type type;
 			private final Request request;
 			private final Response response;
+
 			public RecoverableException(Type type, Request request, Response response){
 				this.type = type;
 				this.request = request;

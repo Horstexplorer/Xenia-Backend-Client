@@ -28,6 +28,7 @@ public class BackendRequest{
 	private final List<String> path;
 	private final HashMap<String, String> queryParams;
 	private final byte[] payload;
+
 	public BackendRequest(Method method, AuthType authType, List<String> path, HashMap<String, String> queryParams, JSONObject payload){
 		this.method = method;
 		this.authType = authType;
