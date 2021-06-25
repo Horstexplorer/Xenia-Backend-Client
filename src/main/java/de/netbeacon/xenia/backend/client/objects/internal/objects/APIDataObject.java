@@ -170,7 +170,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 			if(!isStable.compareAndSet(true, false) && !securityOverride){
 				throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
 			}
-			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, getBackendPath(), queryParams, payload);
+			BackendRequest backendRequest = new BackendRequest(method, BackendRequest.AuthType.BEARER, getBackendPath(), queryParams, payload);
 			backendProcessor.processAsync(backendRequest, backendResult -> {
 				try{
 					if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
