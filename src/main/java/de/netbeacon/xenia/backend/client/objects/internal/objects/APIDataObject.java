@@ -43,7 +43,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 	private final AtomicBoolean isStable = new AtomicBoolean(true);
 	private long lastRequestDuration;
 
-	private JSONObject shadowCopy; // contains the object last returned from the backend
+	private JSONObject shadowCopy = asJSON(); // contains the object last returned from the backend
 
 	public APIDataObject(BackendProcessor backendProcessor){
 		this.backendProcessor = backendProcessor;
@@ -218,6 +218,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 
 
 	public boolean hasChanges(){
+		if(shadowCopy == null) return true;
 		return JSONEQ.equals(asJSON(), shadowCopy);
 	}
 
