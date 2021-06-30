@@ -22,6 +22,8 @@ import org.json.JSONObject;
 public class JSONEQ{
 
 	public static boolean equals(JSONObject a, JSONObject b){
+		if(a == null ^ b == null) return false;
+		if(a == null && b == null) return true;
 		JSONObject ac = new JSONObject(a.toString());
 		JSONObject bc = new JSONObject(b.toString());
 		if(ac.keySet().size() != bc.keySet().size()) return false;
@@ -35,6 +37,8 @@ public class JSONEQ{
 	}
 
 	public static boolean equals(JSONArray a, JSONArray b){
+		if(a == null ^ b == null) return false;
+		if(a == null && b == null) return true;
 		JSONArray ac = new JSONArray(a.toString());
 		JSONArray bc = new JSONArray(b.toString());
 		if(ac.length() != bc.length()) return false;
@@ -55,6 +59,8 @@ public class JSONEQ{
 	}
 
 	private static boolean equals(Object a, Object b){
+		if(a == null ^ b == null) return false;
+		if(a == null && b == null) return true;
 		if(!a.getClass().equals(b.getClass())) return false;
 		if(a instanceof JSONObject){
 			return equals((JSONObject) a, (JSONObject) b);
