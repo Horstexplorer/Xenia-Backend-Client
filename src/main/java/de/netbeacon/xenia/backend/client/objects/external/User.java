@@ -67,7 +67,6 @@ public class User extends APIDataObject{
 	}
 
 	public void lSetMetaData(String username, String iconUrl){
-		secure();
 		this.metaUsername = username;
 		this.metaIconUrl = iconUrl;
 	}
@@ -86,12 +85,10 @@ public class User extends APIDataObject{
 	}
 
 	public void lSetInternalRole(String internalRole){
-		secure();
 		this.internalRole = internalRole;
 	}
 
 	public void lSetPreferredLanguage(String language){
-		secure();
 		this.preferredLanguage = language;
 	}
 

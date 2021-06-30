@@ -58,7 +58,6 @@ public class Role extends APIDataObject{
 	}
 
 	public void lSetRoleName(String name){
-		secure();
 		this.roleName = name;
 	}
 

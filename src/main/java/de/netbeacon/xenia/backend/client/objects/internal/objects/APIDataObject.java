@@ -18,6 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
 import de.netbeacon.utils.json.serial.IJSONSerializable;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
+import de.netbeacon.utils.json.test.JSONEQ;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
@@ -41,93 +42,96 @@ public abstract class APIDataObject implements IJSONSerializable{
 	private final ArrayList<APIDataEventListener> apiDataEventListeners = new ArrayList<>();
 	private final AtomicBoolean isStable = new AtomicBoolean(true);
 	private long lastRequestDuration;
-	private JSONObject shadowCopy;
+
+	private JSONObject shadowCopy; // contains the object last returned from the backend
 
 	public APIDataObject(BackendProcessor backendProcessor){
 		this.backendProcessor = backendProcessor;
 	}
 
-	public void get() throws DataException{
+	public synchronized void get() throws DataException{
 		get(false);
 	}
 
-	public void get(boolean securityOverride) throws DataException{
+	public synchronized void get(boolean securityOverride) throws DataException{
 		process(securityOverride, BackendRequest.Method.GET, null, null);
 	}
 
-	public void getAsync(){
+	public synchronized void getAsync(){
 		getAsync(false);
 	}
 
-	public void getAsync(boolean securityOverride) throws DataException{
+	public synchronized void getAsync(boolean securityOverride) throws DataException{
 		processAsync(securityOverride, BackendRequest.Method.GET, null, null);
 	}
 
 
-	public void create(){
+	public synchronized void create(){
 		create(false);
 	}
 
-	public void create(boolean securityOverride) throws DataException{
+	public synchronized void create(boolean securityOverride) throws DataException{
 		process(securityOverride, BackendRequest.Method.POST, null, asJSON());
 	}
 
-	public void createAsync(){
+	public synchronized void createAsync(){
 		createAsync(false);
 	}
 
-	public void createAsync(boolean securityOverride) throws DataException{
+	public synchronized void createAsync(boolean securityOverride) throws DataException{
 		processAsync(securityOverride, BackendRequest.Method.POST, null, asJSON());
 	}
 
 
-	public void getOrCreate(){
+	public synchronized void getOrCreate(){
 		getOrCreate(false);
 	}
 
-	public void getOrCreate(boolean securityOverride){
+	public synchronized void getOrCreate(boolean securityOverride){
 		process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
 	}
 
-	public void getOrCreateAsync(){
+	public synchronized void getOrCreateAsync(){
 		getOrCreateAsync(false);
 	}
 
-	public void getOrCreateAsync(boolean securityOverride){
+	public synchronized void getOrCreateAsync(boolean securityOverride){
 		processAsync(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
 	}
 
 
-	public void update(){
+	public synchronized void update(){
 		update(false);
 	}
 
-	public void update(boolean securityOverride) throws DataException{
+	public synchronized void update(boolean securityOverride) throws DataException{
+		if(!hasChanges()) return;
 		process(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
 
-	public void updateAsync(){
+	public synchronized void updateAsync(){
 		updateAsync(false);
 	}
 
-	public void updateAsync(boolean securityOverride) throws DataException{
+	public synchronized void updateAsync(boolean securityOverride) throws DataException{
+		if(!hasChanges()) return;
 		processAsync(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
 
 
-	public void delete(){
+	public synchronized void delete(){
 		delete(false);
 	}
 
-	public void delete(boolean securityOverride) throws DataException{
+	public synchronized void delete(boolean securityOverride) throws DataException{
 		process(securityOverride, BackendRequest.Method.DELETE, null, null);
 	}
 
-	public void deleteAsync(){
+	public synchronized void deleteAsync(){
 		deleteAsync(false);
 	}
 
-	public void deleteAsync(boolean securityOverride) throws DataException{
+	public synchronized void deleteAsync(boolean securityOverride) throws DataException{
 		processAsync(securityOverride, BackendRequest.Method.DELETE, null, null);
 	}
 
@@ -144,7 +148,8 @@ public abstract class APIDataObject implements IJSONSerializable{
 				throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
 			}
 			if(backendResult.getStatusCode() != 204){
-				fromJSON(backendResult.getPayloadAsJSON());
+				shadowCopy = backendResult.getPayloadAsJSON();
+				fromJSON(shadowCopy);
 			}
 			lastRequestDuration = backendResult.getRequestDuration();
 			switch(method){
@@ -177,7 +182,8 @@ public abstract class APIDataObject implements IJSONSerializable{
 						throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
 					}
 					if(backendResult.getStatusCode() != 204){
-						fromJSON(backendResult.getPayloadAsJSON());
+						shadowCopy = backendResult.getPayloadAsJSON();
+						fromJSON(shadowCopy);
 					}
 					synchronized(this){
 						lastRequestDuration = backendResult.getRequestDuration();
@@ -211,11 +217,8 @@ public abstract class APIDataObject implements IJSONSerializable{
 
 
 
-
-	public synchronized void secure(){
-		if(isStable.get()){
-			this.shadowCopy = asJSON();
-		}
+	public boolean hasChanges(){
+		return JSONEQ.equals(asJSON(), shadowCopy);
 	}
 
 	public synchronized void restore(){

@@ -117,7 +117,6 @@ public class Message extends APIDataObject{
 	}
 
 	public void lSetMessageContent(String content, String cryptKey){
-		secure();
 		String tmpS = this.messageSalt;
 		String tmpC = this.messageContent;
 		try{

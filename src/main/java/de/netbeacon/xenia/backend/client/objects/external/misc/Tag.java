@@ -75,7 +75,6 @@ public class Tag extends APIDataObject{
 	}
 
 	public void lSetTagContent(String tagContent) throws BackendException{
-		secure();
 		this.tagContent = tagContent;
 	}
 

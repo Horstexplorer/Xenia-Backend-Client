@@ -90,12 +90,10 @@ public class Notification extends APIDataObject{
 	}
 
 	public void lSetNotificationTarget(long notificationTarget){
-		secure();
 		this.notificationTarget = notificationTarget;
 	}
 
 	public void lSetNotificationMessage(String notificationMessage){
-		secure();
 		this.notificationMessage = notificationMessage;
 	}
 

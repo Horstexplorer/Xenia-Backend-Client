@@ -82,7 +82,6 @@ public class TwitchNotification extends APIDataObject{
 	}
 
 	public void lSetNotificationMessage(String message){
-		secure();
 		this.notificationMessage = message;
 	}
 

@@ -73,12 +73,10 @@ public class Member extends APIDataObject{
 	}
 
 	public void lSetLevelPoints(long levelPoints){
-		secure();
 		this.levelPoints = levelPoints;
 	}
 
 	public void lSetMetaData(String nickname, boolean isAdministrator, boolean isOwner){
-		secure();
 		this.metaNickname = nickname;
 		this.metaIsOwner = isOwner;
 		this.metaIsAdministrator = isAdministrator;
@@ -102,7 +100,6 @@ public class Member extends APIDataObject{
 	}
 
 	public void lSetRoleIds(Set<Long> roles){
-		secure();
 		this.roleIDs = roles;
 	}
 
