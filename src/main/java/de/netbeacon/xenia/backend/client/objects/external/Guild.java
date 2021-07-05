@@ -43,7 +43,7 @@ public class Guild extends APIDataObject{
 	private long guildId;
 	private long creationTimestamp;
 	private String preferredLanguage;
-	private GuildSettings settings = new GuildSettings(0);
+	private GuildSettings settings = new GuildSettings(12);
 	private D43Z1Mode d43Z1Mode = new D43Z1Mode(1);
 	private String prefix;
 	// meta data - initialize with values
@@ -259,11 +259,12 @@ public class Guild extends APIDataObject{
 
 		public enum Settings implements IntBit{
 
-			BOT_IGNORE_ADMIN_PERMS(4),
-			DISABLE_COMMAND_AUTO_CORRECT_MESSAGE(3),
-			COMMAND_AUTO_CORRECT(2),
-			ENFORCE_LANGUAGE(1),
-			VPERM_ENABLE(0);
+			BOT_IGNORE_ADMIN_PERMS(4), // default 0
+			COMMAND_AUTO_CORRECT_MESSAGE(3), // default 1
+			COMMAND_AUTO_CORRECT(2), // default 1
+			ENFORCE_LANGUAGE(1), // default 0
+			VPERM_ENABLE(0); // default 0
+			// DEFAULT_INT = 12
 
 			private final int pos;
 
@@ -292,9 +293,10 @@ public class Guild extends APIDataObject{
 
 		public enum Modes implements IntBit{
 
-			SELF_LEARNING_ONLY(2),
-			MIX(1),
-			MASTER_ONLY(0);
+			SELF_LEARNING(2), // default 0
+			MIX(1), // default 1
+			MASTER(0); // default 0
+			// DEFAULT_INT = 1
 
 			private final int pos;
 
