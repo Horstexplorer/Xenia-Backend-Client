@@ -274,7 +274,7 @@ public class MessageCache extends Cache<Long, Message>{
 		super.addToCache(id, message);
 		// remove entries which are too much
 		int defaultLimit = getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C();
-		int limit = (message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ACTIVE) && message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ACTIVATE_SELF_LEARNING))
+		int limit = (message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ACTIVE) && message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ENABLE_SELF_LEARNING))
 			? defaultLimit * 2 : defaultLimit;
 		while(getOrderedKeyMap().size() > limit){
 			var objTD = getOrderedKeyMap().get(0);
