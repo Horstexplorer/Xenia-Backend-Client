@@ -37,7 +37,7 @@ dependencies {
     compileOnly group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     compileOnly group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
 
-    compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.2.1_262' // https://mvnrepository.com/artifact/net.dv8tion/JDA
+    compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.3.0_294' // https://mvnrepository.com/artifact/net.dv8tion/JDA
 }
 
 shadowJar {
