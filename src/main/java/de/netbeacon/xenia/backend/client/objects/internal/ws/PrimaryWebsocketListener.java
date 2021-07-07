@@ -193,6 +193,17 @@ public class PrimaryWebsocketListener extends WebsocketListener{
 							break;
 					}
 				}
+				case "guild_channel_auto_mod":{
+					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
+						return;
+					}
+					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
+					switch(action.toLowerCase()){
+						case "update":
+							g.getChannelCache().get(message.getLong("channelId")).getAutoMod().getAsync();
+							break;
+					}
+				}
 				break;
 				case "guild_message":{
 					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
