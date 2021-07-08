@@ -31,13 +31,10 @@ public class AutoMod extends APIDataObject{
 
 	private final long guildId;
 	private final long channelId;
-	private FilterWordBlacklist filterWordBlacklist;
-	private FilterWordWhitelist filterWordWhitelist;
-	private FilterInviteUrl filterInviteUrl;
-	private FilterOtherUrl filterOtherUrl;
-	private FilterSpecialChars filterSpecialChars;
-	private FilterMultilineSpam filterMultilineSpam;
-	private FilterChatFlood filterChatFlood;
+	private FilterContent_Words filterContent_words = new FilterContent_Words(0);
+	private FilterContent_URLs filterContent_urLs = new FilterContent_URLs(0);
+	private FilterBehaviour_Spam filterBehaviour_spam = new FilterBehaviour_Spam(0);
+	private FilterBehaviour_Raid filterBehaviour_raid = new FilterBehaviour_Raid(0);
 
 	public AutoMod(long guildId, long channelId, BackendProcessor backendProcessor){
 		super(backendProcessor);
@@ -54,133 +51,55 @@ public class AutoMod extends APIDataObject{
 		return channelId;
 	}
 
-	public FilterWordBlacklist getFilterWordBlacklist(){
-		return filterWordBlacklist;
-	}
-
-	public void lSetFilterWordBlacklist(FilterWordBlacklist filterWordBlacklist){
-		this.filterWordBlacklist = filterWordBlacklist;
-	}
-
-	public void setFilterWordBlacklist(FilterWordBlacklist filterWordBlacklist){
-		lSetFilterWordWhitelist(filterWordWhitelist);
-	}
-
-	public FilterWordWhitelist getFilterWordWhitelist(){
-		return filterWordWhitelist;
-	}
-
-	public void lSetFilterWordWhitelist(FilterWordWhitelist filterWordWhitelist){
-		this.filterWordWhitelist = filterWordWhitelist;
-	}
-
-	public void setFilterWordWhitelist(FilterWordWhitelist filterWordWhitelist){
-		lSetFilterWordWhitelist(filterWordWhitelist);
-		update();
-	}
-
-	public FilterInviteUrl getFilterInviteUrl(){
-		return filterInviteUrl;
-	}
-
-	public void lSetFilterInviteUrl(FilterInviteUrl filterInviteUrl){
-		this.filterInviteUrl = filterInviteUrl;
-	}
-
-	public void setFilterInviteUrl(FilterInviteUrl filterInviteUrl){
-		lSetFilterInviteUrl(filterInviteUrl);
-		update();
-	}
-
-	public FilterOtherUrl getFilterOtherUrl(){
-		return filterOtherUrl;
-	}
-
-	public void lSetFilterOtherUrl(FilterOtherUrl filterOtherUrl){
-		this.filterOtherUrl = filterOtherUrl;
-	}
-
-	public void setFilterOtherUrl(FilterOtherUrl filterOtherUrl){
-		lSetFilterOtherUrl(filterOtherUrl);
-		update();
-	}
-
-	public FilterSpecialChars getFilterSpecialChars(){
-		return filterSpecialChars;
-	}
-
-	public void lSetFilterSpecialChars(FilterSpecialChars filterSpecialChars){
-		this.filterSpecialChars = filterSpecialChars;
-	}
-
-	public void setFilterSpecialChars(FilterSpecialChars filterSpecialChars){
-		lSetFilterSpecialChars(filterSpecialChars);
-		update();
-	}
-
-	public FilterMultilineSpam getFilterMultilineSpam(){
-		return filterMultilineSpam;
-	}
-
-	public void lSetFilterMultilineSpam(FilterMultilineSpam filterMultilineSpam){
-		this.filterMultilineSpam = filterMultilineSpam;
-	}
-
-	public void setFilterMultilineSpam(FilterMultilineSpam filterMultilineSpam){
-		lSetFilterMultilineSpam(filterMultilineSpam);
-		update();
-	}
-
-	public FilterChatFlood getFilterChatFlood(){
-		return filterChatFlood;
-	}
-
-	public void lSetFilterChatFlood(FilterChatFlood filterChatFlood){
-		this.filterChatFlood = filterChatFlood;
-	}
-
-	public void setFilterChatFlood(FilterChatFlood filterChatFlood){
-		lSetFilterChatFlood(filterChatFlood);
-		update();
-	}
-
 	@Override
 	public JSONObject asJSON() throws JSONSerializationException{
 		return new JSONObject()
 			.put("guildId", guildId)
 			.put("channelId", channelId)
-			.put("filterWordBlacklist", filterWordBlacklist.getValue())
-			.put("filterWordWhitelist", filterWordWhitelist.getValue())
-			.put("filterInviteUrl", filterInviteUrl.getValue())
-			.put("filterOtherUrl", filterOtherUrl.getValue())
-			.put("filterSpecialChars", filterSpecialChars.getValue())
-			.put("filterMultilineSpam", filterMultilineSpam.getValue())
-			.put("filterChatFlood", filterChatFlood.getValue());
+			.put("filterContentWords", filterContent_words.getValue())
+			.put("filterContentURLs", filterContent_urLs.getValue())
+			.put("filterBehaviourSpam", filterBehaviour_spam.getValue())
+			.put("filterBehaviourRaid", filterBehaviour_spam.getValue());
 	}
 
 	@Override
 	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{
-		this.filterWordBlacklist = new FilterWordBlacklist(jsonObject.getInt("filterWordBlacklist"));
-		this.filterWordWhitelist = new FilterWordWhitelist(jsonObject.getInt("filterWordWhitelist"));
-		this.filterInviteUrl = new FilterInviteUrl(jsonObject.getInt("filterInviteUrl"));
-		this.filterOtherUrl = new FilterOtherUrl(jsonObject.getInt("filterOtherUrl"));
-		this.filterSpecialChars = new FilterSpecialChars(jsonObject.getInt("filterSpecialChars"));
-		this.filterMultilineSpam = new FilterMultilineSpam(jsonObject.getInt("filterMultilineSpam"));
-		this.filterChatFlood = new FilterChatFlood(jsonObject.getInt("filterChatFlood"));
+		this.filterContent_words = new FilterContent_Words(jsonObject.getInt("filterContentWords"));
+		this.filterContent_urLs = new FilterContent_URLs(jsonObject.getInt("filterContentURLs"));
+		this.filterBehaviour_spam = new FilterBehaviour_Spam(jsonObject.getInt("filterBehaviourSpam"));
+		this.filterBehaviour_raid = new FilterBehaviour_Raid(jsonObject.getInt("filterBehaviourRaid"));
 	}
 
-	public static class FilterWordBlacklist extends IntegerBitFlags {
+	public static class FilterContent_Words extends IntegerBitFlags {
 
-		public FilterWordBlacklist(int value){
+		public FilterContent_Words(int value){
 			super(value);
 		}
+
 		@Override
 		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterWordBlacklist.Setting.values()).filter(this::has).collect(Collectors.toList());
+			return (List<T>) Arrays.stream(FilterContent_URLs.Setting.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 		public enum Setting implements IntBit {
-			;
+			// punishments
+			BAN(21),
+			KICK(20),
+			WARN_USER_COUNT_BIT_3(19),
+			WARN_USER_COUNT_BIT_2(18),
+			WARN_USER_COUNT_BIT_1(17),
+			WARN_USER_COUNT_BIT_0(16),
+			NOTIFY_USER(15),
+
+			// cleanup
+			DELETE_MESSAGE(8),
+
+			// bad word set identifier
+			BAD_WORD_SET_IDENTIFIER_BIT_2(3),
+			BAD_WORD_SET_IDENTIFIER_BIT_1(2),
+			BAD_WORD_SET_IDENTIFIER_BIT_0(1),
+			// general
+			APPLY(0);
 
 			private final int pos;
 
@@ -196,18 +115,38 @@ public class AutoMod extends APIDataObject{
 
 	}
 
-	public static class FilterWordWhitelist extends IntegerBitFlags {
+	public static class FilterContent_URLs extends IntegerBitFlags {
 
-		public FilterWordWhitelist(int value){
+		public FilterContent_URLs(int value){
 			super(value);
 		}
+
 		@Override
 		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterWordWhitelist.Setting.values()).filter(this::has).collect(Collectors.toList());
+			return (List<T>) Arrays.stream(FilterContent_URLs.Setting.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 		public enum Setting implements IntBit {
-			;
+			// punishments
+			BAN(21),
+			KICK(20),
+			WARN_USER_COUNT_BIT_3(19),
+			WARN_USER_COUNT_BIT_2(18),
+			WARN_USER_COUNT_BIT_1(17),
+			WARN_USER_COUNT_BIT_0(16),
+			NOTIFY_USER(15),
+
+			// cleanup
+			DELETE_MESSAGE(8),
+
+			// url filter
+			IPS(5),
+			OTHER_URLS(4),
+			TWITCH_URLS(3),
+			YOUTUBE_URLS(2),
+			INVITE_URLS(1),
+			// general
+			APPLY(0);
 
 			private final int pos;
 
@@ -223,18 +162,40 @@ public class AutoMod extends APIDataObject{
 
 	}
 
-	public static class FilterInviteUrl extends IntegerBitFlags {
+	public static class FilterBehaviour_Spam extends IntegerBitFlags {
 
-		public FilterInviteUrl(int value){
+		public FilterBehaviour_Spam(int value){
 			super(value);
 		}
+
 		@Override
 		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterInviteUrl.Setting.values()).filter(this::has).collect(Collectors.toList());
+			return (List<T>) Arrays.stream(FilterBehaviour_Spam.Setting.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 		public enum Setting implements IntBit {
-			;
+			// punishments
+			BAN(21),
+			KICK(20),
+			WARN_USER_COUNT_BIT_3(19),
+			WARN_USER_COUNT_BIT_2(18),
+			WARN_USER_COUNT_BIT_1(17),
+			WARN_USER_COUNT_BIT_0(16),
+			NOTIFY_USER(15),
+
+			// cleanup
+			DELETE_MESSAGE(8),
+
+			// triggers
+			SPAM_DELAY_BIT_4(4),
+			SPAM_DELAY_BIT_3(4),
+			SPAM_DELAY_BIT_2(4),
+			SPAM_DELAY_BIT_1(4),
+			SPAM_MULTILINE(3),
+			SPAM_REPOST(2),
+			SPAM(1),
+			// general
+			APPLY(0);
 
 			private final int pos;
 
@@ -250,99 +211,36 @@ public class AutoMod extends APIDataObject{
 
 	}
 
-	public static class FilterOtherUrl extends IntegerBitFlags {
+	public static class FilterBehaviour_Raid extends IntegerBitFlags {
 
-		public FilterOtherUrl(int value){
+		public FilterBehaviour_Raid(int value){
 			super(value);
 		}
+
 		@Override
 		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterOtherUrl.Setting.values()).filter(this::has).collect(Collectors.toList());
+			return (List<T>) Arrays.stream(FilterBehaviour_Raid.Setting.values()).filter(this::has).collect(Collectors.toList());
 		}
 
 		public enum Setting implements IntBit {
-			;
+			// punishments
+			BAN(21),
+			KICK(20),
 
-			private final int pos;
+			// action
+			COOLDOWN_CHAT_DURATION_BIT_3(8),
+			COOLDOWN_CHAT_DURATION_BIT_2(8),
+			COOLDOWN_CHAT_DURATION_BIT_1(8),
+			COOLDOWN_CHAT_DURATION_BIT_0(8),
+			COOLDOWN_CHAT(8),
 
-			Setting(int pos){
-				this.pos = pos;
-			}
-
-			@Override
-			public int getPos(){
-				return pos;
-			}
-		}
-
-	}
-
-	public static class FilterSpecialChars extends IntegerBitFlags {
-
-		public FilterSpecialChars(int value){
-			super(value);
-		}
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterSpecialChars.Setting.values()).filter(this::has).collect(Collectors.toList());
-		}
-
-		public enum Setting implements IntBit {
-			;
-
-			private final int pos;
-
-			Setting(int pos){
-				this.pos = pos;
-			}
-
-			@Override
-			public int getPos(){
-				return pos;
-			}
-		}
-
-	}
-
-	public static class FilterMultilineSpam extends IntegerBitFlags {
-
-		public FilterMultilineSpam(int value){
-			super(value);
-		}
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterMultilineSpam.Setting.values()).filter(this::has).collect(Collectors.toList());
-		}
-
-		public enum Setting implements IntBit {
-			;
-
-			private final int pos;
-
-			Setting(int pos){
-				this.pos = pos;
-			}
-
-			@Override
-			public int getPos(){
-				return pos;
-			}
-		}
-
-	}
-
-	public static class FilterChatFlood extends IntegerBitFlags {
-
-		public FilterChatFlood(int value){
-			super(value);
-		}
-		@Override
-		public <T extends IntBit> List<T> getBits(){
-			return (List<T>) Arrays.stream(FilterChatFlood.Setting.values()).filter(this::has).collect(Collectors.toList());
-		}
-
-		public enum Setting implements IntBit {
-			;
+			// triggers
+			SPAM_SCALE_BIT_3(4),
+			SPAM_SCALE_BIT_2(3),
+			SPAM_SCALE_BIT_1(2),
+			SPAM_SCALE_BIT_0(1),
+			// general
+			APPLY(0);
 
 			private final int pos;
 
