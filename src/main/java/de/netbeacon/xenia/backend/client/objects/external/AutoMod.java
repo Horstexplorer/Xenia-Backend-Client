@@ -167,6 +167,124 @@ public class AutoMod extends APIDataObject{
 
 		public class Helper{
 
+			enum Punishment{
+				BAN,
+				KICK,
+				NONE
+			}
+
+			public Helper setPunishment(Punishment punishment){
+				FilterContent_Words.this.unset(Setting.BAN, Setting.KICK);
+				switch(punishment){
+					case BAN -> {
+						FilterContent_Words.this.set(Setting.BAN);
+					}
+					case KICK -> {
+						FilterContent_Words.this.set(Setting.KICK);
+					}
+				}
+				return this;
+			}
+
+			public Helper setUserWarnCount(int value){
+				FilterContent_Words.this.unset(Setting.WARN_USER_COUNT_BIT_0, Setting.WARN_USER_COUNT_BIT_1, Setting.WARN_USER_COUNT_BIT_2, Setting.WARN_USER_COUNT_BIT_3);
+				if((((value >> 2) >> 0) & 1) == 1){
+					FilterContent_Words.this.set(Setting.WARN_USER_COUNT_BIT_0);
+				}
+				if((((value >> 2) >> 1) & 1) == 1){
+					FilterContent_Words.this.set(Setting.WARN_USER_COUNT_BIT_1);
+				}
+				if((((value >> 2) >> 2) & 1) == 1){
+					FilterContent_Words.this.set(Setting.WARN_USER_COUNT_BIT_2);
+				}
+				if((((value >> 2) >> 3) & 1) == 1){
+					FilterContent_Words.this.set(Setting.WARN_USER_COUNT_BIT_3);
+				}
+				return this;
+			}
+
+			public int getUserWarnCount(){
+				int i = 0;
+				if(FilterContent_Words.this.has(Setting.WARN_USER_COUNT_BIT_0)){
+					i |= 1;
+				}
+				if(FilterContent_Words.this.has(Setting.WARN_USER_COUNT_BIT_1)){
+					i |= 1 << 1;
+				}
+				if(FilterContent_Words.this.has(Setting.WARN_USER_COUNT_BIT_2)){
+					i |= 1 << 2;
+				}
+				if(FilterContent_Words.this.has(Setting.WARN_USER_COUNT_BIT_3)){
+					i |= 1 << 3;
+				}
+				return i << 2;
+			}
+
+			public Helper enableUserNotification(boolean value){
+				FilterContent_Words.this.unset(FilterContent_URLs.Setting.NOTIFY_USER);
+				if(value){
+					FilterContent_Words.this.set(FilterContent_URLs.Setting.NOTIFY_USER);
+				}
+				return this;
+			}
+
+			public boolean notifyUser(){
+				return FilterContent_Words.this.has(Setting.NOTIFY_USER);
+			}
+
+			public Helper enableMessageCleanup(boolean value){
+				FilterContent_Words.this.unset(Setting.DELETE_MESSAGE);
+				if(value){
+					FilterContent_Words.this.set(Setting.DELETE_MESSAGE);
+				}
+				return this;
+			}
+
+			public boolean doMessageCleanup(){
+				return FilterContent_Words.this.has(Setting.DELETE_MESSAGE);
+			}
+
+			public Helper setWordListId(int value){
+
+				FilterContent_Words.this.unset(Setting.BAD_WORD_SET_IDENTIFIER_BIT_0, Setting.BAD_WORD_SET_IDENTIFIER_BIT_1, Setting.BAD_WORD_SET_IDENTIFIER_BIT_2);
+				if((((value >> 2) >> 0) & 1) == 1){
+					FilterContent_Words.this.set(Setting.BAD_WORD_SET_IDENTIFIER_BIT_0);
+				}
+				if((((value >> 2) >> 1) & 1) == 1){
+					FilterContent_Words.this.set(Setting.BAD_WORD_SET_IDENTIFIER_BIT_1);
+				}
+				if((((value >> 2) >> 2) & 1) == 1){
+					FilterContent_Words.this.set(Setting.BAD_WORD_SET_IDENTIFIER_BIT_2);
+				}
+				return this;
+			}
+
+			public int getWordListId(){
+				int i = 0;
+				if(FilterContent_Words.this.has(Setting.BAD_WORD_SET_IDENTIFIER_BIT_0)){
+					i |= 1;
+				}
+				if(FilterContent_Words.this.has(Setting.BAD_WORD_SET_IDENTIFIER_BIT_1)){
+					i |= 1 << 1;
+				}
+				if(FilterContent_Words.this.has(Setting.BAD_WORD_SET_IDENTIFIER_BIT_2)){
+					i |= 1 << 2;
+				}
+				return i << 2;
+			}
+
+			public Helper enable(boolean value){
+				FilterContent_Words.this.unset(Setting.APPLY);
+				if(value){
+					FilterContent_Words.this.set(Setting.APPLY);
+				}
+				return this;
+			}
+
+			public boolean isEnabled(){
+				return FilterContent_Words.this.has(Setting.APPLY);
+			}
+
 		}
 
 	}
@@ -218,6 +336,155 @@ public class AutoMod extends APIDataObject{
 
 		public class Helper{
 
+			enum Punishment{
+				BAN,
+				KICK,
+				NONE
+			}
+
+			public Helper setPunishment(Punishment punishment){
+				FilterContent_URLs.this.unset(Setting.BAN, Setting.KICK);
+				switch(punishment){
+					case BAN -> {
+						FilterContent_URLs.this.set(FilterContent_URLs.Setting.BAN);
+					}
+					case KICK -> {
+						FilterContent_URLs.this.set(FilterContent_URLs.Setting.KICK);
+					}
+				}
+				return this;
+			}
+
+			public Helper setUserWarnCount(int value){
+				FilterContent_URLs.this.unset(Setting.WARN_USER_COUNT_BIT_0, Setting.WARN_USER_COUNT_BIT_1, Setting.WARN_USER_COUNT_BIT_2, Setting.WARN_USER_COUNT_BIT_3);
+				if((((value >> 2) >> 0) & 1) == 1){
+					FilterContent_URLs.this.set(Setting.WARN_USER_COUNT_BIT_0);
+				}
+				if((((value >> 2) >> 1) & 1) == 1){
+					FilterContent_URLs.this.set(Setting.WARN_USER_COUNT_BIT_1);
+				}
+				if((((value >> 2) >> 2) & 1) == 1){
+					FilterContent_URLs.this.set(Setting.WARN_USER_COUNT_BIT_2);
+				}
+				if((((value >> 2) >> 3) & 1) == 1){
+					FilterContent_URLs.this.set(Setting.WARN_USER_COUNT_BIT_3);
+				}
+				return this;
+			}
+
+			public int getUserWarnCount(){
+				int i = 0;
+				if(FilterContent_URLs.this.has(Setting.WARN_USER_COUNT_BIT_0)){
+					i |= 1;
+				}
+				if(FilterContent_URLs.this.has(Setting.WARN_USER_COUNT_BIT_1)){
+					i |= 1 << 1;
+				}
+				if(FilterContent_URLs.this.has(Setting.WARN_USER_COUNT_BIT_2)){
+					i |= 1 << 2;
+				}
+				if(FilterContent_URLs.this.has(Setting.WARN_USER_COUNT_BIT_3)){
+					i |= 1 << 3;
+				}
+				return i << 2;
+			}
+
+			public Helper enableUserNotification(boolean value){
+				FilterContent_URLs.this.unset(Setting.NOTIFY_USER);
+				if(value){
+					FilterContent_URLs.this.set(Setting.NOTIFY_USER);
+				}
+				return this;
+			}
+
+			public boolean notifyUser(){
+				return FilterContent_URLs.this.has(Setting.NOTIFY_USER);
+			}
+
+			public Helper enableMessageCleanup(boolean value){
+				FilterContent_URLs.this.unset(Setting.DELETE_MESSAGE);
+				if(value){
+					FilterContent_URLs.this.set(Setting.DELETE_MESSAGE);
+				}
+				return this;
+			}
+
+			public boolean doMessageCleanup(){
+				return FilterContent_URLs.this.has(Setting.DELETE_MESSAGE);
+			}
+
+			public Helper enableIPFilter(boolean value){
+				FilterContent_URLs.this.unset(Setting.IPS);
+				if(value){
+					FilterContent_URLs.this.set(Setting.IPS);
+				}
+				return this;
+			}
+
+			public boolean hasIPFilterEnabled(){
+				return FilterContent_URLs.this.has(Setting.IPS);
+			}
+
+			public Helper enableOtherURLFilter(boolean value){
+				FilterContent_URLs.this.unset(Setting.OTHER_URLS);
+				if(value){
+					FilterContent_URLs.this.set(Setting.OTHER_URLS);
+				}
+				return this;
+			}
+
+			public boolean hasOtherURLFilterEnabled(){
+				return FilterContent_URLs.this.has(Setting.OTHER_URLS);
+			}
+
+			public Helper enableTwitchURLFilter(boolean value){
+				FilterContent_URLs.this.unset(Setting.TWITCH_URLS);
+				if(value){
+					FilterContent_URLs.this.set(Setting.TWITCH_URLS);
+				}
+				return this;
+			}
+
+			public boolean hasTwitchURLFilterEnabled(){
+				return FilterContent_URLs.this.has(Setting.TWITCH_URLS);
+			}
+
+			public Helper enableYoutubeURLFilter(boolean value){
+				FilterContent_URLs.this.unset(Setting.YOUTUBE_URLS);
+				if(value){
+					FilterContent_URLs.this.set(Setting.YOUTUBE_URLS);
+				}
+				return this;
+			}
+
+			public boolean hasYoutubeURLFilterEnabled(){
+				return FilterContent_URLs.this.has(Setting.YOUTUBE_URLS);
+			}
+
+			public Helper enableInviteFilter(boolean value){
+				FilterContent_URLs.this.unset(Setting.INVITE_URLS);
+				if(value){
+					FilterContent_URLs.this.set(Setting.INVITE_URLS);
+				}
+				return this;
+			}
+
+			public boolean hasInviteFilterEnabled(){
+				return FilterContent_URLs.this.has(Setting.INVITE_URLS);
+			}
+
+			public Helper enable(boolean value){
+				FilterContent_URLs.this.unset(Setting.APPLY);
+				if(value){
+					FilterContent_URLs.this.set(Setting.APPLY);
+				}
+				return this;
+			}
+
+			public boolean isEnabled(){
+				return FilterContent_URLs.this.has(Setting.APPLY);
+			}
+
 		}
 
 	}
@@ -247,10 +514,10 @@ public class AutoMod extends APIDataObject{
 			DELETE_MESSAGE(8),
 
 			// triggers
-			SPAM_DELAY_BIT_4(4),
-			SPAM_DELAY_BIT_3(4),
-			SPAM_DELAY_BIT_2(4),
-			SPAM_DELAY_BIT_1(4),
+			SPAM_SENSITIVITY_BIT_3(7),
+			SPAM_SENSITIVITY_BIT_2(6),
+			SPAM_SENSITIVITY_BIT_1(5),
+			SPAM_SENSITIVITY_BIT_0(4),
 			SPAM_MULTILINE(3),
 			SPAM_REPOST(2),
 			SPAM(1),
@@ -271,6 +538,164 @@ public class AutoMod extends APIDataObject{
 
 		public class Helper{
 
+			enum Punishment{
+				BAN,
+				KICK,
+				NONE
+			}
+
+			public Helper setPunishment(Punishment punishment){
+				FilterBehaviour_Spam.this.unset(FilterBehaviour_Spam.Setting.BAN, FilterBehaviour_Spam.Setting.KICK);
+				switch(punishment){
+					case BAN -> {
+						FilterBehaviour_Spam.this.set(FilterBehaviour_Spam.Setting.BAN);
+					}
+					case KICK -> {
+						FilterBehaviour_Spam.this.set(FilterBehaviour_Spam.Setting.KICK);
+					}
+				}
+				return this;
+			}
+
+			public Helper setUserWarnCount(int value){
+				FilterBehaviour_Spam.this.unset(Setting.WARN_USER_COUNT_BIT_0, Setting.WARN_USER_COUNT_BIT_1, Setting.WARN_USER_COUNT_BIT_2, Setting.WARN_USER_COUNT_BIT_3);
+				if((((value >> 2) >> 0) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.WARN_USER_COUNT_BIT_0);
+				}
+				if((((value >> 2) >> 1) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.WARN_USER_COUNT_BIT_1);
+				}
+				if((((value >> 2) >> 2) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.WARN_USER_COUNT_BIT_2);
+				}
+				if((((value >> 2) >> 3) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.WARN_USER_COUNT_BIT_3);
+				}
+				return this;
+			}
+
+			public int getUserWarnCount(){
+				int i = 0;
+				if(FilterBehaviour_Spam.this.has(Setting.WARN_USER_COUNT_BIT_0)){
+					i |= 1;
+				}
+				if(FilterBehaviour_Spam.this.has(Setting.WARN_USER_COUNT_BIT_1)){
+					i |= 1 << 1;
+				}
+				if(FilterBehaviour_Spam.this.has(Setting.WARN_USER_COUNT_BIT_2)){
+					i |= 1 << 2;
+				}
+				if(FilterBehaviour_Spam.this.has(Setting.WARN_USER_COUNT_BIT_3)){
+					i |= 1 << 3;
+				}
+				return i << 2;
+			}
+
+			public Helper enableUserNotification(boolean value){
+				FilterBehaviour_Spam.this.unset(Setting.NOTIFY_USER);
+				if(value){
+					FilterBehaviour_Spam.this.set(Setting.NOTIFY_USER);
+				}
+				return this;
+			}
+
+			public boolean notifyUser(){
+				return FilterBehaviour_Spam.this.has(Setting.NOTIFY_USER);
+			}
+
+			public Helper enableMessageCleanup(boolean value){
+				FilterBehaviour_Spam.this.unset(Setting.DELETE_MESSAGE);
+				if(value){
+					FilterBehaviour_Spam.this.set(Setting.DELETE_MESSAGE);
+				}
+				return this;
+			}
+
+			public boolean doMessageCleanup(){
+				return FilterBehaviour_Spam.this.has(Setting.DELETE_MESSAGE);
+			}
+
+			public Helper setSpamSensitivity(int value){
+				FilterBehaviour_Spam.this.unset(Setting.SPAM_SENSITIVITY_BIT_0, Setting.SPAM_SENSITIVITY_BIT_1, Setting.SPAM_SENSITIVITY_BIT_2, Setting.SPAM_SENSITIVITY_BIT_3);
+				if((((value >> 2) >> 0) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.SPAM_SENSITIVITY_BIT_0);
+				}
+				if((((value >> 2) >> 1) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.SPAM_SENSITIVITY_BIT_1);
+				}
+				if((((value >> 2) >> 2) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.SPAM_SENSITIVITY_BIT_2);
+				}
+				if((((value >> 2) >> 3) & 1) == 1){
+					FilterBehaviour_Spam.this.set(Setting.SPAM_SENSITIVITY_BIT_3);
+				}
+				return this;
+			}
+
+			public int getSpamSensitivity(){
+				int i = 0;
+				if(FilterBehaviour_Spam.this.has(Setting.SPAM_SENSITIVITY_BIT_0)){
+					i |= 1;
+				}
+				if(FilterBehaviour_Spam.this.has(Setting.SPAM_SENSITIVITY_BIT_1)){
+					i |= 1 << 1;
+				}
+				if(FilterBehaviour_Spam.this.has(Setting.SPAM_SENSITIVITY_BIT_2)){
+					i |= 1 << 2;
+				}
+				if(FilterBehaviour_Spam.this.has(Setting.SPAM_SENSITIVITY_BIT_3)){
+					i |= 1 << 3;
+				}
+				return i << 2;
+			}
+
+			public Helper enableSpamMultiLineTrigger(boolean value){
+				FilterBehaviour_Spam.this.unset(Setting.SPAM_MULTILINE);
+				if(value){
+					FilterBehaviour_Spam.this.set(Setting.SPAM_MULTILINE);
+				}
+				return this;
+			}
+
+			public boolean hasSpamMultiLineTrigger(){
+				return FilterBehaviour_Spam.this.has(Setting.SPAM_MULTILINE);
+			}
+
+			public Helper enableSpamRepostTrigger(boolean value){
+				FilterBehaviour_Spam.this.unset(Setting.SPAM_REPOST);
+				if(value){
+					FilterBehaviour_Spam.this.set(Setting.SPAM_REPOST);
+				}
+				return this;
+			}
+
+			public boolean hasSpamRepostTrigger(){
+				return FilterBehaviour_Spam.this.has(Setting.SPAM_REPOST);
+			}
+
+			public Helper enableSpamTrigger(boolean value){
+				FilterBehaviour_Spam.this.unset(Setting.SPAM);
+				if(value){
+					FilterBehaviour_Spam.this.set(Setting.SPAM);
+				}
+				return this;
+			}
+
+			public boolean hasSpamTrigger(){
+				return FilterBehaviour_Spam.this.has(Setting.SPAM);
+			}
+
+			public Helper enable(boolean value){
+				FilterBehaviour_Spam.this.unset(Setting.APPLY);
+				if(value){
+					FilterBehaviour_Spam.this.set(Setting.APPLY);
+				}
+				return this;
+			}
+
+			public boolean isEnabled(){
+				return FilterBehaviour_Spam.this.has(Setting.APPLY);
+			}
 
 		}
 
@@ -341,9 +766,6 @@ public class AutoMod extends APIDataObject{
 			}
 
 			public Helper setChatCooldownDuration(int value){
-				if(value > 60 || value < 0){
-					return this;
-				}
 				FilterBehaviour_Raid.this.unset(Setting.COOLDOWN_CHAT_DURATION_BIT_0, Setting.COOLDOWN_CHAT_DURATION_BIT_1, Setting.COOLDOWN_CHAT_DURATION_BIT_2, Setting.COOLDOWN_CHAT_DURATION_BIT_3);
 				if((((value >> 2) >> 0) & 1) == 1){
 					FilterBehaviour_Raid.this.set(Setting.COOLDOWN_CHAT_DURATION_BIT_0);
@@ -378,9 +800,6 @@ public class AutoMod extends APIDataObject{
 			}
 
 			public Helper setSpamScaleThreshold(int value){
-				if(value > 60 || value < 0){
-					return this;
-				}
 				FilterBehaviour_Raid.this.unset(Setting.SPAM_SCALE_BIT_0, Setting.SPAM_SCALE_BIT_1, Setting.SPAM_SCALE_BIT_2, Setting.SPAM_SCALE_BIT_3);
 				if((((value >> 2) >> 0) & 1) == 1){
 					FilterBehaviour_Raid.this.set(Setting.SPAM_SCALE_BIT_0);
