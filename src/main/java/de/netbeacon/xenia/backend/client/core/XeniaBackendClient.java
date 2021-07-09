@@ -28,7 +28,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.ws.PrimaryWebsocketListener;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.SecondaryWebsocketListener;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessorCore;
-import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp.*;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp2.*;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;

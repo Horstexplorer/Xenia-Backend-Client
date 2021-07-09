@@ -17,9 +17,10 @@
 package de.netbeacon.xenia.backend.client.objects.internal.ws;
 
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.Channel;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
-import de.netbeacon.xenia.backend.client.objects.external.User;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.HeartbeatProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.StatusProcessor;
+import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cache.*;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okio.ByteString;
@@ -29,15 +30,38 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class PrimaryWebsocketListener extends WebsocketListener{
 
 	private final Logger logger = LoggerFactory.getLogger(PrimaryWebsocketListener.class);
-	private long lastHeartBeat = System.currentTimeMillis();
+	private final HashMap<String, PrimaryWSProcessor> processors = new HashMap<>();
+	private final Consumer<PrimaryWSProcessor> register = p -> processors.put(p.ofType(), p);
+
 
 	public PrimaryWebsocketListener(XeniaBackendClient xeniaBackendClient){
 		super(xeniaBackendClient, "ws");
+
+		register.accept(new StatusProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new HeartbeatProcessor(xeniaBackendClient, scalingExecutor));
+
+		register.accept(new CacheGuildMiscTwitchNotificationProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildMiscNotificationProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildMiscTagProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildLicenseProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildMemberProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildMessageProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildRoleProcessor(xeniaBackendClient, scalingExecutor));
+		processors.put("guild_role_permission", new CacheGuildRoleProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildChannelProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheGuildChannelAutoModProcessor(xeniaBackendClient, scalingExecutor));
+		register.accept(new CacheUserProcessor(xeniaBackendClient, scalingExecutor));
+
+
 	}
 
 	@Override
@@ -97,222 +121,13 @@ public class PrimaryWebsocketListener extends WebsocketListener{
 
 	public void handle(JSONObject message){
 		try{
-			String type = message.getString("type");
-			String action = message.getString("action");
-			logger.debug("Received Message From WS: " + message);
-			switch(type.toLowerCase()){
-				case "status":
-					logger.debug("Received Status From WS: " + action);
-					break;
-				case "heartbeat":{
-					long newHeartBeat = message.getLong("timestamp");
-					long delay = (newHeartBeat - lastHeartBeat);
-					if(delay > 30000 * 2){
-						logger.warn("Received Heartbeat After " + delay + "ms (Delay To Target " + (delay - 30000) + ") Missed At Least " + (delay / 30000) + " Heartbeat(s). The Network Might Be Faulty!");
-					}
-					else if(delay > 30000 * 1.5){
-						logger.info("Received Heartbeat After " + delay + "ms (Delay To Target " + (delay - 30000) + ") The Service Might Be Slow.");
-					}
-					else{
-						logger.debug("Received Heartbeat After " + delay + "ms (Delay To Target " + (delay - 30000) + ")");
-					}
-					lastHeartBeat = newHeartBeat;
-				}
-				break;
-				case "user":{
-					if(!xeniaBackendClient.getUserCache().contains(message.getLong("userId"))){
-						return;
-					}
-					User u = xeniaBackendClient.getUserCache().get(message.getLong("userId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							break;
-						case "update":
-							u.getAsync(true);
-							break;
-						case "delete":
-							u.onDeletion();
-							xeniaBackendClient.getUserCache().remove(message.getLong("userId"));
-							break;
-					}
-				}
-				break;
-				case "guild":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							break;
-						case "update":
-							g.getAsync(true); // this just gets the new data as we dont want to reload all channels, roles, members,...
-							break;
-						case "delete":
-							g.clear(true);
-							xeniaBackendClient.getGuildCache().remove(message.getLong("guildId"));
-							break;
-					}
-				}
-				break;
-				case "guild_role":
-				case "guild_role_permission":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> g.getRoleCache().get(message.getLong("roleId")));
-							break;
-						case "update":
-							g.getRoleCache().get(message.getLong("roleId")).getAsync(true);
-							break;
-						case "delete":
-							g.getRoleCache().get(message.getLong("roleId")).onDeletion();
-							g.getRoleCache().remove(message.getLong("roleId"));
-							break;
-					}
-				}
-				break;
-				case "guild_channel":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> g.getChannelCache().get(message.getLong("channelId")));
-							break;
-						case "update":
-							g.getChannelCache().get(message.getLong("channelId")).getAsync(true);
-							break;
-						case "delete":
-							g.getChannelCache().get(message.getLong("channelId")).clear(true);
-							g.getChannelCache().remove(message.getLong("channelId"));
-							break;
-					}
-				}
-				case "guild_channel_auto_mod":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "update":
-							g.getChannelCache().get(message.getLong("channelId")).getAutoMod().getAsync();
-							break;
-					}
-				}
-				break;
-				case "guild_message":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					if(!g.getChannelCache().contains(message.getLong("channelId"))){
-						return;
-					}
-					Channel c = g.getChannelCache().get(message.getLong("channelId"));
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> c.getMessageCache().get(message.getLong("messageId")));
-							break;
-						case "update":
-							c.getMessageCache().get(message.getLong("messageId")).updateAsync(true);
-							break;
-						case "delete":
-							c.getMessageCache().remove(message.getLong("messageId"));
-							break;
-					}
-				}
-				break;
-				case "guild_license":{
-					if(!xeniaBackendClient.getLicenseCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					else{
-						xeniaBackendClient.getLicenseCache().remove(message.getLong("guildId"));
-					}
-				}
-				break;
-				case "guild_member":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> g.getMemberCache().get(message.getLong("userId")));
-							break;
-						case "update":
-							g.getMemberCache().get(message.getLong("userId")).getAsync(true);
-							break;
-						case "delete":
-							g.getMemberCache().get(message.getLong("userId")).onDeletion();
-							g.getMemberCache().remove(message.getLong("userId"));
-							break;
-					}
-				}
-				break;
-				case "guild_misc_tag":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> g.getMiscCaches().getTagCache().get(message.getString("tagName")));
-							break;
-						case "update":
-							g.getMiscCaches().getTagCache().get(message.getString("tagName")).getAsync(true);
-							break;
-						case "delete":
-							g.getMiscCaches().getTagCache().get(message.getString("tagName")).onDeletion();
-							g.getMiscCaches().getTagCache().remove(message.getString("tagName"));
-							break;
-					}
-				}
-				break;
-				case "guild_misc_notification":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")));
-							break;
-						case "update":
-							g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")).getAsync(true);
-							break;
-						case "delete":
-							g.getMiscCaches().getNotificationCache().get(message.getLong("notificationId")).onDeletion();
-							g.getMiscCaches().getNotificationCache().remove(message.getLong("notificationId"));
-							break;
-					}
-				}
-				break;
-				case "guild_misc_twitchnotification":{
-					if(!xeniaBackendClient.getGuildCache().contains(message.getLong("guildId"))){
-						return;
-					}
-					Guild g = xeniaBackendClient.getGuildCache().get(message.getLong("guildId"), false);
-					switch(action.toLowerCase()){
-						case "create":
-							scalingExecutor.execute(() -> g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")));
-							break;
-						case "update":
-							g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")).getAsync(true);
-							break;
-						case "delete":
-							g.getMiscCaches().getTwitchNotificationCache().get(message.getLong("twitchNotificationId")).onDeletion();
-							g.getMiscCaches().getTwitchNotificationCache().remove(message.getLong("twitchNotificationId"));
-							break;
-					}
-				}
-				break;
+			String type = message.getString("type").toLowerCase(Locale.ROOT);
+			var v = processors.get(type);
+			if(v == null){
+				logger.warn("Unknown Event Type " + type + " On Message " + message);
+				return;
 			}
+			v.accept(message);
 		}
 		catch(Exception e){
 			logger.warn("Error Processing Message, Cache Might Be Inconsistent: " + message.toString());

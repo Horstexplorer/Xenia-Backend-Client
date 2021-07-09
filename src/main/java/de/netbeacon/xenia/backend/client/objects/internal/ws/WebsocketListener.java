@@ -52,7 +52,7 @@ public abstract class WebsocketListener extends okhttp3.WebSocketListener implem
 		if(webSocket != null){
 			webSocket.close(1000, "Reconnecting Soon");
 		}
-		scalingExecutor = new ScalingExecutor(2, 14, 12000, 30, TimeUnit.SECONDS);
+		scalingExecutor = new ScalingExecutor(2, 6, -1, 30, TimeUnit.SECONDS);
 		BackendSettings backendSettings = xeniaBackendClient.getBackendProcessor().getBackendSettings();
 		String host = backendSettings.getHost();
 		int port = backendSettings.getPort();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp;
+package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp2;
 
 import de.netbeacon.utils.tuples.Triplet;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
