@@ -96,7 +96,8 @@ public class XeniaBackendClient implements IShutdown{
 			new StatisticsProcessor(),
 			new TwitchNotificationProcessor(),
 			new ShutdownInterruptProcessor(),
-			new MetricsProcessor()
+			new MetricsProcessor(),
+			new ShardStartupProcessor()
 		);
 		secondaryWebsocketListener = new SecondaryWebsocketListener(this, wsProcessorCore);
 		secondaryWebsocketListener.start();
