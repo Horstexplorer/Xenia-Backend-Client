@@ -51,7 +51,6 @@ public class Channel extends APIDataObject{
 		this.messageCache = new MessageCache(backendProcessor, guildId, channelId);
 		setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId);
 		this.autoMod = new AutoMod(guildId, channelId, backendProcessor);
-		this.autoMod.getAsync();
 	}
 
 	public long getId(){

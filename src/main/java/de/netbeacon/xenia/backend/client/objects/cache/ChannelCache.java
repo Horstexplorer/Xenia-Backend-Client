@@ -64,9 +64,11 @@ public class ChannelCache extends Cache<Long, Channel>{
 			channel = new Channel(getBackendProcessor(), guildId, channelId);
 			if(init){
 				channel.getOrCreate(securityOverride);
-			}else{
+			}
+			else{
 				channel.get(securityOverride);
 			}
+			channel.getAutoMod().getAsync();
 			addToCache(channelId, channel);
 			return channel;
 		}
