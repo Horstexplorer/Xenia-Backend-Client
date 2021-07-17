@@ -105,7 +105,9 @@ public abstract class APIDataObject implements IJSONSerializable{
 	}
 
 	public synchronized void update(boolean securityOverride) throws DataException{
-		if(!hasChanges()) return;
+		if(!hasChanges()){
+			return;
+		}
 		process(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
 
@@ -114,7 +116,9 @@ public abstract class APIDataObject implements IJSONSerializable{
 	}
 
 	public synchronized void updateAsync(boolean securityOverride) throws DataException{
-		if(!hasChanges()) return;
+		if(!hasChanges()){
+			return;
+		}
 		processAsync(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
 
@@ -218,8 +222,10 @@ public abstract class APIDataObject implements IJSONSerializable{
 
 
 	public boolean hasChanges(){
-		if(shadowCopy == null) return true;
-		return JSONEQ.equals(asJSON(), shadowCopy);
+		if(shadowCopy == null){
+			return true;
+		}
+		return !JSONEQ.equals(asJSON(), shadowCopy);
 	}
 
 	public synchronized void restore(){
