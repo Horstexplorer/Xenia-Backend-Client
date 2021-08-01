@@ -28,7 +28,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-public class Tag extends APIDataObject{
+public class Tag extends APIDataObject<Tag>{
 
 	private long guildId;
 	private String tagName;

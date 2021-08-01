@@ -16,7 +16,9 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache;
 
-import de.netbeacon.utils.locks.IdBasedLockHolder;
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.action.ExecutionException;
+import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
 import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.external.Message;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
@@ -27,238 +29,165 @@ import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 public class MessageCache extends Cache<Long, Message>{
 
 	private final long guildId;
-	private final long channelid;
-	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
-	private final Logger logger = LoggerFactory.getLogger(MessageCache.class);
+	private final long channelId;
 	private final HashMap<String, Message> lastMap = new HashMap<>();
 
 	public MessageCache(BackendProcessor backendProcessor, long guildId, long channelId){
 		super(backendProcessor);
 		this.guildId = guildId;
-		this.channelid = channelId;
+		this.channelId = channelId;
 	}
 
-	public Message get(long messageId) throws CacheException, DataException{
-		return get(messageId, false);
-	}
-
-	public Message get(long messageId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(messageId).lock();
-			Message message = getFromCache(messageId);
-			if(message != null){
-				return message;
-			}
-			message = new Message(getBackendProcessor(), guildId, channelid, messageId);
+	@Override
+	public ExecutionAction<Message> retrieve(Long id, boolean cache){
+		Supplier<Message> fun = () -> {
 			try{
-				message.get(securityOverride);
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					var entry = get_(id);
+					if(entry != null){
+						return entry;
+					}
+					entry = new Message(getBackendProcessor(), guildId, channelId, id).get(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
 			}
-			catch(DataException e){
-				if(e.getCode() == 404){
+			catch(CacheException | DataException e){
+				throw e;
+			}
+			catch(Exception e){
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Message", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	@Deprecated
+	@Override
+	public ExecutionAction<Message> retrieveOrCreate(Long id, boolean cache, Object... other){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+	}
+
+	@Deprecated
+	@Override
+	public ExecutionAction<Message> create(Long id, boolean cache, Object... other){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+	}
+
+	public ExecutionAction<Message> create(long id, long creationTime, long userId, String messageContent, List<String> attachmentUrls){
+		Supplier<Message> fun = () -> {
+			try{
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					if(contains(id)){
+						return get_(id);
+					}
+					Message message = new Message(getBackendProcessor(), guildId, channelId, id)
+						.lSetInitialData(userId, creationTime, messageContent, attachmentUrls, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
+					message.create(true).queue(); // can be async as we process a lot of em
+					add_(id, message);
+					return message;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
+			}
+			catch(Exception e){
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create Message", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	@Override
+	public ExecutionAction<Void> delete(Long id){
+		Supplier<Void> fun = () -> {
+			try{
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					remove_(id);
+					new Message(getBackendProcessor(), guildId, channelId, id).delete(true).execute();
 					return null;
 				}
-				else{
-					throw e;
+				finally{
+					idBasedProvider.get(id).release();
 				}
 			}
-			addToCache(messageId, message);
-			return message;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Message", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(messageId).unlock();
-		}
-	}
-
-	public void getAsync(long messageId, Consumer<Message> whenReady, Consumer<Exception> onException){
-		getAsync(messageId, false, whenReady, onException);
-	}
-
-	public void getAsync(long messageId, boolean securityOverride, Consumer<Message> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
-			try{
-				var v = get(messageId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
-				}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Message", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public Message create(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls) throws CacheException, DataException{
-		return create(messageId, creationTime, userId, messageContent, attachmentUrls, false);
-	}
-
-	public Message create(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(messageId).lock();
-			if(contains(messageId)){
-				return getFromCache(messageId);
-			}
-			Message message = new Message(getBackendProcessor(), guildId, channelid, messageId).lSetInitialData(userId, creationTime, messageContent, attachmentUrls, getBackendProcessor().getBackendClient().getBackendSettings().getMessageCryptKey());
-			message.createAsync(securityOverride); // can be async as we process a lot of em
-			addToCache(messageId, message);
-			return message;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create Message", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(messageId).unlock();
-		}
-	}
-
-	public void createAsync(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls, Consumer<Message> whenReady, Consumer<Exception> onException){
-		createAsync(messageId, creationTime, userId, messageContent, attachmentUrls, false, whenReady, onException);
-	}
-
-	public void createAsync(long messageId, long creationTime, long userId, String messageContent, List<String> attachmentUrls, boolean securityOverride, Consumer<Message> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	public ExecutionAction<List<Message>> retrieveAllFromBackend(boolean enforceLimit, boolean cache){
+		Supplier<List<Message>> fun = () -> {
 			try{
-				var v = create(messageId, creationTime, userId, messageContent, attachmentUrls, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				int limit = getBackendProcessor().getBackendClient().getLicenseCache().retrieve(guildId, true).execute().getPerk_CHANNEL_LOGGING_C();
+				HashMap<String, String> hashMap = new HashMap<>();
+				if(enforceLimit){
+					hashMap.put("limit", String.valueOf(limit));
 				}
+				BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelId), "messages"), hashMap, null);
+				BackendResult backendResult = getBackendProcessor().process(backendRequest);
+				if(backendResult.getStatusCode() != 200){
+					logger.warn("Failed To Get " + limit + " Messages From The Backend");
+					return null;
+				}
+				JSONArray messages = backendResult.getPayloadAsJSON().getJSONArray("messages");
+				List<Message> messageList = new ArrayList<>();
+				for(int i = 0; i < messages.length(); i++){
+					JSONObject jsonObject = messages.getJSONObject(i);
+					Message message = new Message(getBackendProcessor(), guildId, channelId, jsonObject.getLong("messageId"));
+					message.fromJSON(jsonObject);
+					if(cache){
+						add_(message.getId(), message);
+					}
+					messageList.add(message);
+				}
+				return messageList;
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Messages", e);
 			}
-		});
-	}
-
-	public List<Message> retrieveAllFromBackend(boolean enforceLimit, boolean cacheInsert) throws CacheException, DataException{
-		try{
-			if(cacheInsert){
-				idBasedLockHolder.getLock().writeLock().lock();
-			}
-			int limit = getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C();
-			HashMap<String, String> hashMap = new HashMap<>();
-			if(enforceLimit){
-				hashMap.put("limit", String.valueOf(limit));
-			}
-			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels", String.valueOf(channelid), "messages"), hashMap, null);
-			BackendResult backendResult = getBackendProcessor().process(backendRequest);
-			if(backendResult.getStatusCode() != 200){
-				logger.warn("Failed To Get " + limit + " Messages From The Backend");
-				return null;
-			}
-			JSONArray messages = backendResult.getPayloadAsJSON().getJSONArray("messages");
-			List<Message> messageList = new ArrayList<>();
-			for(int i = 0; i < messages.length(); i++){
-				JSONObject jsonObject = messages.getJSONObject(i);
-				Message message = new Message(getBackendProcessor(), guildId, channelid, jsonObject.getLong("messageId"));
-				message.fromJSON(jsonObject);
-				if(cacheInsert){
-					addToCache(message.getId(), message);
-				}
-				messageList.add(message);
-			}
-			return messageList;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Messages", e);
-		}
-		finally{
-			if(cacheInsert){
-				idBasedLockHolder.getLock().writeLock().unlock();
-			}
-		}
-	}
-
-	public void retrieveAllFromBackendAsync(boolean enforceLimit, boolean cacheInsert, Consumer<List<Message>> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
-			try{
-				var v = retrieveAllFromBackend(enforceLimit, cacheInsert);
-				if(whenReady != null){
-					whenReady.accept(v);
-				}
-			}
-			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
-			}
-		});
-	}
-
-	public void remove(long messageId){
-		removeFromCache(messageId);
-	}
-
-	public void delete(long messageId) throws CacheException, DataException{
-		delete(messageId, false);
-	}
-
-	public void delete(long messageId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(messageId).lock();
-			Message message = getFromCache(messageId);
-			Objects.requireNonNullElseGet(message, () -> new Message(getBackendProcessor(), guildId, channelid, messageId)).delete(securityOverride);
-			removeFromCache(messageId);
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Message", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(messageId).unlock();
-		}
-	}
-
-	public void deleteAsync(long messageId, Consumer<Long> whenReady, Consumer<Exception> onException){
-		deleteAsync(messageId, false, whenReady, onException);
-	}
-
-	public void deleteAsync(long messageId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
-			try{
-				delete(messageId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(messageId);
-				}
-			}
-			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
-			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
 	public void setLast(String type, long messageId){
-		Message message = get(messageId);
+		Message message = get_(messageId);
 		if(message == null){
 			return;
 		}
@@ -270,16 +199,16 @@ public class MessageCache extends Cache<Long, Message>{
 	}
 
 	@Override
-	public Message addToCache(Long id, Message message){
-		super.addToCache(id, message);
+	public Message add_(Long id, Message message){
+		super.add_(id, message);
 		// remove entries which are too much
-		int defaultLimit = getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_CHANNEL_LOGGING_C();
+		int defaultLimit = getBackendProcessor().getBackendClient().getLicenseCache().retrieve(guildId, true).execute().getPerk_CHANNEL_LOGGING_C();
 		int limit = (message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ACTIVE) && message.getChannel().getD43Z1Settings().has(Channel.D43Z1Settings.Settings.ENABLE_SELF_LEARNING))
 			? defaultLimit * 2 : defaultLimit;
 		while(getOrderedKeyMap().size() > limit){
 			var objTD = getOrderedKeyMap().get(0);
 			if(objTD != null){
-				removeFromCache(objTD);
+				remove_(objTD);
 			}
 		}
 		return message;

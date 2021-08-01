@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Guild extends APIDataObject{
+public class Guild extends APIDataObject<Guild>{
 
 	private final ChannelCache channelCache;
 	private final MemberCache memberCache;

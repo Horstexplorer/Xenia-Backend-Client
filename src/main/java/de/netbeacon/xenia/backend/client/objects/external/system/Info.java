@@ -25,7 +25,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Info extends APIDataObject{
+public class Info extends APIDataObject<Info>{
 
 	private final Mode mode;
 	private final Logger logger = LoggerFactory.getLogger(Info.class);

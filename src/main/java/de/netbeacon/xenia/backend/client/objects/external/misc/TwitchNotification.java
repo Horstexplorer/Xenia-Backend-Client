@@ -25,7 +25,7 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class TwitchNotification extends APIDataObject{
+public class TwitchNotification extends APIDataObject<TwitchNotification>{
 
 	private long twitchNotificationId;
 	private long guildId;

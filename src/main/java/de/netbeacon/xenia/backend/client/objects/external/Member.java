@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class Member extends APIDataObject{
+public class Member extends APIDataObject<Member>{
 
 	private long guildId;
 	private long userId;

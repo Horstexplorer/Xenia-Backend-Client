@@ -28,7 +28,7 @@ import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class License extends APIDataObject{
+public class License extends APIDataObject<License>{
 
 	private final long guildId;
 

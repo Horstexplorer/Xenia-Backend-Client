@@ -23,7 +23,7 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class User extends APIDataObject{
+public class User extends APIDataObject<User>{
 
 	private long userId;
 

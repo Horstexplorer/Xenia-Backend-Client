@@ -26,7 +26,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-public class Ping extends APIDataObject{
+public class Ping extends APIDataObject<Ping>{
 
 	public Ping(BackendProcessor backendProcessor){
 		super(backendProcessor);

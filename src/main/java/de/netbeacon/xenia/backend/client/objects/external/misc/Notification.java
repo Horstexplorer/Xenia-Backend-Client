@@ -26,7 +26,7 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class Notification extends APIDataObject{
+public class Notification extends APIDataObject<Notification>{
 
 	private long notificationId;
 	private long creationTimestamp;

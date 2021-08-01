@@ -17,8 +17,6 @@
 package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
 import de.netbeacon.utils.concurrency.action.ExecutionAction;
-import de.netbeacon.utils.concurrency.action.ExecutionException;
-import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
 import de.netbeacon.utils.concurrency.block.ReentrantBlock;
 import de.netbeacon.utils.concurrency.provider.IDBasedProvider;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
@@ -40,10 +38,10 @@ public abstract class Cache<K, T extends APIDataObject<T>>{
 	private final ConcurrentHashMap<T, K> inverseDataMap = new ConcurrentHashMap<>();
 	private final ArrayList<K> orderedKeyMap = new ArrayList<>();
 	private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-	private final IDBasedProvider<K, ReentrantBlock> idBasedProvider = new IDBasedProvider<K, ReentrantBlock>().setSupplier((unused) -> new ReentrantBlock());
-	private final ReentrantLock cacheModifyLock = new ReentrantLock();
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final IDBasedProvider<K, ReentrantBlock> idBasedProvider = new IDBasedProvider<K, ReentrantBlock>().setSupplier((unused) -> new ReentrantBlock());
+	protected final ReentrantLock creationLock = new ReentrantLock();
+	private final ReentrantLock internalCacheModifyLock = new ReentrantLock();
 
 	public Cache(BackendProcessor backendProcessor){
 		this.backendProcessor = backendProcessor;
@@ -57,7 +55,7 @@ public abstract class Cache<K, T extends APIDataObject<T>>{
 
 	public T add_(K id, T t){
 		try{
-			cacheModifyLock.lock();
+			internalCacheModifyLock.lock();
 			dataMap.put(id, t);
 			inverseDataMap.put(t, id);
 			orderedKeyMap.add(id);
@@ -65,28 +63,25 @@ public abstract class Cache<K, T extends APIDataObject<T>>{
 			return t;
 		}
 		finally{
-			cacheModifyLock.unlock();
+			internalCacheModifyLock.unlock();
 		}
 	}
 
 	@CheckReturnValue
-	public abstract ExecutionAction<T> retrieve(K id);
+	public abstract ExecutionAction<T> retrieve(K id, boolean cache);
 
-	@Deprecated
 	@CheckReturnValue
-	public ExecutionAction<T> retrieveOrCreate(K id){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
-	}
+	public abstract ExecutionAction<T> retrieveOrCreate(K id, boolean cache, Object... other);
 
 	@CheckReturnValue
 	public abstract ExecutionAction<T> create(K id, boolean cache, Object... other);
 
 	@CheckReturnValue
-	public abstract ExecutionAction<T> delete(K id);
+	public abstract ExecutionAction<Void> delete(K id);
 
 	public void remove_(K id){
 		try{
-			cacheModifyLock.lock();
+			internalCacheModifyLock.lock();
 			if(id == null){
 				return;
 			}
@@ -99,13 +94,13 @@ public abstract class Cache<K, T extends APIDataObject<T>>{
 			onRemoval(id, t);
 		}
 		finally{
-			cacheModifyLock.unlock();
+			internalCacheModifyLock.unlock();
 		}
 	}
 
 	public void remove_(T t){
 		try{
-			cacheModifyLock.lock();
+			internalCacheModifyLock.lock();
 			if(t == null){
 				return;
 			}
@@ -118,7 +113,7 @@ public abstract class Cache<K, T extends APIDataObject<T>>{
 			onRemoval(id, t);
 		}
 		finally{
-			cacheModifyLock.unlock();
+			internalCacheModifyLock.unlock();
 		}
 	}
 

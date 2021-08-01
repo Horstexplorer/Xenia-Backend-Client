@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Channel extends APIDataObject{
+public class Channel extends APIDataObject<Channel>{
 
 	private final MessageCache messageCache;
 	private long guildId;

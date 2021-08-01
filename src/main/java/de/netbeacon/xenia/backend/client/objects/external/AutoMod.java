@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class AutoMod extends APIDataObject{
+public class AutoMod extends APIDataObject<AutoMod>{
 
 	private final long guildId;
 	private final long channelId;

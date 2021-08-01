@@ -16,7 +16,9 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache.misc;
 
-import de.netbeacon.utils.locks.IdBasedLockHolder;
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.action.ExecutionException;
+import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
 import de.netbeacon.xenia.backend.client.objects.external.misc.Notification;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
@@ -26,211 +28,148 @@ import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 public class NotificationCache extends Cache<Long, Notification>{
 
 	private final long guildId;
-	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
-	private final Logger logger = LoggerFactory.getLogger(NotificationCache.class);
-	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public NotificationCache(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
 		this.guildId = guildId;
 	}
 
-	public Notification get(long notificationId) throws CacheException, DataException{
-		return get(notificationId, false);
-	}
-
-	public Notification get(long notificationId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(notificationId).lock();
-			if(contains(notificationId)){
-				return getFromCache(notificationId);
-			}
-			Notification notification = new Notification(getBackendProcessor(), guildId, notificationId);
-			notification.get(securityOverride);
-			addToCache(notificationId, notification);
-			return notification;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Notification", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(notificationId).unlock();
-		}
-	}
-
-	public void getAsync(long notificationId, Consumer<Notification> whenReady, Consumer<Exception> onException){
-		getAsync(notificationId, false, whenReady, onException);
-	}
-
-	public void getAsync(long notificationId, boolean securityOverride, Consumer<Notification> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@Override
+	public ExecutionAction<Notification> retrieve(Long id, boolean cache){
+		Supplier<Notification> fun = () -> {
 			try{
-				var v = get(notificationId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
+				try{
+					var entry = get_(id);
+					if(entry != null){
+						return entry;
+					}
+					entry = new Notification(getBackendProcessor(), guildId, id).get(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Notification", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public List<Notification> retrieveAllFromBackend() throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock().writeLock().lock();
-			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "notifications"), new HashMap<>(), null);
-			BackendResult backendResult = getBackendProcessor().process(backendRequest);
-			if(backendResult.getStatusCode() != 200){
-				logger.warn("Failed To Get Notifications From The Backend");
-				return null;
-			}
-			JSONArray notifications = backendResult.getPayloadAsJSON().getJSONArray("notifications");
-			List<Notification> notificationList = new ArrayList<>();
-			for(int i = 0; i < notifications.length(); i++){
-				JSONObject jsonObject = notifications.getJSONObject(i);
-				Notification notification = new Notification(getBackendProcessor(), guildId, -1);
-				notification.fromJSON(jsonObject);
-				addToCache(notification.getId(), notification);
-				notificationList.add(notification);
-			}
-			return notificationList;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Notifications", e);
-		}
-		finally{
-			idBasedLockHolder.getLock().writeLock().unlock();
-		}
+	@Deprecated
+	@Override
+	public ExecutionAction<Notification> retrieveOrCreate(Long id, boolean cache, Object... other){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
-	public void retrieveAllFromBackendAsync(Consumer<List<Notification>> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@Deprecated
+	@Override
+	public ExecutionAction<Notification> create(Long id, boolean cache, Object... other){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+	}
+
+	public ExecutionAction<Notification> create(long channelId, long userId, long notificationTarget, String notificationMessage){
+		Supplier<Notification> fun = () -> {
 			try{
-				var v = retrieveAllFromBackend();
-				if(whenReady != null){
-					whenReady.accept(v);
+				creationLock.lock();
+				if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().retrieve(guildId, true).execute().getPerk_MISC_NOTIFICATIONS_C()){
+					throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
 				}
+				Notification notification = new Notification(getBackendProcessor(), guildId, -1).lSetInitialData(channelId, userId, notificationTarget, notificationMessage);
+				notification.create(true).execute();
+				add_(notification.getId(), notification);
+				return notification;
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create A New Notification", e);
 			}
-		});
-	}
-
-	public Notification create(long channelId, long userId, long notificationTarget, String notificationMessage) throws CacheException, DataException{
-		return create(channelId, userId, notificationTarget, notificationMessage, false);
-	}
-
-	public Notification create(long channelId, long userId, long notificationTarget, String notificationMessage, boolean securityOverride) throws CacheException, DataException{
-		try{
-			creationLock.lock();
-			if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_NOTIFICATIONS_C()){
-				throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
+			finally{
+				creationLock.unlock();
 			}
-			Notification notification = new Notification(getBackendProcessor(), guildId, -1).lSetInitialData(channelId, userId, notificationTarget, notificationMessage);
-			notification.create(securityOverride);
-			addToCache(notification.getId(), notification);
-			return notification;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create A New Notification", e);
-		}
-		finally{
-			creationLock.unlock();
-		}
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public void createAsync(long channelId, long userId, long notificationTarget, String notificationMessage, Consumer<Notification> whenReady, Consumer<Exception> onException){
-		createAsync(channelId, userId, notificationTarget, notificationMessage, false, whenReady, onException);
-	}
-
-	public void createAsync(long channelId, long userId, long notificationTarget, String notificationMessage, boolean securityOverride, Consumer<Notification> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@Override
+	public ExecutionAction<Void> delete(Long id){
+		Supplier<Void> fun = () -> {
 			try{
-				var v = create(channelId, userId, notificationTarget, notificationMessage, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
+				try{
+					remove_(id);
+					new Notification(getBackendProcessor(), guildId, id).delete(true).execute();
+					return null;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Notification", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public void remove(long notificationId){
-		removeFromCache(notificationId);
-	}
-
-	public void delete(long notificationId) throws CacheException, DataException{
-		delete(notificationId, false);
-	}
-
-	public void delete(long notificationId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(notificationId).lock();
-			Notification notification = getFromCache(notificationId);
-			Objects.requireNonNullElseGet(notification, () -> new Notification(getBackendProcessor(), guildId, notificationId)).delete(securityOverride);
-			removeFromCache(notificationId);
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Notification", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(notificationId).unlock();
-		}
-	}
-
-	public void deleteAsync(long notificationId, Consumer<Long> whenReady, Consumer<Exception> onException){
-		deleteAsync(notificationId, false, whenReady, onException);
-	}
-
-	public void deleteAsync(long notificationId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	public ExecutionAction<List<Notification>> retrieveAllFromBackend(boolean cache){
+		Supplier<List<Notification>> fun = () -> {
 			try{
-				delete(notificationId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(notificationId);
+				BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "notifications"), new HashMap<>(), null);
+				BackendResult backendResult = getBackendProcessor().process(backendRequest);
+				if(backendResult.getStatusCode() != 200){
+					logger.warn("Failed To Get Notifications From The Backend");
+					return null;
 				}
+				JSONArray notifications = backendResult.getPayloadAsJSON().getJSONArray("notifications");
+				List<Notification> notificationList = new ArrayList<>();
+				for(int i = 0; i < notifications.length(); i++){
+					JSONObject jsonObject = notifications.getJSONObject(i);
+					Notification notification = new Notification(getBackendProcessor(), guildId, -1);
+					notification.fromJSON(jsonObject);
+					if(cache){
+						add_(notification.getId(), notification);
+					}
+					notificationList.add(notification);
+				}
+				return notificationList;
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Notifications", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
 }

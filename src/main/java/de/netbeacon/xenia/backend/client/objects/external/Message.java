@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class Message extends APIDataObject{
+public class Message extends APIDataObject<Message>{
 
 	private long guildId;
 	private long channelId;

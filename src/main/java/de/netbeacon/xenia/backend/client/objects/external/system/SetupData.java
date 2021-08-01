@@ -22,7 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendExce
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-public class SetupData extends APIDataObject{
+public class SetupData extends APIDataObject<SetupData>{
 
 	private long clientId;
 	private String clientName;

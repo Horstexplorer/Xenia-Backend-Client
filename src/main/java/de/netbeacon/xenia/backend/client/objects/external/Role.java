@@ -24,7 +24,7 @@ import org.json.JSONObject;
 
 import java.util.function.Supplier;
 
-public class Role extends APIDataObject{
+public class Role extends APIDataObject<Role>{
 
 	private long guildId;
 	private long roleId;
