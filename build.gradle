@@ -11,6 +11,10 @@ sourceCompatibility = 16
 repositories {
     mavenCentral()
     maven {
+        name 'hypercdn-maven2'
+        url 'https://nexus.hypercdn.de/repository/hypercdn-maven'
+    }
+    maven {
         name 'm2-dv8tion'
         url 'https://m2.dv8tion.net/releases'
     }
@@ -38,6 +42,8 @@ dependencies {
     compileOnly group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30' // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
 
     compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.3.0_294' // https://mvnrepository.com/artifact/net.dv8tion/JDA
+
+    implementation group: 'de.netbeacon.utils', name: 'Concurrency-Utils', version: '1.0.4', changing: true
 }
 
 shadowJar {

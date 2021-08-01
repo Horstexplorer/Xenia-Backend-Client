@@ -16,6 +16,9 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.action.ExecutionException;
+import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
 import de.netbeacon.utils.json.serial.IJSONSerializable;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.utils.json.test.JSONEQ;
@@ -27,6 +30,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,12 +38,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-public abstract class APIDataObject implements IJSONSerializable{
+public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSONSerializable{
 
 	private final BackendProcessor backendProcessor;
 	private final List<BackendPathArg> backendPath = new ArrayList<>();
 	private final Logger logger = LoggerFactory.getLogger(APIDataObject.class);
-	private final ArrayList<APIDataEventListener> apiDataEventListeners = new ArrayList<>();
+	private final ArrayList<APIDataEventListener<T>> apiDataEventListeners = new ArrayList<>();
 	private final AtomicBoolean isStable = new AtomicBoolean(true);
 	private long lastRequestDuration;
 
@@ -49,176 +53,98 @@ public abstract class APIDataObject implements IJSONSerializable{
 		this.backendProcessor = backendProcessor;
 	}
 
-	public synchronized void get() throws DataException{
-		get(false);
+	@CheckReturnValue
+	public ExecutionAction<T> get() throws DataException{
+		return get(false);
 	}
 
-	public synchronized void get(boolean securityOverride) throws DataException{
-		process(securityOverride, BackendRequest.Method.GET, null, null);
+	@CheckReturnValue
+	public ExecutionAction<T> get(boolean securityOverride) throws DataException{
+		return process(securityOverride, BackendRequest.Method.GET, null, null);
 	}
 
-	public synchronized void getAsync(){
-		getAsync(false);
+	@CheckReturnValue
+	public ExecutionAction<T> create(){
+		return create(false);
 	}
 
-	public synchronized void getAsync(boolean securityOverride) throws DataException{
-		processAsync(securityOverride, BackendRequest.Method.GET, null, null);
+	@CheckReturnValue
+	public ExecutionAction<T> create(boolean securityOverride) throws DataException{
+		return process(securityOverride, BackendRequest.Method.POST, null, asJSON());
 	}
 
-
-	public synchronized void create(){
-		create(false);
+	@CheckReturnValue
+	public ExecutionAction<T> getOrCreate(){
+		return getOrCreate(false);
 	}
 
-	public synchronized void create(boolean securityOverride) throws DataException{
-		process(securityOverride, BackendRequest.Method.POST, null, asJSON());
+	@Deprecated
+	@CheckReturnValue
+	public ExecutionAction<T> getOrCreate(boolean securityOverride){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		//return process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
 	}
 
-	public synchronized void createAsync(){
-		createAsync(false);
+	@CheckReturnValue
+	public ExecutionAction<T> update(){
+		return update(false);
 	}
 
-	public synchronized void createAsync(boolean securityOverride) throws DataException{
-		processAsync(securityOverride, BackendRequest.Method.POST, null, asJSON());
-	}
-
-
-	public synchronized void getOrCreate(){
-		getOrCreate(false);
-	}
-
-	public synchronized void getOrCreate(boolean securityOverride){
-		process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
-	}
-
-	public synchronized void getOrCreateAsync(){
-		getOrCreateAsync(false);
-	}
-
-	public synchronized void getOrCreateAsync(boolean securityOverride){
-		processAsync(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
-	}
-
-
-	public synchronized void update(){
-		update(false);
-	}
-
-	public synchronized void update(boolean securityOverride) throws DataException{
+	@CheckReturnValue
+	public ExecutionAction<T> update(boolean securityOverride) throws DataException{
 		if(!hasChanges()){
-			return;
+			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
-		process(securityOverride, BackendRequest.Method.PUT, null, asJSON());
+		return process(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
 
-	public synchronized void updateAsync(){
-		updateAsync(false);
+	@CheckReturnValue
+	public ExecutionAction<T> delete(){
+		return delete(false);
 	}
 
-	public synchronized void updateAsync(boolean securityOverride) throws DataException{
-		if(!hasChanges()){
-			return;
-		}
-		processAsync(securityOverride, BackendRequest.Method.PUT, null, asJSON());
-	}
-
-
-	public synchronized void delete(){
-		delete(false);
-	}
-
-	public synchronized void delete(boolean securityOverride) throws DataException{
-		process(securityOverride, BackendRequest.Method.DELETE, null, null);
-	}
-
-	public synchronized void deleteAsync(){
-		deleteAsync(false);
-	}
-
-	public synchronized void deleteAsync(boolean securityOverride) throws DataException{
-		processAsync(securityOverride, BackendRequest.Method.DELETE, null, null);
+	@CheckReturnValue
+	public ExecutionAction<T> delete(boolean securityOverride) throws DataException{
+		return process(securityOverride, BackendRequest.Method.DELETE, null, null);
 	}
 
 
-
-	private void process(boolean securityOverride, BackendRequest.Method method, HashMap<String, String> queryParams, JSONObject payload){
-		try{
-			if(!isStable.compareAndSet(true, false) && !securityOverride){
-				throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
-			}
-			BackendRequest backendRequest = new BackendRequest(method, BackendRequest.AuthType.BEARER, getBackendPath(), queryParams, payload);
-			BackendResult backendResult = backendProcessor.process(backendRequest);
-			if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
-				throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
-			}
-			if(backendResult.getStatusCode() != 204){
-				shadowCopy = backendResult.getPayloadAsJSON();
-				fromJSON(shadowCopy);
-			}
-			lastRequestDuration = backendResult.getRequestDuration();
-			switch(method){
-				case GET -> this.onRetrieval();
-				case POST -> this.onCreation();
-				case PUT -> this.onUpdate();
-				case DELETE -> this.onDeletion();
-			}
-		}
-		catch(Exception e){
-			this.restore();
-			throw e;
-		}
-		finally{
-			if(!securityOverride){
-				isStable.set(true);
-			}
-		}
-	}
-
-	private void processAsync(boolean securityOverride, BackendRequest.Method method, HashMap<String, String> queryParams, JSONObject payload){
-		try{
-			if(!isStable.compareAndSet(true, false) && !securityOverride){
-				throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
-			}
-			BackendRequest backendRequest = new BackendRequest(method, BackendRequest.AuthType.BEARER, getBackendPath(), queryParams, payload);
-			backendProcessor.processAsync(backendRequest, backendResult -> {
-				try{
-					if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
-						throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To "+method+" APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
-					}
-					if(backendResult.getStatusCode() != 204){
-						shadowCopy = backendResult.getPayloadAsJSON();
-						fromJSON(shadowCopy);
-					}
-					synchronized(this){
-						lastRequestDuration = backendResult.getRequestDuration();
-					}
-					switch(method){
-						case GET -> this.onRetrieval();
-						case POST -> this.onCreation();
-						case PUT -> this.onUpdate();
-						case DELETE -> this.onDeletion();
-					}
+	private ExecutionAction<T> process(boolean securityOverride, BackendRequest.Method method, HashMap<String, String> queryParams, JSONObject payload){
+		Supplier<T> fun = () -> {
+			try{
+				if(!isStable.compareAndSet(true, false) && !securityOverride){
+					throw new DataException(DataException.Type.UNSTABLE, 0, "Failed To " + method + " APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
 				}
-				catch(Exception e){
-					this.restore();
-					throw e;
+				BackendRequest backendRequest = new BackendRequest(method, BackendRequest.AuthType.BEARER, getBackendPath(), queryParams, payload);
+				BackendResult backendResult = backendProcessor.process(backendRequest);
+				if(backendResult.getStatusCode() > 299 || backendResult.getStatusCode() < 200){
+					throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To " + method + " APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
 				}
-				finally{
-					if(!securityOverride){
-						isStable.set(true);
-					}
+				if(backendResult.getStatusCode() != 204){
+					shadowCopy = backendResult.getPayloadAsJSON();
+					fromJSON(shadowCopy);
 				}
-			});
-		}
-		catch(Exception e){
-			this.restore();
-			if(!securityOverride){
-				isStable.set(true);
+				lastRequestDuration = backendResult.getRequestDuration();
+				switch(method){
+					case GET -> this.onRetrieval();
+					case POST -> this.onCreation();
+					case PUT -> this.onUpdate();
+					case DELETE -> this.onDeletion();
+				}
+				return (T) this;
 			}
-			throw e;
-		}
+			catch(Exception e){
+				this.restore();
+				throw e;
+			}
+			finally{
+				if(!securityOverride){
+					isStable.set(true);
+				}
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
-
 
 
 	public boolean hasChanges(){
@@ -264,7 +190,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 	protected void onRetrieval(){
 		for(var listener : new ArrayList<>(apiDataEventListeners)){
 			try{
-				listener.onRetrieval(this);
+				listener.onRetrieval((T) this);
 			}
 			catch(Exception e){
 				logger.error("Uncaught exception on APIDataObject onRetrieval listener " + e);
@@ -275,7 +201,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 	protected void onCreation(){
 		for(var listener : new ArrayList<>(apiDataEventListeners)){
 			try{
-				listener.onCreation(this);
+				listener.onCreation((T) this);
 			}
 			catch(Exception e){
 				logger.error("Uncaught exception on APIDataObject onCreation listener " + e);
@@ -286,7 +212,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 	protected void onUpdate(){
 		for(var listener : new ArrayList<>(apiDataEventListeners)){
 			try{
-				listener.onUpdate(this);
+				listener.onUpdate((T) this);
 			}
 			catch(Exception e){
 				logger.error("Uncaught exception on APIDataObject onUpdate listener " + e);
@@ -297,7 +223,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 	public void onDeletion(){
 		for(var listener : new ArrayList<>(apiDataEventListeners)){
 			try{
-				listener.onDeletion(this);
+				listener.onDeletion((T) this);
 			}
 			catch(Exception e){
 				logger.error("Uncaught exception on APIDataObject onDeletion listener " + e);
@@ -305,7 +231,7 @@ public abstract class APIDataObject implements IJSONSerializable{
 		}
 	}
 
-	public void addEventListener(APIDataEventListener... listeners){
+	public void addEventListener(APIDataEventListener<T>... listeners){
 		apiDataEventListeners.addAll(Arrays.asList(listeners));
 	}
 

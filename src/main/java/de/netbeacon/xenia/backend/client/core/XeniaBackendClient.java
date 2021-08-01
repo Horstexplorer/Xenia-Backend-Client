@@ -66,8 +66,8 @@ public class XeniaBackendClient implements IShutdown{
 		this.shardManagerSupplier = shardManagerSupplier;
 		// create okhttp client
 		Dispatcher dispatcher = new Dispatcher();
-		dispatcher.setMaxRequests(128);
-		dispatcher.setMaxRequestsPerHost(128);
+		dispatcher.setMaxRequests(512);
+		dispatcher.setMaxRequestsPerHost(512);
 		OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder()
 			.connectTimeout(15, TimeUnit.SECONDS)
 			.readTimeout(30, TimeUnit.SECONDS)
