@@ -20,11 +20,7 @@ import org.json.JSONObject;
 
 import java.util.Objects;
 
-public class BackendResult{
-
-	private final int statusCode;
-	private final byte[] payload;
-	private final long requestDuration;
+public record BackendResult(int statusCode, byte[] payload, long requestDuration){
 
 	public BackendResult(int statusCode, byte[] payload, long requestDuration){
 		this.statusCode = statusCode;
