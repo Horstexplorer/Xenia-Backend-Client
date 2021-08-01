@@ -31,10 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.CheckReturnValue;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -60,6 +57,9 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 
 	@CheckReturnValue
 	public ExecutionAction<T> get(boolean securityOverride) throws DataException{
+		if(!getSupportedFeatures().contains(FeatureSet.Values.GET)){
+			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		}
 		return process(securityOverride, BackendRequest.Method.GET, null, null);
 	}
 
@@ -70,6 +70,9 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 
 	@CheckReturnValue
 	public ExecutionAction<T> create(boolean securityOverride) throws DataException{
+		if(!getSupportedFeatures().contains(FeatureSet.Values.CREATE)){
+			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		}
 		return process(securityOverride, BackendRequest.Method.POST, null, asJSON());
 	}
 
@@ -78,11 +81,14 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 		return getOrCreate(false);
 	}
 
-	@Deprecated
 	@CheckReturnValue
 	public ExecutionAction<T> getOrCreate(boolean securityOverride){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
-		//return process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{ put("goc", "true"); }}, asJSON());
+		if(!getSupportedFeatures().contains(FeatureSet.Values.GET_OR_CREATE)){
+			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		}
+		return process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{
+			put("goc", "true");
+		}}, asJSON());
 	}
 
 	@CheckReturnValue
@@ -92,6 +98,9 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 
 	@CheckReturnValue
 	public ExecutionAction<T> update(boolean securityOverride) throws DataException{
+		if(!getSupportedFeatures().contains(FeatureSet.Values.UPDATE)){
+			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		}
 		if(!hasChanges()){
 			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
@@ -105,6 +114,9 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 
 	@CheckReturnValue
 	public ExecutionAction<T> delete(boolean securityOverride) throws DataException{
+		if(!getSupportedFeatures().contains(FeatureSet.Values.DELETE)){
+			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		}
 		return process(securityOverride, BackendRequest.Method.DELETE, null, null);
 	}
 
@@ -162,7 +174,6 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	}
 
 
-
 	public BackendProcessor getBackendProcessor(){
 		return backendProcessor;
 	}
@@ -181,10 +192,10 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 		}
 	}
 
+
 	public long getLastRequestDuration(){
 		return lastRequestDuration;
 	}
-
 
 
 	protected void onRetrieval(){
@@ -245,13 +256,8 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	@Override
 	public abstract void fromJSON(JSONObject jsonObject) throws JSONSerializationException;
 
-	public static class BackendPathArg{
 
-		private final Object object;
-
-		public BackendPathArg(Object object){
-			this.object = object;
-		}
+	public record BackendPathArg(Object object){
 
 		public Object getObject(){
 			if(object instanceof Supplier<?>){
@@ -261,5 +267,23 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 		}
 
 	}
+
+	public record FeatureSet(Values... values){
+
+		public enum Values{
+			GET,
+			GET_OR_CREATE,
+			CREATE,
+			UPDATE,
+			DELETE
+		}
+
+		public Set<Values> asSet(){
+			return new HashSet<>(List.of(values));
+		}
+
+	}
+
+	protected abstract Set<FeatureSet.Values> getSupportedFeatures();
 
 }
