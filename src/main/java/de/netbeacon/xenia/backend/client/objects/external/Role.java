@@ -22,6 +22,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class Role extends APIDataObject<Role>{
@@ -31,6 +34,7 @@ public class Role extends APIDataObject<Role>{
 
 	private String roleName;
 	private Permissions permissions;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Role(BackendProcessor backendProcessor, long guildId, long roleId){
 		super(backendProcessor);
@@ -54,7 +58,7 @@ public class Role extends APIDataObject<Role>{
 
 	public void setRoleName(String name){
 		lSetRoleName(name);
-		update();
+		update().queue();
 	}
 
 	public void lSetRoleName(String name){
@@ -68,7 +72,7 @@ public class Role extends APIDataObject<Role>{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	@Override
@@ -99,12 +103,12 @@ public class Role extends APIDataObject<Role>{
 
 		public synchronized void enable(Bit... bits){
 			set(bits);
-			role.update();
+			role.update().queue();
 		}
 
 		public synchronized void disable(Bit... bits){
 			unset(bits);
-			role.update();
+			role.update().queue();
 		}
 
 		public boolean hasPermission(Bit bit){
@@ -169,6 +173,11 @@ public class Role extends APIDataObject<Role>{
 			}
 		}
 
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

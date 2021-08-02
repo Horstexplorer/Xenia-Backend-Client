@@ -24,7 +24,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ public class Channel extends APIDataObject<Channel>{
 	private String metaChannelName;
 	private String metaChannelTopic;
 	private final AutoMod autoMod;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.GET_OR_CREATE, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Channel(BackendProcessor backendProcessor, long guildId, long channelId){
 		super(backendProcessor);
@@ -75,7 +78,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setAccessMode(AccessMode accessMode){
 		lSetAccessMode(accessMode);
-		update();
+		update().queue();
 	}
 
 	public ChannelFlags getChannelFlags(){
@@ -84,7 +87,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setChannelFlags(ChannelFlags channelFlags){
 		lSetChannelFlags(channelFlags);
-		update();
+		update().queue();
 	}
 
 	public ChannelSettings getChannelSettings(){
@@ -93,7 +96,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setChannelSettings(ChannelSettings channelSettings){
 		lSetChannelSettings(channelSettings);
-		update();
+		update().queue();
 	}
 
 	public boolean tmpLoggingIsActive(){
@@ -106,7 +109,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setTmpLoggingChannelId(long tmpLoggingChannelId){
 		lSetTmpLoggingChannelId(tmpLoggingChannelId);
-		update();
+		update().queue();
 	}
 
 	public void lSetAccessMode(AccessMode accessMode){
@@ -123,7 +126,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setTmpLoggingActive(boolean tmpLoggingActive){
 		lSetTmpLoggingActive(tmpLoggingActive);
-		update();
+		update().queue();
 	}
 
 	public void lSetTmpLoggingActive(boolean tmpLoggingActive){
@@ -140,7 +143,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setD43Z1Settings(D43Z1Settings d43Z1Settings){
 		lSetD43Z1Settings(d43Z1Settings);
-		update();
+		update().queue();
 	}
 
 	public void lSetD43Z1Settings(D43Z1Settings d43Z1Settings){
@@ -161,7 +164,7 @@ public class Channel extends APIDataObject<Channel>{
 
 	public void setMetaData(String channelName, String channelTopic){
 		lSetMetaData(channelName, channelTopic);
-		update();
+		update().queue();
 	}
 
 	public void lSetMetaData(String channelName, String channelTopic){
@@ -176,7 +179,7 @@ public class Channel extends APIDataObject<Channel>{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	@Override
@@ -335,6 +338,11 @@ public class Channel extends APIDataObject<Channel>{
 			}
 		}
 
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

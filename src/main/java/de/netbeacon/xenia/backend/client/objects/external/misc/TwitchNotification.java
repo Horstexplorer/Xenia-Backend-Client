@@ -23,6 +23,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class TwitchNotification extends APIDataObject<TwitchNotification>{
@@ -34,6 +37,7 @@ public class TwitchNotification extends APIDataObject<TwitchNotification>{
 	private Long twitchChannelId;
 	private String twitchChannelName;
 	private String notificationMessage = "$username$ is now live on twitch playing $game$";
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public TwitchNotification(BackendProcessor backendProcessor, long guildId, long twitchNotificationId){
 		super(backendProcessor);
@@ -78,7 +82,7 @@ public class TwitchNotification extends APIDataObject<TwitchNotification>{
 
 	public void setNotificationMessage(String message){
 		lSetNotificationMessage(message);
-		update();
+		update().queue();
 	}
 
 	public void lSetNotificationMessage(String message){
@@ -88,11 +92,11 @@ public class TwitchNotification extends APIDataObject<TwitchNotification>{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	public Channel getChannel(){
-		return getGuild().getChannelCache().get(channelId, false);
+		return getGuild().getChannelCache().retrieve(channelId, true).execute();
 	}
 
 
@@ -117,6 +121,11 @@ public class TwitchNotification extends APIDataObject<TwitchNotification>{
 		twitchChannelId = jsonObject.get("twitchChannelId") != JSONObject.NULL ? jsonObject.getLong("twitchChannelId") : null;
 		twitchChannelName = jsonObject.getString("twitchChannelName");
 		notificationMessage = jsonObject.getString("notificationMessage");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

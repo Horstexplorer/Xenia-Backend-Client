@@ -21,6 +21,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class User extends APIDataObject<User>{
@@ -33,6 +36,7 @@ public class User extends APIDataObject<User>{
 	// meta data - initialize with values
 	private String metaUsername = "unknown_username";
 	private String metaIconUrl = null;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.GET_OR_CREATE, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public User(BackendProcessor backendProcessor, long userId){
 		super(backendProcessor);
@@ -54,7 +58,7 @@ public class User extends APIDataObject<User>{
 
 	public void setInternalRole(String internalRole){
 		lSetInternalRole(internalRole);
-		update();
+		update().queue();
 	}
 
 	public String getPreferredLanguage(){
@@ -63,7 +67,7 @@ public class User extends APIDataObject<User>{
 
 	public void setPreferredLanguage(String language){
 		lSetPreferredLanguage(language);
-		update();
+		update().queue();
 	}
 
 	public void lSetMetaData(String username, String iconUrl){
@@ -73,7 +77,7 @@ public class User extends APIDataObject<User>{
 
 	public void setMetaData(String username, String iconUrl){
 		lSetMetaData(username, iconUrl);
-		update();
+		update().queue();
 	}
 
 	public String getMetaUsername(){
@@ -114,6 +118,11 @@ public class User extends APIDataObject<User>{
 		JSONObject meta = jsonObject.getJSONObject("meta");
 		this.metaUsername = meta.getString("username");
 		this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

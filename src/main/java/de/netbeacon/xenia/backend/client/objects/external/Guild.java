@@ -29,7 +29,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -49,6 +51,7 @@ public class Guild extends APIDataObject<Guild>{
 	// meta data - initialize with values
 	private String metaGuildName = "unknown_name";
 	private String metaIconUrl = null;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.GET_OR_CREATE, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Guild(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
@@ -74,7 +77,7 @@ public class Guild extends APIDataObject<Guild>{
 
 	public void setPreferredLanguage(String preferredLanguage){
 		lSetPreferredLanguage(preferredLanguage);
-		update();
+		update().queue();
 	}
 
 	public void lSetPreferredLanguage(String preferredLanguage){
@@ -87,7 +90,7 @@ public class Guild extends APIDataObject<Guild>{
 
 	public void setGuildSettings(GuildSettings settings){
 		lSetGuildSettings(settings);
-		update();
+		update().queue();
 	}
 
 	public void lSetGuildSettings(GuildSettings settings){
@@ -100,7 +103,7 @@ public class Guild extends APIDataObject<Guild>{
 
 	public void setD43Z1Mode(D43Z1Mode d43Z1Mode){
 		lSetD43Z1Mode(d43Z1Mode);
-		update();
+		update().queue();
 	}
 
 	public void lSetD43Z1Mode(D43Z1Mode d43Z1Mode){
@@ -113,7 +116,7 @@ public class Guild extends APIDataObject<Guild>{
 
 	public void setPrefix(String prefix){
 		lSetPrefix(prefix);
-		update();
+		update().queue();
 	}
 
 	public void lSetPrefix(String prefix){
@@ -135,7 +138,7 @@ public class Guild extends APIDataObject<Guild>{
 
 	public void setMetaData(String metaGuildName, String iconUrl){
 		lSetMetaData(metaGuildName, iconUrl);
-		update();
+		update().queue();
 	}
 
 
@@ -156,15 +159,15 @@ public class Guild extends APIDataObject<Guild>{
 	}
 
 	public void initSync(){
-		List<Channel> channelList = getChannelCache().retrieveAllFromBackend(true);
+		List<Channel> channelList = getChannelCache().retrieveAllFromBackend(true).execute();
 		for(Channel channel : channelList){
 			channel.getMessageCache().retrieveAllFromBackend(true, true);
 		}
 		getRoleCache().retrieveAllFromBackend(true);
 
-		getMiscCaches().getTagCache().retrieveAllFromBackend();
-		getMiscCaches().getNotificationCache().retrieveAllFromBackend();
-		getMiscCaches().getTwitchNotificationCache().retrieveAllFromBackend();
+		getMiscCaches().getTagCache().retrieveAllFromBackend(true).execute();
+		getMiscCaches().getNotificationCache().retrieveAllFromBackend(true).execute();
+		getMiscCaches().getTwitchNotificationCache().retrieveAllFromBackend(true).execute();
 	}
 
 	public void initAsync(Consumer<Guild> then){
@@ -307,6 +310,11 @@ public class Guild extends APIDataObject<Guild>{
 			}
 		}
 
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

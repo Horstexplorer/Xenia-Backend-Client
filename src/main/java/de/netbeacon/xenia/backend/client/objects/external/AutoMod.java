@@ -23,7 +23,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,7 @@ public class AutoMod extends APIDataObject<AutoMod>{
 	private FilterContent_URLs filterContent_urls = new FilterContent_URLs(0);
 	private FilterBehaviour_Spam filterBehaviour_spam = new FilterBehaviour_Spam(0);
 	private FilterBehaviour_Raid filterBehaviour_raid = new FilterBehaviour_Raid(0);
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.UPDATE));
 
 	public AutoMod(long guildId, long channelId, BackendProcessor backendProcessor){
 		super(backendProcessor);
@@ -61,7 +64,7 @@ public class AutoMod extends APIDataObject<AutoMod>{
 
 	public void setFilterContent_words(FilterContent_Words filterContent_words){
 		lSetFilterContent_words(filterContent_words);
-		update();
+		update().queue();
 	}
 
 	public FilterContent_URLs getFilterContent_urls(){
@@ -74,7 +77,7 @@ public class AutoMod extends APIDataObject<AutoMod>{
 
 	public void setFilterContent_urls(FilterContent_URLs filterContent_urls){
 		lSetFilterContent_urls(filterContent_urls);
-		update();
+		update().queue();
 	}
 
 	public FilterBehaviour_Spam getFilterBehaviour_spam(){
@@ -87,7 +90,7 @@ public class AutoMod extends APIDataObject<AutoMod>{
 
 	public void setFilterBehaviour_spam(FilterBehaviour_Spam filterBehaviour_spam){
 		lSetFilterBehaviour_spam(filterBehaviour_spam);
-		update();
+		update().queue();
 	}
 
 	public FilterBehaviour_Raid getFilterBehaviour_raid(){
@@ -100,7 +103,7 @@ public class AutoMod extends APIDataObject<AutoMod>{
 
 	public void setFilterBehaviour_raid(FilterBehaviour_Raid filterBehaviour_raid){
 		lSetFilterBehaviour_raid(filterBehaviour_raid);
-		update();
+		update().queue();
 	}
 
 	@Override
@@ -847,6 +850,11 @@ public class AutoMod extends APIDataObject<AutoMod>{
 
 		}
 
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

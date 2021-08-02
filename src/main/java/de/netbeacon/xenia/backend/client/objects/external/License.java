@@ -25,8 +25,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 public class License extends APIDataObject<License>{
 
@@ -43,22 +42,12 @@ public class License extends APIDataObject<License>{
 	private int perk_MISC_NOTIFICATIONS_C;
 	private int perk_MISC_TWITCHNOTIFICATIONS_C;
 	private int perk_CHANNEL_D43Z1_SELFLEARNING_C;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET));
 
 	public License(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
 		this.guildId = guildId;
 		setBackendPath("data", "guilds", this.guildId, "license");
-	}
-
-	public void update(String licenseKey) throws BackendException{
-		HashMap<String, String> map = new HashMap<>();
-		map.put("licenseKey", licenseKey);
-		BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), map, asJSON());
-		BackendResult backendResult = getBackendProcessor().process(backendRequest);
-		if(backendResult.getStatusCode() != 200){
-			throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
-		}
-		fromJSON(backendResult.getPayloadAsJSON());
 	}
 
 	public long getGuildId(){
@@ -105,34 +94,21 @@ public class License extends APIDataObject<License>{
 		return perk_CHANNEL_D43Z1_SELFLEARNING_C;
 	}
 
+	public void updateLicenseKey(String licenseKey) throws BackendException{
+		HashMap<String, String> map = new HashMap<>();
+		map.put("licenseKey", licenseKey);
+		BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.PUT, BackendRequest.AuthType.BEARER, getBackendPath(), map, asJSON());
+		BackendResult backendResult = getBackendProcessor().process(backendRequest);
+		if(backendResult.getStatusCode() != 200){
+			throw new DataException(DataException.Type.HTTP, backendResult.getStatusCode(), "Failed To UPDATE APIDataObject With Path " + Arrays.toString(getBackendPath().toArray()));
+		}
+		fromJSON(backendResult.getPayloadAsJSON());
+	}
+
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
-	}
-
-	@Override
-	public void create() throws BackendException{
-	}
-
-	@Override
-	public void createAsync(){
-	}
-
-	@Override
-	public void update() throws BackendException{
-	}
-
-	@Override
-	public void updateAsync(){
-	}
-
-	@Override
-	public void delete() throws BackendException{
-	}
-
-	@Override
-	public void deleteAsync(){
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	@Override
@@ -165,6 +141,11 @@ public class License extends APIDataObject<License>{
 		this.perk_MISC_NOTIFICATIONS_C = perks.getInt("miscNotifications");
 		this.perk_MISC_TWITCHNOTIFICATIONS_C = perks.getInt("miscTwitchNotifications");
 		this.perk_CHANNEL_D43Z1_SELFLEARNING_C = perks.getInt("channelD43z1SelfLearning");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

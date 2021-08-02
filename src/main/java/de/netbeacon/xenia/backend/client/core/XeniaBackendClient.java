@@ -125,7 +125,7 @@ public class XeniaBackendClient implements IShutdown{
 			return setupDataCache;
 		}
 		SetupData setupData = new SetupData(backendProcessor);
-		setupData.get();
+		setupData.get().execute();
 		this.setupDataCache = setupData;
 		// check if the setup data matches the given key
 		if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
@@ -136,7 +136,7 @@ public class XeniaBackendClient implements IShutdown{
 
 	public Info getInfo(Info.Mode mode){
 		Info info = new Info(backendProcessor, mode);
-		info.get();
+		info.get().execute();
 		return info;
 	}
 

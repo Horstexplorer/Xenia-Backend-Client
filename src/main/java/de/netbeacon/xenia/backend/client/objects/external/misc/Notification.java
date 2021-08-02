@@ -24,6 +24,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class Notification extends APIDataObject<Notification>{
@@ -35,6 +38,7 @@ public class Notification extends APIDataObject<Notification>{
 	private long userId;
 	private long notificationTarget;
 	private String notificationMessage;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Notification(BackendProcessor backendProcessor, long guildId, long notificationId){
 		super(backendProcessor);
@@ -77,7 +81,7 @@ public class Notification extends APIDataObject<Notification>{
 
 	public void setNotificationTarget(long notificationTarget){
 		lSetNotificationTarget(notificationTarget);
-		update();
+		update().queue();
 	}
 
 	public String getNotificationMessage(){
@@ -86,7 +90,7 @@ public class Notification extends APIDataObject<Notification>{
 
 	public void setNotificationMessage(String notificationMessage){
 		lSetNotificationMessage(notificationMessage);
-		update();
+		update().queue();
 	}
 
 	public void lSetNotificationTarget(long notificationTarget){
@@ -100,15 +104,15 @@ public class Notification extends APIDataObject<Notification>{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	public Channel getChannel(){
-		return getGuild().getChannelCache().get(channelId, false);
+		return getGuild().getChannelCache().retrieve(channelId, true).execute();
 	}
 
 	public Member getMember(){
-		return getGuild().getMemberCache().get(userId, false);
+		return getGuild().getMemberCache().retrieve(userId, true).execute();
 	}
 
 	@Override
@@ -132,6 +136,11 @@ public class Notification extends APIDataObject<Notification>{
 		this.userId = jsonObject.getLong("userId");
 		this.notificationTarget = jsonObject.getLong("notificationTarget");
 		this.notificationMessage = jsonObject.getString("notificationMessage");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

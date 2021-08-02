@@ -22,8 +22,15 @@ import de.netbeacon.xenia.backend.client.objects.external.Channel;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
+import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -127,6 +134,38 @@ public class ChannelCache extends Cache<Long, Channel>{
 			}
 			catch(Exception e){
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Channel", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	public ExecutionAction<List<Channel>> retrieveAllFromBackend(boolean cache){
+		Supplier<List<Channel>> fun = () -> {
+			try{
+				BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "channels"), new HashMap<>(), null);
+				BackendResult backendResult = getBackendProcessor().process(backendRequest);
+				if(backendResult.getStatusCode() != 200){
+					logger.warn("Failed To Get All Roles From The Backend");
+					return null;
+				}
+				JSONArray channels = backendResult.getPayloadAsJSON().getJSONArray("channels");
+				List<Channel> channelList = new ArrayList<>();
+				for(int i = 0; i < channels.length(); i++){
+					JSONObject jsonObject = channels.getJSONObject(i);
+					Channel channel = new Channel(getBackendProcessor(), guildId, jsonObject.getLong("channelId"));
+					channel.fromJSON(jsonObject); // manually insert the data
+					if(cache){
+						add_(channel.getId(), channel); // this will overwrite already existing ones
+					}
+					channelList.add(channel);
+				}
+				return channelList;
+			}
+			catch(CacheException | DataException e){
+				throw e;
+			}
+			catch(Exception e){
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Channels", e);
 			}
 		};
 		return new SupplierExecutionAction<>(fun);

@@ -25,7 +25,9 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class Message extends APIDataObject<Message>{
@@ -42,6 +44,7 @@ public class Message extends APIDataObject<Message>{
 	private String oldMessageSalt;
 	private String oldMessageContent;
 	private List<String> attachments = new ArrayList<>();
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Message(BackendProcessor backendProcessor, long guildId, long channelId, long messageId){
 		super(backendProcessor);
@@ -113,7 +116,7 @@ public class Message extends APIDataObject<Message>{
 
 	public void setMessageContent(String content, String cryptKey){
 		lSetMessageContent(content, cryptKey);
-		update();
+		update().queue();
 	}
 
 	public void lSetMessageContent(String content, String cryptKey){
@@ -138,15 +141,15 @@ public class Message extends APIDataObject<Message>{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	public Channel getChannel(){
-		return getGuild().getChannelCache().get(channelId, false);
+		return getGuild().getChannelCache().retrieve(channelId, true).execute();
 	}
 
 	public Member getMember(){
-		return getGuild().getMemberCache().get(userId, false);
+		return getGuild().getMemberCache().retrieve(userId, true).execute();
 	}
 
 	@Override
@@ -177,6 +180,11 @@ public class Message extends APIDataObject<Message>{
 		}
 		this.messageSalt = jsonObject.getString("messageSalt");
 		this.messageContent = jsonObject.getString("messageContent");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

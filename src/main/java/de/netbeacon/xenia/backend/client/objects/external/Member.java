@@ -22,6 +22,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -36,6 +37,7 @@ public class Member extends APIDataObject<Member>{
 	private String metaNickname = "unknown_nickname";
 	private boolean metaIsAdministrator = false;
 	private boolean metaIsOwner = false;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.GET_OR_CREATE, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Member(BackendProcessor backendProcessor, long guildId, long userId){
 		super(backendProcessor);
@@ -62,14 +64,14 @@ public class Member extends APIDataObject<Member>{
 
 	public void setRoleIds(Set<Long> roles){
 		lSetRoleIds(roles);
-		update();
+		update().queue();
 	}
 
 	public long getLevelPoints(){ return levelPoints; }
 
 	public void setLevelPoints(long levelPoints){
 		lSetLevelPoints(levelPoints);
-		update();
+		update().queue();
 	}
 
 	public void lSetLevelPoints(long levelPoints){
@@ -84,7 +86,7 @@ public class Member extends APIDataObject<Member>{
 
 	public void setMetaData(String nickname, boolean isAdministrator, boolean isOwner){
 		lSetMetaData(nickname, isAdministrator, isOwner);
-		update();
+		update().queue();
 	}
 
 	public String metaNickname(){
@@ -106,19 +108,19 @@ public class Member extends APIDataObject<Member>{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	public User getUser(){
-		return getBackendProcessor().getBackendClient().getUserCache().get(userId);
+		return getBackendProcessor().getBackendClient().getUserCache().retrieve(userId, true).execute();
 	}
 
 	public Set<Role> getRoles(){
-		Guild g = getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		Guild g = getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 		Set<Role> roles = new HashSet<>();
 		for(Long l : new HashSet<>(roleIDs)){
 			try{
-				roles.add(g.getRoleCache().get(l));
+				roles.add(g.getRoleCache().retrieve(l, true).execute());
 			}
 			catch(Exception e){
 				roleIDs.remove(l);
@@ -165,6 +167,11 @@ public class Member extends APIDataObject<Member>{
 		this.metaNickname = meta.getString("nickname");
 		this.metaIsAdministrator = meta.getBoolean("isAdministrator");
 		this.metaIsOwner = meta.getBoolean("isOwner");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }
