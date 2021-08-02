@@ -38,15 +38,17 @@ public class GuildCache extends Cache<Long, Guild>{
 	public ExecutionAction<Guild> retrieve(Long id, boolean cache){
 		Supplier<Guild> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Guild(getBackendProcessor(), id).get(true).execute();
+					var entry = new Guild(getBackendProcessor(), id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
@@ -75,15 +77,17 @@ public class GuildCache extends Cache<Long, Guild>{
 	public ExecutionAction<Guild> create(Long id, boolean cache, Object... other){
 		Supplier<Guild> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Guild(getBackendProcessor(), id).getOrCreate(true).execute();
+					var entry = new Guild(getBackendProcessor(), id).getOrCreate(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

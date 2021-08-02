@@ -38,15 +38,17 @@ public class UserCache extends Cache<Long, User>{
 	public ExecutionAction<User> retrieve(Long id, boolean cache){
 		Supplier<User> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new User(getBackendProcessor(), id).get(true).execute();
+					var entry = new User(getBackendProcessor(), id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
@@ -75,15 +77,17 @@ public class UserCache extends Cache<Long, User>{
 	public ExecutionAction<User> create(Long id, boolean cache, Object... other){
 		Supplier<User> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new User(getBackendProcessor(), id).getOrCreate(true).execute();
+					var entry = new User(getBackendProcessor(), id).getOrCreate(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

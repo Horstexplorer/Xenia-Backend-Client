@@ -49,15 +49,17 @@ public class NotificationCache extends Cache<Long, Notification>{
 	public ExecutionAction<Notification> retrieve(Long id, boolean cache){
 		Supplier<Notification> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Notification(getBackendProcessor(), guildId, id).get(true).execute();
+					var entry = new Notification(getBackendProcessor(), guildId, id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

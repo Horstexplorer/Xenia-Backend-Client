@@ -48,15 +48,17 @@ public class MemberCache extends Cache<Long, Member>{
 	public ExecutionAction<Member> retrieve(Long id, boolean cache){
 		Supplier<Member> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Member(getBackendProcessor(), guildId, id).get(true).execute();
+					var entry = new Member(getBackendProcessor(), guildId, id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
@@ -85,15 +87,17 @@ public class MemberCache extends Cache<Long, Member>{
 	public ExecutionAction<Member> create(Long id, boolean cache, Object... other){
 		Supplier<Member> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Member(getBackendProcessor(), guildId, id).create(true).execute();
+					var entry = new Member(getBackendProcessor(), guildId, id).create(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

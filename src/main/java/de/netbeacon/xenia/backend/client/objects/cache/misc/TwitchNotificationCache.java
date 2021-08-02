@@ -50,15 +50,17 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 	public ExecutionAction<TwitchNotification> retrieve(Long id, boolean cache){
 		Supplier<TwitchNotification> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new TwitchNotification(getBackendProcessor(), guildId, id).get(true).execute();
+					var entry = new TwitchNotification(getBackendProcessor(), guildId, id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

@@ -48,15 +48,17 @@ public class ChannelCache extends Cache<Long, Channel>{
 	public ExecutionAction<Channel> retrieve(Long id, boolean cache){
 		Supplier<Channel> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Channel(getBackendProcessor(), guildId, id).get(true).execute();
+					var entry = new Channel(getBackendProcessor(), guildId, id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
@@ -85,15 +87,17 @@ public class ChannelCache extends Cache<Long, Channel>{
 	public ExecutionAction<Channel> create(Long id, boolean cache, Object... other){
 		Supplier<Channel> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Channel(getBackendProcessor(), guildId, id).getOrCreate(true).execute();
+					var entry = new Channel(getBackendProcessor(), guildId, id).getOrCreate(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

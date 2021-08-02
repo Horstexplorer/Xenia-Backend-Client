@@ -49,15 +49,17 @@ public class RoleCache extends Cache<Long, Role>{
 	public ExecutionAction<Role> retrieve(Long id, boolean cache){
 		Supplier<Role> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Role(getBackendProcessor(), guildId, id).get(true).execute();
+					var entry = new Role(getBackendProcessor(), guildId, id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}

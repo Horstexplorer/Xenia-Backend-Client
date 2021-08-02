@@ -53,15 +53,17 @@ public class MessageCache extends Cache<Long, Message>{
 	public ExecutionAction<Message> retrieve(Long id, boolean cache){
 		Supplier<Message> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new Message(getBackendProcessor(), guildId, channelId, id).get(true).execute();
+					var entry = new Message(getBackendProcessor(), guildId, channelId, id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
@@ -96,6 +98,9 @@ public class MessageCache extends Cache<Long, Message>{
 	public ExecutionAction<Message> create(long id, long creationTime, long userId, String messageContent, List<String> attachmentUrls){
 		Supplier<Message> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}

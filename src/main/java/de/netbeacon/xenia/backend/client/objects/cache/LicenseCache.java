@@ -39,15 +39,17 @@ public class LicenseCache extends Cache<Long, License>{
 	public ExecutionAction<License> retrieve(Long id, boolean cache){
 		Supplier<License> fun = () -> {
 			try{
+				if(contains(id)){
+					return get_(id);
+				}
 				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
 					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
 				try{
-					var entry = get_(id);
-					if(entry != null){
-						return entry;
+					if(contains(id)){
+						return get_(id);
 					}
-					entry = new License(getBackendProcessor(), id).get(true).execute();
+					var entry = new License(getBackendProcessor(), id).get(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
