@@ -16,8 +16,8 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp2;
 
+import de.netbeacon.xenia.backend.client.objects.apidata.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.TwitchNotificationCache;
-import de.netbeacon.xenia.backend.client.objects.external.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;

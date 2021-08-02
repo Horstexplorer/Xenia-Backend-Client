@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external;
+package de.netbeacon.xenia.backend.client.objects.apidata;
 
 import de.netbeacon.utils.crypt.Base64;
 import de.netbeacon.utils.crypt.Crypt;

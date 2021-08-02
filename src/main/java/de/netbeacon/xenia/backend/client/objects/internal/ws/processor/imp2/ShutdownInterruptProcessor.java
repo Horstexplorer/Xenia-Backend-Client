@@ -16,7 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp2;
 
-import de.netbeacon.xenia.backend.client.objects.external.system.Ping;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.Ping;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;

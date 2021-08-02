@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external.misc;
+package de.netbeacon.xenia.backend.client.objects.apidata.misc;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
-import de.netbeacon.xenia.backend.client.objects.external.Channel;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Channel;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;

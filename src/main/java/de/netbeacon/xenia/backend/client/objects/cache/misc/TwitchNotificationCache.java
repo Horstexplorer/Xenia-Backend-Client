@@ -19,7 +19,7 @@ package de.netbeacon.xenia.backend.client.objects.cache.misc;
 import de.netbeacon.utils.concurrency.action.ExecutionAction;
 import de.netbeacon.utils.concurrency.action.ExecutionException;
 import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
-import de.netbeacon.xenia.backend.client.objects.external.misc.TwitchNotification;
+import de.netbeacon.xenia.backend.client.objects.apidata.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;

@@ -16,8 +16,8 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp2;
 
-import de.netbeacon.xenia.backend.client.objects.external.system.Info;
-import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.Info;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;

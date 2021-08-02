@@ -17,11 +17,11 @@
 package de.netbeacon.xenia.backend.client.core;
 
 import de.netbeacon.utils.shutdownhook.IShutdown;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.Info;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.cache.GuildCache;
 import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
-import de.netbeacon.xenia.backend.client.objects.external.system.Info;
-import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;

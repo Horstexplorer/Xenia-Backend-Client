@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.cache;
 
 import de.netbeacon.utils.concurrency.action.ExecutionAction;
 import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
-import de.netbeacon.xenia.backend.client.objects.external.User;
+import de.netbeacon.xenia.backend.client.objects.apidata.User;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
