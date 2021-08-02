@@ -33,9 +33,11 @@ public class CacheGuildChannelAutoModProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
 		if("update".equalsIgnoreCase(jsonObject.getString("action"))){
-			g.getChannelCache().get(jsonObject.getLong("channelId")).getAutoMod().getAsync();
+			g.getChannelCache().retrieve(jsonObject.getLong("channelId"), true).queue(
+				channel -> channel.getAutoMod().get().queue()
+			);
 		}
 	}
 

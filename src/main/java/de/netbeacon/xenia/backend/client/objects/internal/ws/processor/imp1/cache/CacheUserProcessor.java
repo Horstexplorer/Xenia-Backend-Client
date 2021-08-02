@@ -33,12 +33,12 @@ public class CacheUserProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getUserCache().contains(jsonObject.getLong("userId"))){
 			return;
 		}
-		User u = xeniaBackendClient.getUserCache().get(jsonObject.getLong("userId"), false);
+		User u = xeniaBackendClient.getUserCache().get_(jsonObject.getLong("userId"));
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "update" -> u.getAsync(true);
+			case "update" -> u.get(true).queue();
 			case "delete" -> {
 				u.onDeletion();
-				xeniaBackendClient.getUserCache().remove(jsonObject.getLong("userId"));
+				xeniaBackendClient.getUserCache().remove_(jsonObject.getLong("userId"));
 			}
 		}
 	}

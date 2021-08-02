@@ -33,13 +33,18 @@ public class CacheGuildRoleProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
+		var rc = g.getRoleCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> g.getRoleCache().get(jsonObject.getLong("roleId")));
-			case "update" -> g.getRoleCache().get(jsonObject.getLong("roleId")).getAsync(true);
+			case "create" -> rc.retrieve(jsonObject.getLong("roleId"), true).queue();
+			case "update" -> rc.retrieve(jsonObject.getLong("roleId"), true).queue(
+				e -> e.get(true).queue()
+			);
 			case "delete" -> {
-				g.getRoleCache().get(jsonObject.getLong("roleId")).onDeletion();
-				g.getRoleCache().remove(jsonObject.getLong("roleId"));
+				if(rc.contains(jsonObject.getLong("roleId"))){
+					rc.get_(jsonObject.getLong("roleId")).onDeletion();
+					rc.remove_(jsonObject.getLong("roleId"));
+				}
 			}
 		}
 	}

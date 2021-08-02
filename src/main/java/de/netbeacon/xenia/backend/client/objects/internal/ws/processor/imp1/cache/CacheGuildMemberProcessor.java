@@ -33,13 +33,18 @@ public class CacheGuildMemberProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
+		var mc = g.getMemberCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> g.getMemberCache().get(jsonObject.getLong("userId")));
-			case "update" -> g.getMemberCache().get(jsonObject.getLong("userId")).getAsync(true);
+			case "create" -> mc.retrieve(jsonObject.getLong("userId"), true).queue();
+			case "update" -> mc.retrieve(jsonObject.getLong("userId"), true).queue(
+				e -> e.get(true).queue()
+			);
 			case "delete" -> {
-				g.getMemberCache().get(jsonObject.getLong("userId")).onDeletion();
-				g.getMemberCache().remove(jsonObject.getLong("userId"));
+				if(mc.contains(jsonObject.getLong("userId"))){
+					mc.get_(jsonObject.getLong("userId")).onDeletion();
+					mc.remove_(jsonObject.getLong("userId"));
+				}
 			}
 		}
 	}

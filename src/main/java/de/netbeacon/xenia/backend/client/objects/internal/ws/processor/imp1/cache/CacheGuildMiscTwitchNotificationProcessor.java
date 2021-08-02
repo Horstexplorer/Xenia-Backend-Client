@@ -33,13 +33,18 @@ public class CacheGuildMiscTwitchNotificationProcessor extends PrimaryWSProcesso
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
+		var tn = g.getMiscCaches().getTwitchNotificationCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> g.getMiscCaches().getTwitchNotificationCache().get(jsonObject.getLong("twitchNotificationId")));
-			case "update" -> g.getMiscCaches().getTwitchNotificationCache().get(jsonObject.getLong("twitchNotificationId")).getAsync(true);
+			case "create" -> tn.retrieve(jsonObject.getLong("twitchNotificationId"), true).queue();
+			case "update" -> tn.retrieve(jsonObject.getLong("twitchNotificationId"), true).queue(
+				e -> e.get(true).queue()
+			);
 			case "delete" -> {
-				g.getMiscCaches().getTwitchNotificationCache().get(jsonObject.getLong("twitchNotificationId")).onDeletion();
-				g.getMiscCaches().getTwitchNotificationCache().remove(jsonObject.getLong("twitchNotificationId"));
+				if(tn.contains(jsonObject.getLong("twitchNotificationId"))){
+					tn.get_(jsonObject.getLong("twitchNotificationId")).onDeletion();
+					tn.remove_(jsonObject.getLong("twitchNotificationId"));
+				}
 			}
 		}
 	}

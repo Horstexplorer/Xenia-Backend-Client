@@ -30,7 +30,7 @@ public class CacheGuildLicenseProcessor extends PrimaryWSProcessor{
 	@Override
 	public void accept(JSONObject jsonObject){
 		if(xeniaBackendClient.getLicenseCache().contains(jsonObject.getLong("guildId"))){
-			xeniaBackendClient.getLicenseCache().remove(jsonObject.getLong("guildId"));
+			xeniaBackendClient.getLicenseCache().remove_(jsonObject.getLong("guildId"));
 		}
 	}
 

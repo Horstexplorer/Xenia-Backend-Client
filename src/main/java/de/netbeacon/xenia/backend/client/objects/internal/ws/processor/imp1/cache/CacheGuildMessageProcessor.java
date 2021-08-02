@@ -34,15 +34,18 @@ public class CacheGuildMessageProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
 		if(!g.getChannelCache().contains(jsonObject.getLong("channelId"))){
 			return;
 		}
-		Channel c = g.getChannelCache().get(jsonObject.getLong("channelId"));
+		Channel c = g.getChannelCache().get_(jsonObject.getLong("channelId"));
+		var mc = c.getMessageCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> c.getMessageCache().get(jsonObject.getLong("messageId")));
-			case "update" -> c.getMessageCache().get(jsonObject.getLong("messageId")).updateAsync(true);
-			case "delete" -> c.getMessageCache().remove(jsonObject.getLong("messageId"));
+			case "create" -> scalingExecutor.execute(() -> mc.retrieve(jsonObject.getLong("messageId"), true).queue());
+			case "update" -> mc.retrieve(jsonObject.getLong("messageId"), true).queue(
+				e -> e.get(true).queue()
+			);
+			case "delete" -> mc.remove_(jsonObject.getLong("messageId"));
 		}
 	}
 
