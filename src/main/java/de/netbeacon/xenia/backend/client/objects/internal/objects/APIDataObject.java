@@ -102,7 +102,7 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
 		if(!hasChanges()){
-			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+			return new SupplierExecutionAction<>(() -> (T) this);
 		}
 		return process(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
