@@ -25,6 +25,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheExcept
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
+import javax.annotation.CheckReturnValue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -35,6 +36,7 @@ public class LicenseCache extends Cache<Long, License>{
 		super(backendProcessor);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<License> retrieve(Long id, boolean cache){
 		Supplier<License> fun = () -> {
@@ -69,18 +71,21 @@ public class LicenseCache extends Cache<Long, License>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<License> retrieveOrCreate(Long id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<License> create(Long id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Void> delete(Long id){

@@ -29,6 +29,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,7 @@ public class TagCache extends Cache<String, Tag>{
 		this.guildId = guildId;
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Tag> retrieve(String id, boolean cache){
 		Supplier<Tag> fun = () -> {
@@ -79,18 +81,21 @@ public class TagCache extends Cache<String, Tag>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Tag> retrieveOrCreate(String id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Tag> create(String id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	public ExecutionAction<Tag> create(String tagName, long userId, String content){
 		Supplier<Tag> fun = () -> {
 			try{
@@ -119,6 +124,7 @@ public class TagCache extends Cache<String, Tag>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Void> delete(String id){
 		Supplier<Void> fun = () -> {
@@ -145,6 +151,7 @@ public class TagCache extends Cache<String, Tag>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	public ExecutionAction<List<Tag>> retrieveAllFromBackend(boolean cache){
 		Supplier<List<Tag>> fun = () -> {
 			try{

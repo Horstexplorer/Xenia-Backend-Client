@@ -28,6 +28,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,7 @@ public class MemberCache extends Cache<Long, Member>{
 		this.guildId = guildId;
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Member> retrieve(Long id, boolean cache){
 		Supplier<Member> fun = () -> {
@@ -78,11 +80,13 @@ public class MemberCache extends Cache<Long, Member>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Member> retrieveOrCreate(Long id, boolean cache, Object... other){
 		return create(id, cache, other);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Member> create(Long id, boolean cache, Object... other){
 		Supplier<Member> fun = () -> {
@@ -117,6 +121,7 @@ public class MemberCache extends Cache<Long, Member>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Void> delete(Long id){
 		Supplier<Void> fun = () -> {
@@ -143,6 +148,7 @@ public class MemberCache extends Cache<Long, Member>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	public ExecutionAction<List<Member>> retrieveAllFromBackend(boolean cache){
 		Supplier<List<Member>> fun = () -> {
 			try{

@@ -29,6 +29,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,7 @@ public class RoleCache extends Cache<Long, Role>{
 		this.guildId = guildId;
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Role> retrieve(Long id, boolean cache){
 		Supplier<Role> fun = () -> {
@@ -79,12 +81,14 @@ public class RoleCache extends Cache<Long, Role>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Role> retrieveOrCreate(Long id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Role> create(Long id, boolean cache, Object... other){
@@ -115,6 +119,7 @@ public class RoleCache extends Cache<Long, Role>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Void> delete(Long id){
 		Supplier<Void> fun = () -> {
@@ -141,6 +146,7 @@ public class RoleCache extends Cache<Long, Role>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	public ExecutionAction<List<Role>> retrieveAllFromBackend(boolean cache){
 		Supplier<List<Role>> fun = () -> {
 			try{

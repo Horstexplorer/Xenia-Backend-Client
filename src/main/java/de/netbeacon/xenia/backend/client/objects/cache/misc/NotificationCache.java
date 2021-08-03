@@ -29,6 +29,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 		this.guildId = guildId;
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Notification> retrieve(Long id, boolean cache){
 		Supplier<Notification> fun = () -> {
@@ -79,18 +81,21 @@ public class NotificationCache extends Cache<Long, Notification>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Notification> retrieveOrCreate(Long id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Notification> create(Long id, boolean cache, Object... other){
 		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
+	@CheckReturnValue
 	public ExecutionAction<Notification> create(long channelId, long userId, long notificationTarget, String notificationMessage){
 		Supplier<Notification> fun = () -> {
 			try{
@@ -116,6 +121,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Void> delete(Long id){
 		Supplier<Void> fun = () -> {
@@ -142,6 +148,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	public ExecutionAction<List<Notification>> retrieveAllFromBackend(boolean cache){
 		Supplier<List<Notification>> fun = () -> {
 			try{

@@ -161,9 +161,9 @@ public class Guild extends APIDataObject<Guild>{
 	public void initSync(){
 		List<Channel> channelList = getChannelCache().retrieveAllFromBackend(true).execute();
 		for(Channel channel : channelList){
-			channel.getMessageCache().retrieveAllFromBackend(true, true);
+			channel.getMessageCache().retrieveAllFromBackend(true, true).execute();
 		}
-		getRoleCache().retrieveAllFromBackend(true);
+		getRoleCache().retrieveAllFromBackend(true).execute();
 
 		getMiscCaches().getTagCache().retrieveAllFromBackend(true).execute();
 		getMiscCaches().getNotificationCache().retrieveAllFromBackend(true).execute();

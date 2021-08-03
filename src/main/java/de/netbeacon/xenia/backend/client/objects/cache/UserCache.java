@@ -24,6 +24,7 @@ import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheExcept
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
+import javax.annotation.CheckReturnValue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -34,6 +35,7 @@ public class UserCache extends Cache<Long, User>{
 		super(backendProcessor);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<User> retrieve(Long id, boolean cache){
 		Supplier<User> fun = () -> {
@@ -68,11 +70,13 @@ public class UserCache extends Cache<Long, User>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<User> retrieveOrCreate(Long id, boolean cache, Object... other){
 		return create(id, cache, other);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<User> create(Long id, boolean cache, Object... other){
 		Supplier<User> fun = () -> {
@@ -107,6 +111,7 @@ public class UserCache extends Cache<Long, User>{
 		return new SupplierExecutionAction<>(fun);
 	}
 
+	@CheckReturnValue
 	@Override
 	public ExecutionAction<Void> delete(Long id){
 		Supplier<Void> fun = () -> {
