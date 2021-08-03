@@ -97,7 +97,7 @@ public class MemberCache extends Cache<Long, Member>{
 					if(contains(id)){
 						return get_(id);
 					}
-					var entry = new Member(getBackendProcessor(), guildId, id).create(true).execute();
+					var entry = new Member(getBackendProcessor(), guildId, id).getOrCreate(true).execute();
 					if(cache){
 						add_(id, entry);
 					}
