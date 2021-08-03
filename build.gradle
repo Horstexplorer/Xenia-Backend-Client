@@ -50,6 +50,10 @@ shadowJar {
     archiveClassifier.set("")
 }
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'hours'
+}
+
 publishing {
     repositories {
         maven {
