@@ -16,128 +16,126 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache;
 
-import de.netbeacon.utils.locks.IdBasedLockHolder;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import javax.annotation.CheckReturnValue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 public class GuildCache extends Cache<Long, Guild>{
-
-	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 
 	public GuildCache(BackendProcessor backendProcessor){
 		super(backendProcessor);
 	}
 
-	public Guild get(long guildId) throws CacheException, DataException{
-		return get(guildId, true, false);
-	}
-
-	public Guild get(long guildId, boolean init) throws CacheException, DataException{
-		return get(guildId, init, false);
-	}
-
-	public Guild get(long guildId, boolean init, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(guildId).lock();
-			Guild guild = getFromCache(guildId);
-			if(guild != null){
-				return guild;
-			}
-			guild = new Guild(getBackendProcessor(), guildId);
-			if(init){
-				guild.getOrCreate(securityOverride);
-			}else{
-				guild.get(securityOverride);
-			}
-			addToCache(guildId, guild);
-			return guild;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Guild", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(guildId).unlock();
-		}
-	}
-
-	public void getAsync(long guildId, Consumer<Guild> whenReady, Consumer<Exception> onException){
-		getAsync(guildId, true, whenReady, onException);
-	}
-
-	public void getAsync(long guildId, boolean init, Consumer<Guild> whenReady, Consumer<Exception> onException){
-		getAsync(guildId, init, false, whenReady, onException);
-	}
-
-	public void getAsync(long guildId, boolean init, boolean securityOverride, Consumer<Guild> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<Guild> retrieve(Long id, boolean cache){
+		Supplier<Guild> fun = () -> {
 			try{
-				var v = get(guildId, init, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				if(contains(id)){
+					return get_(id);
 				}
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					if(contains(id)){
+						return get_(id);
+					}
+					var entry = new Guild(getBackendProcessor(), id).get(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Guild", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<Guild> retrieveOrCreate(Long id, boolean cache, Object... other){
+		return create(id, cache, other);
+	}
+
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<Guild> create(Long id, boolean cache, Object... other){
+		Supplier<Guild> fun = () -> {
+			try{
+				if(contains(id)){
+					return get_(id);
+				}
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					if(contains(id)){
+						return get_(id);
+					}
+					var entry = new Guild(getBackendProcessor(), id).getOrCreate(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
 				}
 			}
-		});
-	}
-
-	public void remove(long guildId){
-		removeFromCache(guildId);
-	}
-
-	public void delete(long guildId) throws CacheException, DataException{
-		delete(guildId, false);
-	}
-
-	public void delete(long guildId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(guildId).lock();
-			Guild guild = getFromCache(guildId);
-			Objects.requireNonNullElseGet(guild, () -> new Guild(getBackendProcessor(), guildId)).delete(securityOverride);
-			guild.clear(true);
-			removeFromCache(guildId);
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Guild", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(guildId).unlock();
-		}
-	}
-
-	public void deleteAsync(long guildId, Consumer<Long> whenReady, Consumer<Exception> onException){
-		deleteAsync(guildId, false, whenReady, onException);
-	}
-
-	public void deleteAsync(long guildId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
-			try{
-				delete(guildId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(guildId);
-				}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve / Create Guild", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<Void> delete(Long id){
+		Supplier<Void> fun = () -> {
+			try{
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					remove_(id);
+					new Guild(getBackendProcessor(), id).delete(true).execute();
+					return null;
+				}
+				finally{
+					idBasedProvider.get(id).release();
 				}
 			}
-		});
+			catch(CacheException | DataException e){
+				throw e;
+			}
+			catch(Exception e){
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Guild", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
 	@Override

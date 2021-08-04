@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cac
 
 import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.User;
+import de.netbeacon.xenia.backend.client.objects.apidata.User;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
 import org.json.JSONObject;
 
@@ -33,12 +33,12 @@ public class CacheUserProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getUserCache().contains(jsonObject.getLong("userId"))){
 			return;
 		}
-		User u = xeniaBackendClient.getUserCache().get(jsonObject.getLong("userId"), false);
+		User u = xeniaBackendClient.getUserCache().get_(jsonObject.getLong("userId"));
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "update" -> u.getAsync(true);
+			case "update" -> u.get(true).queue();
 			case "delete" -> {
 				u.onDeletion();
-				xeniaBackendClient.getUserCache().remove(jsonObject.getLong("userId"));
+				xeniaBackendClient.getUserCache().remove_(jsonObject.getLong("userId"));
 			}
 		}
 	}

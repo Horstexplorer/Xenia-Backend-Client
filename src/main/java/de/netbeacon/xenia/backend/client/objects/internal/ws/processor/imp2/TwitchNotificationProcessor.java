@@ -16,8 +16,8 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp2;
 
+import de.netbeacon.xenia.backend.client.objects.apidata.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.cache.misc.TwitchNotificationCache;
-import de.netbeacon.xenia.backend.client.objects.external.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSResponse;
@@ -54,14 +54,14 @@ public class TwitchNotificationProcessor extends WSProcessor{
 				return null;
 			}
 			// get the notification details
-			TwitchNotificationCache notificationCache = getWsProcessorCore().getXeniaBackendClient().getGuildCache().get(data.getLong("guildId"), false).getMiscCaches().getTwitchNotificationCache();
-			TwitchNotification twitchNotification = notificationCache.get(data.getLong("twitchNotificationId"));
+			TwitchNotificationCache notificationCache = getWsProcessorCore().getXeniaBackendClient().getGuildCache().retrieve(data.getLong("guildId"), true).execute().getMiscCaches().getTwitchNotificationCache();
+			TwitchNotification twitchNotification = notificationCache.retrieve(data.getLong("twitchNotificationId"), true).execute();
 			// get the channel
 			TextChannel textChannel = guild.getTextChannelById(twitchNotification.getChannelId());
 			// check permissions
 			if(textChannel == null || !guild.getSelfMember().hasAccess(textChannel) || !textChannel.canTalk(guild.getSelfMember())){
 				// delete
-				notificationCache.delete(twitchNotification.getId());
+				notificationCache.delete(twitchNotification.getId()).queue();
 				return null;
 			}
 			// prepare message to send

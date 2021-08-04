@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external.misc;
+package de.netbeacon.xenia.backend.client.objects.apidata.misc;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
-import de.netbeacon.xenia.backend.client.objects.external.Member;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Member;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
@@ -26,15 +26,19 @@ import org.json.JSONObject;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
-public class Tag extends APIDataObject{
+public class Tag extends APIDataObject<Tag>{
 
 	private long guildId;
 	private String tagName;
 	private long creationTimestamp;
 	private long userId;
 	private String tagContent;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Tag(BackendProcessor backendProcessor, long guildId, String tagName){
 		super(backendProcessor);
@@ -71,7 +75,7 @@ public class Tag extends APIDataObject{
 
 	public void setTagContent(String tagContent) throws BackendException{
 		lSetTagContent(tagContent);
-		update();
+		update().queue();
 	}
 
 	public void lSetTagContent(String tagContent) throws BackendException{
@@ -81,11 +85,11 @@ public class Tag extends APIDataObject{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	public Member getMember(){
-		return getGuild().getMemberCache().get(userId, false);
+		return getGuild().getMemberCache().retrieve(userId, true).execute();
 	}
 
 	@Override
@@ -105,6 +109,11 @@ public class Tag extends APIDataObject{
 		this.guildId = jsonObject.getLong("guildId");
 		this.userId = jsonObject.getLong("userId");
 		this.tagContent = jsonObject.getString("tagContent");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

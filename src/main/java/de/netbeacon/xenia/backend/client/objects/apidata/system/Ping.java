@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external.system;
+package de.netbeacon.xenia.backend.client.objects.apidata.system;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
-import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendRequest;
 import de.netbeacon.xenia.backend.client.objects.internal.io.BackendResult;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Ping extends APIDataObject{
+public class Ping extends APIDataObject<Ping>{
+
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>();
 
 	public Ping(BackendProcessor backendProcessor){
 		super(backendProcessor);
@@ -46,33 +49,14 @@ public class Ping extends APIDataObject{
 	}
 
 	@Override
-	public void get() throws BackendException{}
-
-	@Override
-	public void getAsync(){}
-
-	@Override
-	public void create() throws BackendException{}
-
-	@Override
-	public void createAsync(){}
-
-	@Override
-	public void update() throws BackendException{}
-
-	@Override
-	public void updateAsync(){}
-
-	@Override
-	public void delete() throws BackendException{}
-
-	@Override
-	public void deleteAsync(){}
-
-	@Override
-	public JSONObject asJSON() throws JSONSerializationException{ return null; }
+	public JSONObject asJSON() throws JSONSerializationException{return null;}
 
 	@Override
 	public void fromJSON(JSONObject jsonObject) throws JSONSerializationException{}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
+	}
 
 }

@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external.misc;
+package de.netbeacon.xenia.backend.client.objects.apidata.misc;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
-import de.netbeacon.xenia.backend.client.objects.external.Channel;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Channel;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
-public class TwitchNotification extends APIDataObject{
+public class TwitchNotification extends APIDataObject<TwitchNotification>{
 
 	private long twitchNotificationId;
 	private long guildId;
@@ -34,6 +37,7 @@ public class TwitchNotification extends APIDataObject{
 	private Long twitchChannelId;
 	private String twitchChannelName;
 	private String notificationMessage = "$username$ is now live on twitch playing $game$";
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public TwitchNotification(BackendProcessor backendProcessor, long guildId, long twitchNotificationId){
 		super(backendProcessor);
@@ -78,7 +82,7 @@ public class TwitchNotification extends APIDataObject{
 
 	public void setNotificationMessage(String message){
 		lSetNotificationMessage(message);
-		update();
+		update().queue();
 	}
 
 	public void lSetNotificationMessage(String message){
@@ -88,11 +92,11 @@ public class TwitchNotification extends APIDataObject{
 	// SECONDARY
 
 	public Guild getGuild(){
-		return getBackendProcessor().getBackendClient().getGuildCache().get(guildId, false);
+		return getBackendProcessor().getBackendClient().getGuildCache().retrieve(guildId, true).execute();
 	}
 
 	public Channel getChannel(){
-		return getGuild().getChannelCache().get(channelId, false);
+		return getGuild().getChannelCache().retrieve(channelId, true).execute();
 	}
 
 
@@ -117,6 +121,11 @@ public class TwitchNotification extends APIDataObject{
 		twitchChannelId = jsonObject.get("twitchChannelId") != JSONObject.NULL ? jsonObject.getLong("twitchChannelId") : null;
 		twitchChannelName = jsonObject.getString("twitchChannelName");
 		notificationMessage = jsonObject.getString("notificationMessage");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

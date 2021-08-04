@@ -16,10 +16,14 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.objects;
 
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.block.ReentrantBlock;
+import de.netbeacon.utils.concurrency.provider.IDBasedProvider;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,15 +31,17 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-public abstract class Cache<K, T extends APIDataObject>{
+public abstract class Cache<K, T extends APIDataObject<T>>{
 
 	private final BackendProcessor backendProcessor;
 	private final ConcurrentHashMap<K, T> dataMap = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<T, K> inverseDataMap = new ConcurrentHashMap<>();
 	private final ArrayList<K> orderedKeyMap = new ArrayList<>();
 	private final ArrayList<CacheEventListener<K, T>> cacheListeners = new ArrayList<>();
-	private final Logger logger = LoggerFactory.getLogger(Cache.class);
-	private final ReentrantLock cacheModifyLock = new ReentrantLock();
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final IDBasedProvider<K, ReentrantBlock> idBasedProvider = new IDBasedProvider<K, ReentrantBlock>().setSupplier((unused) -> new ReentrantBlock());
+	protected final ReentrantLock creationLock = new ReentrantLock();
+	private final ReentrantLock internalCacheModifyLock = new ReentrantLock();
 
 	public Cache(BackendProcessor backendProcessor){
 		this.backendProcessor = backendProcessor;
@@ -43,13 +49,13 @@ public abstract class Cache<K, T extends APIDataObject>{
 
 	// data
 
-	public T getFromCache(K id){
+	public T get_(K id){
 		return dataMap.get(id);
 	}
 
-	public T addToCache(K id, T t){
+	public T add_(K id, T t){
 		try{
-			cacheModifyLock.lock();
+			internalCacheModifyLock.lock();
 			dataMap.put(id, t);
 			inverseDataMap.put(t, id);
 			orderedKeyMap.add(id);
@@ -57,13 +63,25 @@ public abstract class Cache<K, T extends APIDataObject>{
 			return t;
 		}
 		finally{
-			cacheModifyLock.unlock();
+			internalCacheModifyLock.unlock();
 		}
 	}
 
-	public void removeFromCache(K id){
+	@CheckReturnValue
+	public abstract ExecutionAction<T> retrieve(K id, boolean cache);
+
+	@CheckReturnValue
+	public abstract ExecutionAction<T> retrieveOrCreate(K id, boolean cache, Object... other);
+
+	@CheckReturnValue
+	public abstract ExecutionAction<T> create(K id, boolean cache, Object... other);
+
+	@CheckReturnValue
+	public abstract ExecutionAction<Void> delete(K id);
+
+	public void remove_(K id){
 		try{
-			cacheModifyLock.lock();
+			internalCacheModifyLock.lock();
 			if(id == null){
 				return;
 			}
@@ -76,13 +94,13 @@ public abstract class Cache<K, T extends APIDataObject>{
 			onRemoval(id, t);
 		}
 		finally{
-			cacheModifyLock.unlock();
+			internalCacheModifyLock.unlock();
 		}
 	}
 
-	public void removeFromCache(T t){
+	public void remove_(T t){
 		try{
-			cacheModifyLock.lock();
+			internalCacheModifyLock.lock();
 			if(t == null){
 				return;
 			}
@@ -95,7 +113,7 @@ public abstract class Cache<K, T extends APIDataObject>{
 			onRemoval(id, t);
 		}
 		finally{
-			cacheModifyLock.unlock();
+			internalCacheModifyLock.unlock();
 		}
 	}
 
@@ -126,7 +144,7 @@ public abstract class Cache<K, T extends APIDataObject>{
 	}
 
 	public void clear(boolean deletion){
-		dataMap.values().forEach(this::removeFromCache); // remove all objects, triggering the remove event for the cache
+		dataMap.values().forEach(this::remove_); // remove all objects, triggering the remove event for the cache
 		dataMap.forEach((k, v) -> {
 			if(deletion){
 				v.onDeletion(); // trigger deletion event for when this cache gets removed with the deletion as cause

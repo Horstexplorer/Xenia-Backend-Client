@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cac
 
 import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
 import org.json.JSONObject;
 
@@ -33,13 +33,18 @@ public class CacheGuildChannelProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
+		var cc = g.getChannelCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> g.getChannelCache().get(jsonObject.getLong("channelId")));
-			case "update" -> g.getChannelCache().get(jsonObject.getLong("channelId")).getAsync(true);
+			case "create" -> cc.retrieve(jsonObject.getLong("channelId"), true).queue();
+			case "update" -> cc.retrieve(jsonObject.getLong("channelId"), true).queue(
+				e -> e.get(true).queue()
+			);
 			case "delete" -> {
-				g.getChannelCache().get(jsonObject.getLong("channelId")).clear(true);
-				g.getChannelCache().remove(jsonObject.getLong("channelId"));
+				if(cc.contains(jsonObject.getLong("channelId"))){
+					g.getChannelCache().get_(jsonObject.getLong("channelId")).clear(true);
+					g.getChannelCache().remove_(jsonObject.getLong("channelId"));
+				}
 			}
 		}
 	}

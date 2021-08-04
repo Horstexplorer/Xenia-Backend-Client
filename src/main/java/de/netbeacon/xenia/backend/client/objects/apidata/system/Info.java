@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external.system;
+package de.netbeacon.xenia.backend.client.objects.apidata.system;
 
 import de.netbeacon.utils.appinfo.AppInfo;
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
-import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Info extends APIDataObject{
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Info extends APIDataObject<Info>{
 
 	private final Mode mode;
 	private final Logger logger = LoggerFactory.getLogger(Info.class);
@@ -36,30 +39,13 @@ public class Info extends APIDataObject{
 	private int channelCount;
 	private int forbiddenChannels;
 	private int messageCount;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET));
 
 	public Info(BackendProcessor backendProcessor, Mode mode){
 		super(backendProcessor);
 		this.mode = mode;
 		setBackendPath("info", mode.toString().toLowerCase());
 	}
-
-	@Override
-	public void create() throws BackendException{}
-
-	@Override
-	public void createAsync(){}
-
-	@Override
-	public void update() throws BackendException{}
-
-	@Override
-	public void updateAsync(){}
-
-	@Override
-	public void delete() throws BackendException{}
-
-	@Override
-	public void deleteAsync(){}
 
 	public String getVersion(){
 		return version;
@@ -137,6 +123,11 @@ public class Info extends APIDataObject{
 	public enum Mode{
 		Public,
 		Private,
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cac
 
 import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
 import org.json.JSONObject;
 
@@ -33,9 +33,11 @@ public class CacheGuildChannelAutoModProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
 		if("update".equalsIgnoreCase(jsonObject.getString("action"))){
-			g.getChannelCache().get(jsonObject.getLong("channelId")).getAutoMod().getAsync();
+			g.getChannelCache().retrieve(jsonObject.getLong("channelId"), true).queue(
+				channel -> channel.getAutoMod().get().queue()
+			);
 		}
 	}
 

@@ -17,11 +17,11 @@
 package de.netbeacon.xenia.backend.client.core;
 
 import de.netbeacon.utils.shutdownhook.IShutdown;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.Info;
+import de.netbeacon.xenia.backend.client.objects.apidata.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.cache.GuildCache;
 import de.netbeacon.xenia.backend.client.objects.cache.LicenseCache;
 import de.netbeacon.xenia.backend.client.objects.cache.UserCache;
-import de.netbeacon.xenia.backend.client.objects.external.system.Info;
-import de.netbeacon.xenia.backend.client.objects.external.system.SetupData;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendSettings;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
@@ -66,8 +66,8 @@ public class XeniaBackendClient implements IShutdown{
 		this.shardManagerSupplier = shardManagerSupplier;
 		// create okhttp client
 		Dispatcher dispatcher = new Dispatcher();
-		dispatcher.setMaxRequests(128);
-		dispatcher.setMaxRequestsPerHost(128);
+		dispatcher.setMaxRequests(512);
+		dispatcher.setMaxRequestsPerHost(512);
 		OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder()
 			.connectTimeout(15, TimeUnit.SECONDS)
 			.readTimeout(30, TimeUnit.SECONDS)
@@ -125,7 +125,7 @@ public class XeniaBackendClient implements IShutdown{
 			return setupDataCache;
 		}
 		SetupData setupData = new SetupData(backendProcessor);
-		setupData.get();
+		setupData.get().execute();
 		this.setupDataCache = setupData;
 		// check if the setup data matches the given key
 		if(!BCrypt.checkpw(backendSettings.getMessageCryptKey(), setupData.getMessageCryptHash())){
@@ -136,7 +136,7 @@ public class XeniaBackendClient implements IShutdown{
 
 	public Info getInfo(Info.Mode mode){
 		Info info = new Info(backendProcessor, mode);
-		info.get();
+		info.get().execute();
 		return info;
 	}
 

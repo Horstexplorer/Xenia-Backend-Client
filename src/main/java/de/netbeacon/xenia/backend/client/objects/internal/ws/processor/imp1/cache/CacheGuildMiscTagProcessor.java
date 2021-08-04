@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cac
 
 import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
 import org.json.JSONObject;
 
@@ -33,13 +33,18 @@ public class CacheGuildMiscTagProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
+		var tc = g.getMiscCaches().getTagCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> g.getMiscCaches().getTagCache().get(jsonObject.getString("tagName")));
-			case "update" -> g.getMiscCaches().getTagCache().get(jsonObject.getString("tagName")).getAsync(true);
+			case "create" -> tc.retrieve(jsonObject.getString("tagName"), true).queue();
+			case "update" -> tc.retrieve(jsonObject.getString("tagName"), true).queue(
+				e -> e.get(true).queue()
+			);
 			case "delete" -> {
-				g.getMiscCaches().getTagCache().get(jsonObject.getString("tagName")).onDeletion();
-				g.getMiscCaches().getTagCache().remove(jsonObject.getString("tagName"));
+				if(tc.contains(jsonObject.getString("tagName"))){
+					tc.get_(jsonObject.getString("tagName")).onDeletion();
+					tc.remove_(jsonObject.getString("tagName"));
+				}
 			}
 		}
 	}

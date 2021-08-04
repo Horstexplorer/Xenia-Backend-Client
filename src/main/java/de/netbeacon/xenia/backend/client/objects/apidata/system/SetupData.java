@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package de.netbeacon.xenia.backend.client.objects.external.system;
+package de.netbeacon.xenia.backend.client.objects.apidata.system;
 
 import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
-import de.netbeacon.xenia.backend.client.objects.internal.exceptions.BackendException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
 
-public class SetupData extends APIDataObject{
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class SetupData extends APIDataObject<SetupData>{
 
 	private long clientId;
 	private String clientName;
@@ -32,6 +35,7 @@ public class SetupData extends APIDataObject{
 	private int[] shardIds;
 	private String messageCryptHash;
 	private String clientLocation;
+	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET));
 
 	public SetupData(BackendProcessor backendProcessor){
 		super(backendProcessor);
@@ -69,24 +73,6 @@ public class SetupData extends APIDataObject{
 	public String getClientLocation(){ return clientLocation; }
 
 	@Override
-	public void create() throws BackendException{}
-
-	@Override
-	public void createAsync(){}
-
-	@Override
-	public void update() throws BackendException{}
-
-	@Override
-	public void updateAsync(){}
-
-	@Override
-	public void delete() throws BackendException{}
-
-	@Override
-	public void deleteAsync(){}
-
-	@Override
 	public JSONObject asJSON() throws JSONSerializationException{
 		return new JSONObject()
 			.put("clientId", clientId)
@@ -114,6 +100,11 @@ public class SetupData extends APIDataObject{
 		}
 		this.shardIds = shardIdsI;
 		this.clientLocation = jsonObject.getString("clientLocation");
+	}
+
+	@Override
+	protected Set<FeatureSet.Values> getSupportedFeatures(){
+		return FEATURE_SET;
 	}
 
 }

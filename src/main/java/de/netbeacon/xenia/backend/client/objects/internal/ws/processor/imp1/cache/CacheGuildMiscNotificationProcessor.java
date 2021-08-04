@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cac
 
 import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
 import org.json.JSONObject;
 
@@ -33,13 +33,18 @@ public class CacheGuildMiscNotificationProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
+		var nc = g.getMiscCaches().getNotificationCache();
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "create" -> scalingExecutor.execute(() -> g.getMiscCaches().getNotificationCache().get(jsonObject.getLong("notificationId")));
-			case "update" -> g.getMiscCaches().getNotificationCache().get(jsonObject.getLong("notificationId")).getAsync(true);
+			case "create" -> nc.retrieve(jsonObject.getLong("notificationId"), true).queue();
+			case "update" -> nc.retrieve(jsonObject.getLong("notificationId"), true).queue(
+				e -> e.get(true).queue()
+			);
 			case "delete" -> {
-				g.getMiscCaches().getNotificationCache().get(jsonObject.getLong("notificationId")).onDeletion();
-				g.getMiscCaches().getNotificationCache().remove(jsonObject.getLong("notificationId"));
+				if(nc.contains(jsonObject.getLong("notificationId"))){
+					nc.get_(jsonObject.getLong("notificationId")).onDeletion();
+					nc.remove_(jsonObject.getLong("notificationId"));
+				}
 			}
 		}
 	}

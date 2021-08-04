@@ -18,7 +18,7 @@ package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.cac
 
 import de.netbeacon.utils.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
-import de.netbeacon.xenia.backend.client.objects.external.Guild;
+import de.netbeacon.xenia.backend.client.objects.apidata.Guild;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1.PrimaryWSProcessor;
 import org.json.JSONObject;
 
@@ -33,12 +33,12 @@ public class CacheGuildProcessor extends PrimaryWSProcessor{
 		if(!xeniaBackendClient.getGuildCache().contains(jsonObject.getLong("guildId"))){
 			return;
 		}
-		Guild g = xeniaBackendClient.getGuildCache().get(jsonObject.getLong("guildId"), false);
+		Guild g = xeniaBackendClient.getGuildCache().get_(jsonObject.getLong("guildId"));
 		switch(jsonObject.getString("action").toLowerCase()){
-			case "update" -> g.getAsync(true); // this just gets the new data as we dont want to reload all channels, roles, members,...
+			case "update" -> g.get(true).queue(); // this just gets the new data as we dont want to reload all channels, roles, members,...
 			case "delete" -> {
 				g.clear(true);
-				xeniaBackendClient.getGuildCache().remove(jsonObject.getLong("guildId"));
+				xeniaBackendClient.getGuildCache().remove_(jsonObject.getLong("guildId"));
 			}
 		}
 	}

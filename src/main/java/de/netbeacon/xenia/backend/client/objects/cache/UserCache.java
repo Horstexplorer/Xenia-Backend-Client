@@ -16,127 +16,126 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache;
 
-import de.netbeacon.utils.locks.IdBasedLockHolder;
-import de.netbeacon.xenia.backend.client.objects.external.User;
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
+import de.netbeacon.xenia.backend.client.objects.apidata.User;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import javax.annotation.CheckReturnValue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 public class UserCache extends Cache<Long, User>{
-
-	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
 
 	public UserCache(BackendProcessor backendProcessor){
 		super(backendProcessor);
 	}
 
-	public User get(long userId) throws CacheException, DataException{
-		return get(userId, true, false);
-	}
-
-	public User get(long userId, boolean init) throws CacheException, DataException{
-		return get(userId, init, false);
-	}
-
-	public User get(long userId, boolean init, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(userId).lock();
-			User user = getFromCache(userId);
-			if(user != null){
-				return user;
-			}
-			user = new User(getBackendProcessor(), userId);
-			if(init){
-				user.getOrCreate(securityOverride);
-			}else{
-				user.get(securityOverride);
-			}
-			addToCache(userId, user);
-			return user;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get User", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(userId).unlock();
-		}
-	}
-
-	public void getAsync(long userId, Consumer<User> whenReady, Consumer<Exception> onException){
-		getAsync(userId, true, whenReady, onException);
-	}
-
-	public void getAsync(long userId, boolean init, Consumer<User> whenReady, Consumer<Exception> onException){
-		getAsync(userId, init, false, whenReady, onException);
-	}
-
-	public void getAsync(long userId, boolean init, boolean securityOverride, Consumer<User> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<User> retrieve(Long id, boolean cache){
+		Supplier<User> fun = () -> {
 			try{
-				var v = get(userId, init, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				if(contains(id)){
+					return get_(id);
 				}
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					if(contains(id)){
+						return get_(id);
+					}
+					var entry = new User(getBackendProcessor(), id).get(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve User", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<User> retrieveOrCreate(Long id, boolean cache, Object... other){
+		return create(id, cache, other);
+	}
+
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<User> create(Long id, boolean cache, Object... other){
+		Supplier<User> fun = () -> {
+			try{
+				if(contains(id)){
+					return get_(id);
+				}
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					if(contains(id)){
+						return get_(id);
+					}
+					var entry = new User(getBackendProcessor(), id).getOrCreate(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
 				}
 			}
-		});
-	}
-
-	public void remove(long userId){
-		removeFromCache(userId);
-	}
-
-	public void delete(long userId) throws CacheException, DataException{
-		delete(userId, false);
-	}
-
-	public void delete(long userId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(userId).lock();
-			User user = getFromCache(userId);
-			Objects.requireNonNullElseGet(user, () -> new User(getBackendProcessor(), userId)).delete(securityOverride);
-			removeFromCache(userId);
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete User", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(userId).unlock();
-		}
-	}
-
-	public void deleteAsync(long userId, Consumer<Long> whenReady, Consumer<Exception> onException){
-		deleteAsync(userId, false, whenReady, onException);
-	}
-
-	public void deleteAsync(long userId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
-			try{
-				delete(userId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(userId);
-				}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve / Create User", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
+	}
+
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<Void> delete(Long id){
+		Supplier<Void> fun = () -> {
+			try{
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					remove_(id);
+					new User(getBackendProcessor(), id).delete(true).execute();
+					return null;
+				}
+				finally{
+					idBasedProvider.get(id).release();
 				}
 			}
-		});
+			catch(CacheException | DataException e){
+				throw e;
+			}
+			catch(Exception e){
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete User", e);
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
 }

@@ -16,8 +16,10 @@
 
 package de.netbeacon.xenia.backend.client.objects.cache.misc;
 
-import de.netbeacon.utils.locks.IdBasedLockHolder;
-import de.netbeacon.xenia.backend.client.objects.external.misc.TwitchNotification;
+import de.netbeacon.utils.concurrency.action.ExecutionAction;
+import de.netbeacon.utils.concurrency.action.ExecutionException;
+import de.netbeacon.utils.concurrency.action.imp.SupplierExecutionAction;
+import de.netbeacon.xenia.backend.client.objects.apidata.misc.TwitchNotification;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.CacheException;
 import de.netbeacon.xenia.backend.client.objects.internal.exceptions.DataException;
@@ -27,228 +29,174 @@ import de.netbeacon.xenia.backend.client.objects.internal.objects.Cache;
 import de.netbeacon.xenia.backend.client.objects.internal.ws.processor.WSRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.annotation.CheckReturnValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 
 	private final long guildId;
-	private final IdBasedLockHolder<Long> idBasedLockHolder = new IdBasedLockHolder<>();
-	private final Logger logger = LoggerFactory.getLogger(TwitchNotificationCache.class);
-	private final ReentrantLock creationLock = new ReentrantLock();
 
 	public TwitchNotificationCache(BackendProcessor backendProcessor, long guildId){
 		super(backendProcessor);
 		this.guildId = guildId;
 	}
 
-	public TwitchNotification get(long twitchNotificationId) throws CacheException, DataException{
-		return get(twitchNotificationId, true);
-	}
-
-	public TwitchNotification get(long twitchNotificationId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(twitchNotificationId).lock();
-			if(contains(twitchNotificationId)){
-				return getFromCache(twitchNotificationId);
-			}
-			TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId);
-			tnotific.get(securityOverride);
-			addToCache(tnotific.getChannelId(), tnotific);
-			return tnotific;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Get Twitch Notification", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(twitchNotificationId).unlock();
-		}
-	}
-
-	public void getAsync(long twitchNotificationId, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
-		getAsync(twitchNotificationId, false, whenReady, onException);
-	}
-
-	public void getAsync(long twitchNotificationId, boolean securityOverride, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<TwitchNotification> retrieve(Long id, boolean cache){
+		Supplier<TwitchNotification> fun = () -> {
 			try{
-				var v = get(twitchNotificationId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				if(contains(id)){
+					return get_(id);
 				}
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
+				}
+				try{
+					if(contains(id)){
+						return get_(id);
+					}
+					var entry = new TwitchNotification(getBackendProcessor(), guildId, id).get(true).execute();
+					if(cache){
+						add_(id, entry);
+					}
+					return entry;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve TwitchNotification", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public List<TwitchNotification> retrieveAllFromBackend() throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock().writeLock().lock();
-			BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "twitchnotifications"), new HashMap<>(), null);
-			BackendResult backendResult = getBackendProcessor().process(backendRequest);
-			if(backendResult.getStatusCode() != 200){
-				logger.warn("Failed To Get Twitch Notifications From The Backend");
-				return null;
-			}
-			JSONArray notifications = backendResult.getPayloadAsJSON().getJSONArray("twitchNotifications");
-			List<TwitchNotification> notificationList = new ArrayList<>();
-			for(int i = 0; i < notifications.length(); i++){
-				JSONObject jsonObject = notifications.getJSONObject(i);
-				TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, jsonObject.getLong("twitchNotificationId"));
-				tnotific.fromJSON(jsonObject);
-				addToCache(tnotific.getId(), tnotific);
-				notificationList.add(tnotific);
-			}
-			return notificationList;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Twitch Notifications", e);
-		}
-		finally{
-			idBasedLockHolder.getLock().writeLock().unlock();
-		}
+	@CheckReturnValue
+	@Deprecated
+	@Override
+	public ExecutionAction<TwitchNotification> retrieveOrCreate(Long id, boolean cache, Object... other){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
-	public void retrieveAllFromBackendAsync(Consumer<List<TwitchNotification>> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@CheckReturnValue
+	@Deprecated
+	@Override
+	public ExecutionAction<TwitchNotification> create(Long id, boolean cache, Object... other){
+		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+	}
+
+	@CheckReturnValue
+	public ExecutionAction<TwitchNotification> create(long channelId, String twitchName, String customMessage){
+		Supplier<TwitchNotification> fun = () -> {
 			try{
-				var v = retrieveAllFromBackend();
-				if(whenReady != null){
-					whenReady.accept(v);
+				creationLock.lock();
+				if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().retrieve(guildId, true).execute().getPerk_MISC_TWITCHNOTIFICATIONS_C()){
+					throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
 				}
+				// check if we already know the name
+				if(getDataMap().values().stream().anyMatch(tn -> tn.getTwitchChannelName().equalsIgnoreCase(twitchName))){
+					throw new CacheException(CacheException.Type.ALREADY_EXISTS, "Twitch Notification Already Exists");
+				}
+				TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, -1).lSetInitialData(twitchName, channelId);
+				if(customMessage != null){
+					tnotific.lSetNotificationMessage(customMessage);
+				}
+				tnotific.create(true).execute();
+				add_(tnotific.getId(), tnotific);
+				// send the funny secondary request to init or destroy this notification
+				var secWSL = getBackendProcessor().getBackendClient().getSecondaryWebsocketListener().getWsProcessorCore();
+				WSRequest wsRequest = new WSRequest.Builder()
+					.action("twitchaccelerator")
+					.recipient(0)
+					.mode(WSRequest.Mode.UNICAST)
+					.payload(new JSONObject().put("guildId", guildId).put("twitchNotificationId", tnotific.getId()))
+					.exitOn(WSRequest.ExitOn.INSTANT)
+					.build();
+				secWSL.process(wsRequest);
+				return tnotific;
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create A New Twitch Notification", e);
 			}
-		});
+			finally{
+				creationLock.unlock();
+			}
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public TwitchNotification createNew(long channelId, String twitchName, String customMessage) throws CacheException, DataException{
-		return createNew(channelId, twitchName, customMessage, false);
-	}
-
-	public TwitchNotification createNew(long channelId, String twitchName, String customMessage, boolean securityOverride) throws CacheException, DataException{
-		try{
-			creationLock.lock();
-			if(getOrderedKeyMap().size() + 1 > getBackendProcessor().getBackendClient().getLicenseCache().get(guildId).getPerk_MISC_TWITCHNOTIFICATIONS_C()){
-				throw new CacheException(CacheException.Type.IS_FULL, "Cache Is Full");
-			}
-			// check if we already know the name
-			if(getDataMap().values().stream().anyMatch(tn -> tn.getTwitchChannelName().equalsIgnoreCase(twitchName))){
-				throw new CacheException(CacheException.Type.ALREADY_EXISTS, "Twitch Notification Already Exists");
-			}
-			TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, -1).lSetInitialData(twitchName, channelId);
-			if(customMessage != null){
-				tnotific.lSetNotificationMessage(customMessage);
-			}
-			tnotific.create(securityOverride);
-			addToCache(tnotific.getId(), tnotific);
-			// send the funny secondary request to init or destroy this notification
-			var secWSL = getBackendProcessor().getBackendClient().getSecondaryWebsocketListener().getWsProcessorCore();
-			WSRequest wsRequest = new WSRequest.Builder()
-				.action("twitchaccelerator")
-				.recipient(0)
-				.mode(WSRequest.Mode.UNICAST)
-				.payload(new JSONObject().put("guildId", guildId).put("twitchNotificationId", tnotific.getId()))
-				.exitOn(WSRequest.ExitOn.INSTANT)
-				.build();
-			secWSL.process(wsRequest);
-			return tnotific;
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create A New Twitch Notification", e);
-		}
-		finally{
-			creationLock.unlock();
-		}
-	}
-
-	public void createAsync(long channelId, String twitchName, String customMessage, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
-		createAsync(channelId, twitchName, customMessage, false, whenReady, onException);
-	}
-
-	public void createAsync(long channelId, String twitchName, String customMessage, boolean securityOverride, Consumer<TwitchNotification> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@CheckReturnValue
+	@Override
+	public ExecutionAction<Void> delete(Long id){
+		Supplier<Void> fun = () -> {
 			try{
-				var v = createNew(channelId, twitchName, customMessage, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(v);
+				if(!idBasedProvider.getElseCreate(id).tryAcquire(10, TimeUnit.SECONDS)){
+					throw new TimeoutException("Failed to acquire block for " + id + " in a reasonable time");
 				}
+				try{
+					remove_(id);
+					new TwitchNotification(getBackendProcessor(), guildId, id).delete(true).execute();
+					return null;
+				}
+				finally{
+					idBasedProvider.get(id).release();
+				}
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete TwitchNotification", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
-	public void remove(long twitchNotificationId){
-		removeFromCache(twitchNotificationId);
-	}
-
-	public void delete(long twitchNotificationId) throws CacheException, DataException{
-		delete(twitchNotificationId, false);
-	}
-
-	public void delete(long twitchNotificationId, boolean securityOverride) throws CacheException, DataException{
-		try{
-			idBasedLockHolder.getLock(twitchNotificationId).lock();
-			TwitchNotification tnotific = getFromCache(twitchNotificationId);
-			Objects.requireNonNullElseGet(tnotific, () -> new TwitchNotification(getBackendProcessor(), guildId, twitchNotificationId)).delete(securityOverride);
-			removeFromCache(tnotific.getId());
-		}
-		catch(CacheException | DataException e){
-			throw e;
-		}
-		catch(Exception e){
-			throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete A Twitch Notification", e);
-		}
-		finally{
-			idBasedLockHolder.getLock(twitchNotificationId).unlock();
-		}
-	}
-
-	public void deleteAsync(long twitchNotificationId, Consumer<Long> whenReady, Consumer<Exception> onException){
-		deleteAsync(twitchNotificationId, false, whenReady, onException);
-	}
-
-	public void deleteAsync(long twitchNotificationId, boolean securityOverride, Consumer<Long> whenReady, Consumer<Exception> onException){
-		getBackendProcessor().getScalingExecutor().execute(() -> {
+	@CheckReturnValue
+	public ExecutionAction<List<TwitchNotification>> retrieveAllFromBackend(boolean cache){
+		Supplier<List<TwitchNotification>> fun = () -> {
 			try{
-				delete(twitchNotificationId, securityOverride);
-				if(whenReady != null){
-					whenReady.accept(twitchNotificationId);
+				BackendRequest backendRequest = new BackendRequest(BackendRequest.Method.GET, BackendRequest.AuthType.BEARER, List.of("data", "guilds", String.valueOf(guildId), "misc", "twitchnotifications"), new HashMap<>(), null);
+				BackendResult backendResult = getBackendProcessor().process(backendRequest);
+				if(backendResult.getStatusCode() != 200){
+					logger.warn("Failed To Get Twitch Notifications From The Backend");
+					return null;
 				}
+				JSONArray notifications = backendResult.getPayloadAsJSON().getJSONArray("twitchNotifications");
+				List<TwitchNotification> notificationList = new ArrayList<>();
+				for(int i = 0; i < notifications.length(); i++){
+					JSONObject jsonObject = notifications.getJSONObject(i);
+					TwitchNotification tnotific = new TwitchNotification(getBackendProcessor(), guildId, jsonObject.getLong("twitchNotificationId"));
+					tnotific.fromJSON(jsonObject);
+					if(cache){
+						add_(tnotific.getId(), tnotific);
+					}
+					notificationList.add(tnotific);
+				}
+				return notificationList;
+			}
+			catch(CacheException | DataException e){
+				throw e;
 			}
 			catch(Exception e){
-				if(onException != null){
-					onException.accept(e);
-				}
+				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Twitch Notifications", e);
 			}
-		});
+		};
+		return new SupplierExecutionAction<>(fun);
 	}
 
 }
