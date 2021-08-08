@@ -16,7 +16,7 @@
 
 package de.netbeacon.xenia.backend.client.objects.internal.ws.processor.imp1;
 
-import de.netbeacon.utils.executor.ScalingExecutor;
+import de.netbeacon.utils.concurrency.executor.ScalingExecutor;
 import de.netbeacon.xenia.backend.client.core.XeniaBackendClient;
 import org.json.JSONObject;
 import org.slf4j.Logger;
