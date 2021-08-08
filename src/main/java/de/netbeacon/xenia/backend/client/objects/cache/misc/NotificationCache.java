@@ -78,21 +78,21 @@ public class NotificationCache extends Cache<Long, Notification>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Notification", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Notification> retrieveOrCreate(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Notification> create(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
@@ -118,7 +118,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 				creationLock.unlock();
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -145,7 +145,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Notification", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -178,7 +178,7 @@ public class NotificationCache extends Cache<Long, Notification>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Notifications", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 }

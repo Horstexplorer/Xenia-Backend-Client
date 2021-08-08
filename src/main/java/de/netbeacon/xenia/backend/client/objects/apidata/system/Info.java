@@ -21,8 +21,6 @@ import de.netbeacon.utils.json.serial.JSONSerializationException;
 import de.netbeacon.xenia.backend.client.objects.internal.BackendProcessor;
 import de.netbeacon.xenia.backend.client.objects.internal.objects.APIDataObject;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +29,6 @@ import java.util.Set;
 public class Info extends APIDataObject<Info>{
 
 	private final Mode mode;
-	private final Logger logger = LoggerFactory.getLogger(Info.class);
 	private String version;
 	private int guildCount;
 	private int userCount;

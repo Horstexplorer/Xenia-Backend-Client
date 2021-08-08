@@ -78,21 +78,21 @@ public class RoleCache extends Cache<Long, Role>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Role", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Role> retrieveOrCreate(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Role> create(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	public ExecutionAction<Role> create(){
@@ -116,7 +116,7 @@ public class RoleCache extends Cache<Long, Role>{
 				creationLock.unlock();
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -143,7 +143,7 @@ public class RoleCache extends Cache<Long, Role>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Role", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -176,7 +176,7 @@ public class RoleCache extends Cache<Long, Role>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Roles", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 }

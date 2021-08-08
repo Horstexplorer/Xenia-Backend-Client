@@ -67,7 +67,7 @@ public class GuildCache extends Cache<Long, Guild>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Guild", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -108,7 +108,7 @@ public class GuildCache extends Cache<Long, Guild>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve / Create Guild", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -135,7 +135,7 @@ public class GuildCache extends Cache<Long, Guild>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Guild", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@Override

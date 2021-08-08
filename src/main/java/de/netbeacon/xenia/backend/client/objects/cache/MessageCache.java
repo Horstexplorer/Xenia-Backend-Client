@@ -82,21 +82,21 @@ public class MessageCache extends Cache<Long, Message>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Message", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Message> retrieveOrCreate(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Message> create(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
@@ -130,7 +130,7 @@ public class MessageCache extends Cache<Long, Message>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Create Message", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -157,7 +157,7 @@ public class MessageCache extends Cache<Long, Message>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Message", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -195,7 +195,7 @@ public class MessageCache extends Cache<Long, Message>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Messages", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	public void setLast(String type, long messageId){

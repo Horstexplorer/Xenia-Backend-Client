@@ -67,7 +67,7 @@ public class UserCache extends Cache<Long, User>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve User", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -108,7 +108,7 @@ public class UserCache extends Cache<Long, User>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve / Create User", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -135,7 +135,7 @@ public class UserCache extends Cache<Long, User>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete User", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 }

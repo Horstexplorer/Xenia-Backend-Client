@@ -77,7 +77,7 @@ public class MemberCache extends Cache<Long, Member>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Member", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -118,7 +118,7 @@ public class MemberCache extends Cache<Long, Member>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve / Create Member", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -145,7 +145,7 @@ public class MemberCache extends Cache<Long, Member>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Member", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -178,7 +178,7 @@ public class MemberCache extends Cache<Long, Member>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Members", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 }

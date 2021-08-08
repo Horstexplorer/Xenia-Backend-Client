@@ -58,7 +58,7 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	@CheckReturnValue
 	public ExecutionAction<T> get(boolean securityOverride) throws DataException{
 		if(!getSupportedFeatures().contains(FeatureSet.Values.GET)){
-			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+			return new SupplierExecutionAction<T>(backendProcessor.getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
 		return process(securityOverride, BackendRequest.Method.GET, null, null);
 	}
@@ -71,7 +71,7 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	@CheckReturnValue
 	public ExecutionAction<T> create(boolean securityOverride) throws DataException{
 		if(!getSupportedFeatures().contains(FeatureSet.Values.CREATE)){
-			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+			return new SupplierExecutionAction<T>(backendProcessor.getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
 		return process(securityOverride, BackendRequest.Method.POST, null, asJSON());
 	}
@@ -84,7 +84,7 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	@CheckReturnValue
 	public ExecutionAction<T> getOrCreate(boolean securityOverride){
 		if(!getSupportedFeatures().contains(FeatureSet.Values.GET_OR_CREATE)){
-			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+			return new SupplierExecutionAction<T>(backendProcessor.getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
 		return process(securityOverride, BackendRequest.Method.POST, new HashMap<>(){{
 			put("goc", "true");
@@ -99,10 +99,10 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	@CheckReturnValue
 	public ExecutionAction<T> update(boolean securityOverride) throws DataException{
 		if(!getSupportedFeatures().contains(FeatureSet.Values.UPDATE)){
-			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+			return new SupplierExecutionAction<T>(backendProcessor.getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
 		if(!hasChanges()){
-			return new SupplierExecutionAction<>(() -> (T) this);
+			return new SupplierExecutionAction<>(backendProcessor.getScalingExecutor(), () -> (T) this);
 		}
 		return process(securityOverride, BackendRequest.Method.PUT, null, asJSON());
 	}
@@ -115,7 +115,7 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 	@CheckReturnValue
 	public ExecutionAction<T> delete(boolean securityOverride) throws DataException{
 		if(!getSupportedFeatures().contains(FeatureSet.Values.DELETE)){
-			return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+			return new SupplierExecutionAction<T>(backendProcessor.getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 		}
 		return process(securityOverride, BackendRequest.Method.DELETE, null, null);
 	}
@@ -155,7 +155,7 @@ public abstract class APIDataObject<T extends APIDataObject<T>> implements IJSON
 				}
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(backendProcessor.getScalingExecutor(), fun);
 	}
 
 

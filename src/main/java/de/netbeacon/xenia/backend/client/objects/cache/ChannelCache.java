@@ -77,7 +77,7 @@ public class ChannelCache extends Cache<Long, Channel>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Channel", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class ChannelCache extends Cache<Long, Channel>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve / Create Channel", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -144,7 +144,7 @@ public class ChannelCache extends Cache<Long, Channel>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Channel", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -177,7 +177,7 @@ public class ChannelCache extends Cache<Long, Channel>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Channels", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@Override

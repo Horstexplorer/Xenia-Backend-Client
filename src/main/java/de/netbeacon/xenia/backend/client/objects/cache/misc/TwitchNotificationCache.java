@@ -79,21 +79,21 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve TwitchNotification", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<TwitchNotification> retrieveOrCreate(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<TwitchNotification> create(Long id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
@@ -136,7 +136,7 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 				creationLock.unlock();
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -163,7 +163,7 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete TwitchNotification", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -196,7 +196,7 @@ public class TwitchNotificationCache extends Cache<Long, TwitchNotification>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Twitch Notifications", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 }

@@ -78,21 +78,21 @@ public class TagCache extends Cache<String, Tag>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve Tag", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Tag> retrieveOrCreate(String id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
 	@Deprecated
 	@Override
 	public ExecutionAction<Tag> create(String id, boolean cache, Object... other){
-		return new SupplierExecutionAction<>(() -> {throw new ExecutionException(new UnsupportedOperationException());});
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), () -> {throw new ExecutionException(new UnsupportedOperationException());});
 	}
 
 	@CheckReturnValue
@@ -121,7 +121,7 @@ public class TagCache extends Cache<String, Tag>{
 				creationLock.unlock();
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -148,7 +148,7 @@ public class TagCache extends Cache<String, Tag>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Delete Tag", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 	@CheckReturnValue
@@ -181,7 +181,7 @@ public class TagCache extends Cache<String, Tag>{
 				throw new CacheException(CacheException.Type.UNKNOWN, "Failed To Retrieve All Tags", e);
 			}
 		};
-		return new SupplierExecutionAction<>(fun);
+		return new SupplierExecutionAction<>(getBackendProcessor().getScalingExecutor(), fun);
 	}
 
 }
