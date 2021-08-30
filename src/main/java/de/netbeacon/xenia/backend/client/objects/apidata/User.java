@@ -33,6 +33,7 @@ public class User extends APIDataObject<User>{
 	private long creationTimestamp;
 	private String internalRole;
 	private String preferredLanguage;
+	private long trustFactor = 10000;
 	// meta data - initialize with values
 	private String metaUsername = "unknown_username";
 	private String metaIconUrl = null;
@@ -96,6 +97,19 @@ public class User extends APIDataObject<User>{
 		this.preferredLanguage = language;
 	}
 
+	public long getTrustFactor(){
+		return trustFactor;
+	}
+
+	public void setTrustFactor(long trustFactor){
+		lSetTrustFactor(trustFactor);
+		update().queue();
+	}
+
+	public void lSetTrustFactor(long trustFactor){
+		this.trustFactor = trustFactor;
+	}
+
 	@Override
 	public JSONObject asJSON() throws JSONSerializationException{
 		return new JSONObject()
@@ -103,6 +117,7 @@ public class User extends APIDataObject<User>{
 			.put("creationTimestamp", creationTimestamp)
 			.put("internalRole", internalRole)
 			.put("preferredLanguage", preferredLanguage)
+			.put("trustFactor", trustFactor)
 			.put("meta", new JSONObject()
 				.put("username", metaUsername)
 				.put("iconUrl", (metaIconUrl != null) ? metaIconUrl : JSONObject.NULL)
@@ -115,6 +130,7 @@ public class User extends APIDataObject<User>{
 		this.creationTimestamp = jsonObject.getLong("creationTimestamp");
 		this.internalRole = jsonObject.getString("internalRole");
 		this.preferredLanguage = jsonObject.getString("preferredLanguage");
+		this.trustFactor = jsonObject.getLong("trustFactor");
 		JSONObject meta = jsonObject.getJSONObject("meta");
 		this.metaUsername = meta.getString("username");
 		this.metaIconUrl = meta.get("iconUrl") != JSONObject.NULL ? meta.getString("iconUrl") : null;

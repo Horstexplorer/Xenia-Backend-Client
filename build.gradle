@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'de.netbeacon.xenia.backend.client'
-version '1.14.5v2'
+version '1.14.6v2'
 sourceCompatibility = 16
 
 repositories {
@@ -43,7 +43,7 @@ dependencies {
 
     compileOnly group: 'net.dv8tion', name: 'JDA', version: '4.3.0_294' // https://mvnrepository.com/artifact/net.dv8tion/JDA
 
-    implementation group: 'de.netbeacon.utils', name: 'Concurrency-Utils', version: '1.0.7', changing: true
+    implementation group: 'de.netbeacon.utils', name: 'Concurrency-Utils', version: '1.0.9_1', changing: true
 }
 
 shadowJar {

@@ -44,7 +44,6 @@ public class Channel extends APIDataObject<Channel>{
 	private D43Z1Settings d43z1Settings = new D43Z1Settings(0);
 	private String metaChannelName;
 	private String metaChannelTopic;
-	private final AutoMod autoMod;
 	private static final Set<FeatureSet.Values> FEATURE_SET = new HashSet<>(List.of(FeatureSet.Values.GET, FeatureSet.Values.GET_OR_CREATE, FeatureSet.Values.CREATE, FeatureSet.Values.UPDATE, FeatureSet.Values.DELETE));
 
 	public Channel(BackendProcessor backendProcessor, long guildId, long channelId){
@@ -53,7 +52,6 @@ public class Channel extends APIDataObject<Channel>{
 		this.channelId = channelId;
 		this.messageCache = new MessageCache(backendProcessor, guildId, channelId);
 		setBackendPath("data", "guilds", (Supplier<Long>) this::getGuildId, "channels", (Supplier<Long>) this::getChannelId);
-		this.autoMod = new AutoMod(guildId, channelId, backendProcessor);
 	}
 
 	public long getId(){
@@ -170,10 +168,6 @@ public class Channel extends APIDataObject<Channel>{
 	public void lSetMetaData(String channelName, String channelTopic){
 		this.metaChannelName = channelName;
 		this.metaChannelTopic = channelTopic != null ? channelTopic : "Unknown topic";
-	}
-
-	public AutoMod getAutoMod(){
-		return autoMod;
 	}
 
 	// SECONDARY

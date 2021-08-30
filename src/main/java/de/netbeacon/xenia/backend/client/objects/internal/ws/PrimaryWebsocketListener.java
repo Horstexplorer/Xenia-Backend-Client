@@ -58,7 +58,6 @@ public class PrimaryWebsocketListener extends WebsocketListener{
 		register.accept(new CacheGuildRoleProcessor(xeniaBackendClient, scalingExecutor));
 		processors.put("guild_role_permission", new CacheGuildRoleProcessor(xeniaBackendClient, scalingExecutor));
 		register.accept(new CacheGuildChannelProcessor(xeniaBackendClient, scalingExecutor));
-		register.accept(new CacheGuildChannelAutoModProcessor(xeniaBackendClient, scalingExecutor));
 		register.accept(new CacheUserProcessor(xeniaBackendClient, scalingExecutor));
 
 
